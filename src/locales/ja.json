@@ -1,0 +1,72 @@
+{
+  "demo": {
+    "title": "MIDI SKETCH BACH",
+    "subtitle": "アルゴリズムによるバッハ器楽曲MIDI生成",
+    "play": "再生",
+    "stop": "停止",
+    "loading": "読み込み中...",
+    "initializing": "初期化中...",
+    "generating": "生成中...",
+    "regenerate": "再生成",
+    "download": "MIDIダウンロード",
+    "settings": "設定",
+    "showSettings": "設定を表示",
+    "hideSettings": "設定を非表示"
+  },
+  "form": {
+    "title": "楽曲形式",
+    "organSystem": "オルガン作品",
+    "soloString": "独奏弦楽",
+    "toccataAndFugue": "トッカータとフーガ",
+    "toccataAndFugueDesc": "劇的なトッカータと厳格なフーガ",
+    "preludeAndFugue": "前奏曲とフーガ",
+    "preludeAndFugueDesc": "流麗な前奏曲から精巧なフーガへ",
+    "fugue": "フーガ",
+    "fugueDesc": "主題と展開による純粋な対位法フーガ",
+    "trioSonata": "トリオ・ソナタ",
+    "trioSonataDesc": "二つの上声部とバスによる三声の編成",
+    "choralePrelude": "コラール前奏曲",
+    "choralePreludeDesc": "讃美歌旋律と対位法的伴奏",
+    "passacaglia": "パッサカリア",
+    "passacagliaDesc": "繰り返されるバスパターン上の変奏",
+    "fantasiaAndFugue": "幻想曲とフーガ",
+    "fantasiaAndFugueDesc": "自由な幻想曲と厳格なフーガ",
+    "celloPrelude": "チェロ前奏曲",
+    "celloPreludeDesc": "無伴奏チェロのための前奏曲",
+    "chaconne": "シャコンヌ",
+    "chaconneDesc": "壮大なアーチ形変奏曲"
+  },
+  "config": {
+    "key": "調",
+    "minor": "短調",
+    "major": "長調",
+    "instrument": "楽器",
+    "character": "性格",
+    "voices": "声部数",
+    "bpm": "テンポ",
+    "scale": "長さ",
+    "seed": "シード",
+    "seedRandom": "ランダム",
+    "organ": "オルガン",
+    "harpsichord": "チェンバロ",
+    "piano": "ピアノ",
+    "violin": "ヴァイオリン",
+    "cello": "チェロ",
+    "guitar": "ギター",
+    "scaleShort": "短い",
+    "scaleMedium": "中程度",
+    "scaleLong": "長い",
+    "scaleFull": "フル"
+  },
+  "pianoRoll": {
+    "voice1": "ソプラノ",
+    "voice2": "アルト",
+    "voice3": "テノール",
+    "voice4": "バス",
+    "voice5": "第5声"
+  },
+  "footer": {
+    "docs": "ドキュメント",
+    "github": "GitHub"
+  }
+}

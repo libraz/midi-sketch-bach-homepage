@@ -1,0 +1,72 @@
+{
+  "demo": {
+    "title": "MIDI SKETCH BACH",
+    "subtitle": "Algorithmic Bach Instrumental MIDI Generator",
+    "play": "PLAY",
+    "stop": "STOP",
+    "loading": "Loading...",
+    "initializing": "Initializing...",
+    "generating": "Generating...",
+    "regenerate": "Regenerate",
+    "download": "Download MIDI",
+    "settings": "Settings",
+    "showSettings": "Show Settings",
+    "hideSettings": "Hide Settings"
+  },
+  "form": {
+    "title": "Musical Form",
+    "organSystem": "Organ System",
+    "soloString": "Solo String",
+    "toccataAndFugue": "Toccata and Fugue",
+    "toccataAndFugueDesc": "Dramatic toccata followed by a strict fugue",
+    "preludeAndFugue": "Prelude and Fugue",
+    "preludeAndFugueDesc": "Flowing prelude leading into an elaborate fugue",
+    "fugue": "Fugue",
+    "fugueDesc": "Pure contrapuntal fugue with subject and episodes",
+    "trioSonata": "Trio Sonata",
+    "trioSonataDesc": "Three-voice texture with two upper voices and bass",
+    "choralePrelude": "Chorale Prelude",
+    "choralePreludeDesc": "Hymn-based melody with contrapuntal accompaniment",
+    "passacaglia": "Passacaglia",
+    "passacagliaDesc": "Variations over a repeating bass pattern",
+    "fantasiaAndFugue": "Fantasia and Fugue",
+    "fantasiaAndFugueDesc": "Free-form fantasia followed by a strict fugue",
+    "celloPrelude": "Cello Prelude",
+    "celloPreludeDesc": "Unaccompanied prelude for solo cello",
+    "chaconne": "Chaconne",
+    "chaconneDesc": "Monumental arch-form variations for solo instrument"
+  },
+  "config": {
+    "key": "Key",
+    "minor": "Minor",
+    "major": "Major",
+    "instrument": "Instrument",
+    "character": "Character",
+    "voices": "Voices",
+    "bpm": "BPM",
+    "scale": "Duration",
+    "seed": "Seed",
+    "seedRandom": "Random",
+    "organ": "Organ",
+    "harpsichord": "Harpsichord",
+    "piano": "Piano",
+    "violin": "Violin",
+    "cello": "Cello",
+    "guitar": "Guitar",
+    "scaleShort": "Short",
+    "scaleMedium": "Medium",
+    "scaleLong": "Long",
+    "scaleFull": "Full"
+  },
+  "pianoRoll": {
+    "voice1": "Soprano",
+    "voice2": "Alto",
+    "voice3": "Tenor",
+    "voice4": "Bass",
+    "voice5": "Voice 5"
+  },
+  "footer": {
+    "docs": "Docs",
+    "github": "GitHub"
+  }
+}

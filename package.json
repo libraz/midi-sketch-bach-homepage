@@ -1,0 +1,30 @@
+{
+  "name": "midi-sketch-bach-homepage",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview",
+    "typecheck": "vue-tsc --noEmit",
+    "copy:wasm": "./scripts/copy-wasm.sh"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.9",
+    "mermaid": "^11.12.2",
+    "typescript": "^5.9.3",
+    "vitepress": "^1.6.4",
+    "vitepress-plugin-mermaid": "^2.0.17",
+    "vue": "^3.5.26",
+    "vue-tsc": "^3.2.2"
+  },
+  "dependencies": {
+    "smplr": "^0.16.3"
+  },
+  "volta": {
+    "node": "22.21.1",
+    "yarn": "4.12.0"
+  }
+}
