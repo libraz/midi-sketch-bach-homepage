@@ -7,7 +7,7 @@ description: The Baroque music theory rules governing voice interaction in MIDI 
 
 This page explains the music theory rules that MIDI Sketch Bach uses to generate authentic Baroque-style counterpoint. These rules govern how multiple independent melodic lines (voices) interact with each other.
 
-::: info Counterpoint for Programmers
+::: info Counterpoint for Engineers
 Think of counterpoint as a constraint satisfaction problem. Each voice is an independent thread that must satisfy interval constraints relative to every other voice at every beat. The rules below are the constraints; the engine finds solutions that satisfy all of them simultaneously while also sounding musically compelling.
 :::
 

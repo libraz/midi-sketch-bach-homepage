@@ -118,7 +118,7 @@ generator.destroy()
 
 | フィールド | 型 | デフォルト | 説明 |
 |-----------|------|----------|------|
-| `form` | `number \| string` | `0` | 楽曲形式（0--8または名前）。[フォーム](/ja/docs/forms)と[プリセットリファレンス](/ja/docs/presets)を参照。 |
+| `form` | `number \| string` | `0` | 楽曲形式（0--8または名前）。[楽曲形式](/ja/docs/forms)と[プリセットリファレンス](/ja/docs/presets)を参照。 |
 | `key` | `number` | `0` | 調（0--11のピッチクラス: 0=C, 1=C#, 2=D, ... 11=B） |
 | `isMinor` | `boolean` | `false` | `true` で短調、`false` で長調 |
 | `numVoices` | `number` | 形式のデフォルト | 声部数（2--5） |
@@ -129,7 +129,7 @@ generator.destroy()
 | `scale` | `number \| string` | `1` | 長さスケール（0=short, 1=medium, 2=long, 3=full） |
 | `targetBars` | `number` | -- | 目標小節数（scaleを上書き） |
 
-### フォームの値
+### 楽曲形式の値
 
 形式は番号または名前文字列で指定できます。
 

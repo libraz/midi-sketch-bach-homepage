@@ -73,7 +73,7 @@ MIDI Sketch Bachは2つのシステムにまたがる9つの楽曲形式をサ�
 
 - [特徴](/ja/docs/features) -- すべての機能の概要
 - [インストール](/ja/docs/installation) -- 詳細なインストール方法
-- [フォーム](/ja/docs/forms) -- 各楽曲形式について
+- [楽曲形式](/ja/docs/forms) -- 各楽曲形式について
 - [対位法と声部進行](/ja/docs/counterpoint) -- エンジンの背後にあるバロック音楽理論
 - [JavaScript API](/ja/docs/api-js) -- 完全なAPIリファレンス
 - [CLI リファレンス](/ja/docs/cli) -- コマンドラインの使い方

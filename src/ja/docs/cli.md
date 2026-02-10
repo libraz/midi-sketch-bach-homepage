@@ -41,7 +41,7 @@ midi-sketch-bach [options]
 | `--output <path>` | `-o` | string | `output.mid` | 出力ファイルパス |
 | `--json` | | boolean | `false` | イベントデータをJSONとして標準出力に出力 |
 
-## フォーム名
+## 楽曲形式名
 
 `--form` オプションで使用できる名前：
 

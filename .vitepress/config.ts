@@ -191,7 +191,7 @@ export default withMermaid(defineConfig({
                 { text: '生成パイプライン', link: '/ja/docs/generation-pipeline' },
                 { text: '対位法と声部進行', link: '/ja/docs/counterpoint' },
                 { text: '声部アーキテクチャ', link: '/ja/docs/voice-architecture' },
-                { text: 'フォーム', link: '/ja/docs/forms' },
+                { text: '楽曲形式', link: '/ja/docs/forms' },
               ]
             },
             {
