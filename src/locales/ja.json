@@ -34,7 +34,8 @@
     "celloPrelude": "チェロ前奏曲",
     "celloPreludeDesc": "無伴奏チェロのための前奏曲",
     "chaconne": "シャコンヌ",
-    "chaconneDesc": "壮大なアーチ形変奏曲"
+    "chaconneDesc": "壮大なアーチ形変奏曲",
+    "bwvRef": "参考作品: {bwv}"
   },
   "config": {
     "key": "調",

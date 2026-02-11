@@ -4,7 +4,7 @@ import { useI18n } from '@/composables/useI18n'
 import { useBachGeneration } from '@/composables/useBachGeneration'
 import { useBachPlayer } from '@/composables/useBachPlayer'
 import { useBachStore } from '@/stores/useBachStore'
-import { FORM_PRESETS, getFormsByCategory } from '@/data/formPresets'
+import { FORM_PRESETS, getFormPreset, getFormsByCategory } from '@/data/formPresets'
 import { KEY_NAMES } from '@/utils/midiUtils'
 import PianoRoll from './PianoRoll.vue'
 
@@ -77,6 +77,8 @@ const categories = computed(() => [
 ])
 
 const filteredForms = computed(() => getFormsByCategory(activeCategory.value))
+
+const currentPreset = computed(() => getFormPreset(store.config.form))
 
 const currentInstrumentName = computed(() => INSTRUMENT_NAMES[store.config.instrument] ?? 'organ')
 
@@ -184,6 +186,9 @@ async function handleRegenerate() {
   if (generation.isGenerating.value) return
 
   isRegenerating.value = true
+
+  // Preserve playback position before stopping
+  const resumeTick = player.currentTick.value
   player.stop()
 
   try {
@@ -199,9 +204,10 @@ async function handleRegenerate() {
     // Restore seed in config (the actual seed used is in eventData)
     store.config.seed = prevSeed
 
-    // Always auto-play after regeneration
+    // Auto-play from the previous position (clamped to new piece length)
     if (ok && store.eventData.value) {
-      await player.play(store.eventData.value, 0, currentInstrumentName.value)
+      const fromTick = Math.min(resumeTick, store.eventData.value.total_ticks)
+      await player.play(store.eventData.value, fromTick, currentInstrumentName.value)
     }
   } catch (e) {
     console.error('Regeneration failed:', e)
@@ -217,7 +223,7 @@ function selectForm(formId: number) {
   store.config.form = formId
 
   // Apply form defaults for instrument and voices
-  const preset = FORM_PRESETS.find(f => f.id === formId)
+  const preset = getFormPreset(formId)
   if (preset) {
     const instId = INSTRUMENT_OPTIONS.find(
       i => INSTRUMENT_NAMES[i.id] === preset.defaultInstrument,
@@ -398,6 +404,7 @@ function handleDownload() {
           @click="selectForm(form.id)"
         >
           <span class="form-card__name">{{ t(form.displayKey) }}</span>
+          <span class="form-card__bwv">{{ t('form.bwvRef', { bwv: form.bwv }) }}</span>
           <span class="form-card__desc">{{ t(form.descKey) }}</span>
         </button>
       </div>
@@ -465,7 +472,11 @@ function handleDownload() {
                 v-for="v in [2, 3, 4, 5]"
                 :key="v"
                 class="seg__btn"
-                :class="{ 'seg__btn--active': store.config.numVoices === v }"
+                :class="{
+                  'seg__btn--active': store.config.numVoices === v,
+                  'seg__btn--disabled': currentPreset && (v < currentPreset.minVoices || v > currentPreset.maxVoices),
+                }"
+                :disabled="currentPreset ? (v < currentPreset.minVoices || v > currentPreset.maxVoices) : false"
                 @click="store.config.numVoices = v"
               >{{ v }}</button>
             </div>
@@ -629,7 +640,7 @@ function handleDownload() {
 .bach-demo__stage {
   position: relative;
   width: 100%;
-  height: 222px;
+  height: 320px;
   box-sizing: border-box;
   border: 1px solid rgba(184, 146, 46, 0.12);
   border-radius: 10px;
@@ -656,8 +667,8 @@ function handleDownload() {
   align-items: center;
   justify-content: center;
   gap: 0.7rem;
-  background: rgba(13, 10, 7, 0.25);
-  backdrop-filter: blur(1px);
+  background: rgba(13, 10, 7, 0.15);
+  backdrop-filter: blur(0.5px);
 }
 
 .stage-play-btn {
@@ -1074,6 +1085,18 @@ function handleDownload() {
   color: #C4B498;
 }
 
+.form-card__bwv {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.64rem;
+  font-weight: 500;
+  color: rgba(184, 146, 46, 0.4);
+  letter-spacing: 0.04em;
+}
+
+.form-card--selected .form-card__bwv {
+  color: rgba(184, 146, 46, 0.6);
+}
+
 .form-card__desc {
   font-size: 0.68rem;
   color: rgba(228, 224, 218, 0.35);
@@ -1151,7 +1174,11 @@ function handleDownload() {
 .key-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: 1px;
+  border: 1px solid rgba(168, 152, 120, 0.12);
+  border-radius: 5px;
+  overflow: hidden;
+  background: rgba(168, 152, 120, 0.15);
 }
 
 .settings-group:has(.key-buttons) {
@@ -1162,8 +1189,8 @@ function handleDownload() {
   flex: 1 0 0;
   min-width: 0;
   height: 32px;
-  border: 1px solid rgba(168, 152, 120, 0.12);
-  border-radius: 4px;
+  border: none;
+  border-radius: 0;
   background: rgba(26, 26, 34, 0.5);
   color: rgba(228, 224, 218, 0.55);
   font-family: 'DM Sans', system-ui, sans-serif;
@@ -1180,13 +1207,12 @@ function handleDownload() {
 }
 
 .key-btn:hover {
-  border-color: rgba(168, 152, 120, 0.3);
+  background: rgba(168, 152, 120, 0.08);
   color: #E4E0DA;
 }
 
 .key-btn--selected {
   background: rgba(168, 152, 120, 0.12);
-  border-color: #A89878;
   color: #C4B498;
 }
 
@@ -1213,7 +1239,7 @@ function handleDownload() {
   white-space: nowrap;
 }
 
-.seg__btn + .seg__btn {
+.seg:not(.seg--wrap) > .seg__btn + .seg__btn {
   border-left: 1px solid rgba(168, 152, 120, 0.06);
 }
 
@@ -1222,40 +1248,33 @@ function handleDownload() {
   color: #C4B498;
 }
 
-.seg__btn:hover:not(.seg__btn--active) {
+.seg__btn:hover:not(.seg__btn--active):not(:disabled) {
   background: rgba(26, 26, 34, 0.7);
   color: rgba(228, 224, 218, 0.6);
+}
+
+.seg__btn--disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
 }
 
 /* Wrapped fill variant — items fill width, wrap on narrow screens */
 .seg--wrap {
   flex-wrap: wrap;
-  gap: 4px;
-  border: none;
-  border-radius: 0;
-  overflow: visible;
+  gap: 1px;
+  background: rgba(168, 152, 120, 0.15);
 }
 
 .seg--wrap .seg__btn {
   flex: 1 1 0;
   min-width: 60px;
-  border: 1px solid rgba(168, 152, 120, 0.12);
-  border-radius: 4px;
+  border-radius: 0;
   padding: 0.42rem 0.5rem;
   font-size: 0.72rem;
 }
 
-.seg--wrap .seg__btn + .seg__btn {
-  border-left: 1px solid rgba(168, 152, 120, 0.12);
-}
-
 .seg--wrap .seg__btn--active {
-  border-color: #A89878;
   background: rgba(168, 152, 120, 0.12);
-}
-
-.seg--wrap .seg__btn:hover:not(.seg__btn--active) {
-  border-color: rgba(168, 152, 120, 0.28);
 }
 
 /* Full-width settings group */
@@ -1378,6 +1397,10 @@ function handleDownload() {
     width: 24px;
   }
 
+  .bach-demo__stage {
+    height: 260px;
+  }
+
   .stage-play-btn--lg {
     width: 56px;
     height: 56px;
@@ -1429,14 +1452,10 @@ function handleDownload() {
     grid-column: 1;
   }
 
-  .key-buttons {
-    gap: 2px;
-  }
-
   .key-btn {
     height: 28px;
     font-size: 0.66rem;
-    flex: 1 0 calc(16.666% - 2px);
+    flex: 1 0 calc(16.666% - 1px);
   }
 
   .seg__btn {
@@ -1445,7 +1464,7 @@ function handleDownload() {
   }
 
   .seg--wrap .seg__btn {
-    min-width: 50px;
+    min-width: 48px;
     font-size: 0.68rem;
     padding: 0.38rem 0.4rem;
   }

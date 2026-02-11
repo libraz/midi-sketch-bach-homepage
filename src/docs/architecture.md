@@ -21,7 +21,7 @@ graph TD
     subgraph EM["Emscripten Bridge"]
         B["JS ↔ WASM bindings"]
     end
-    subgraph CORE["Core Composition Engine — Rust / C++ → WASM"]
+    subgraph CORE["Core Composition Engine — C++ → WASM"]
         C["Organ System<br>(Forms 0–6)"]
         D["Solo Instrument<br>(Forms 7–8)"]
         E["Counterpoint / Voice Leading<br>MIDI Encoding"]

@@ -21,7 +21,7 @@ graph TD
     subgraph EM["Emscriptenブリッジ"]
         B["JS ↔ WASMバインディング"]
     end
-    subgraph CORE["コア作曲エンジン — Rust / C++ → WASM"]
+    subgraph CORE["コア作曲エンジン — C++ → WASM"]
         C["オルガンシステム<br>(形式 0–6)"]
         D["独奏楽器システム<br>(形式 7–8)"]
         E["対位法 / 声部進行<br>MIDIエンコーディング"]

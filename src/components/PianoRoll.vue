@@ -20,6 +20,9 @@ let cachedWidth = 0
 let cachedHeight = 0
 let cachedDpr = 0
 
+/** Last playback tick — preserved when playback stops to keep the scrolled view */
+let lastPlayTick = 0
+
 /** Ensure canvas buffer matches display size; returns false if no resize was needed */
 function ensureCanvasSize(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D): { width: number; height: number } {
   const dpr = window.devicePixelRatio || 1
@@ -84,27 +87,26 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
   }
 }
 
-/** Calculate visible tick window during playback */
+/** Calculate visible tick window — uses lastPlayTick for paused state */
 function getVisibleTickRange(
   currentTick: number,
   totalTicks: number,
-  canvasWidth: number,
-  isPlaying: boolean,
 ): { startTick: number; endTick: number } {
-  if (!isPlaying) {
-    // When not playing, show all notes (fit to content)
+  const refTick = props.isPlaying ? currentTick : lastPlayTick
+
+  if (refTick <= 0) {
+    // Never played or reset — show all notes
     return { startTick: 0, endTick: totalTicks }
   }
 
-  // During playback: playhead at ~25% from left, leaving right side clear
-  // to avoid overlap with bottom-center transport controls
+  // Windowed view: reference tick at ~25% from left
   const barsVisible = 8
   const ticksPerBar = PPQ * 4 // 4/4 time
   const windowTicks = barsVisible * ticksPerBar
 
   const playheadRatio = 0.25
-  let startTick = currentTick - windowTicks * playheadRatio
-  let endTick = currentTick + windowTicks * (1 - playheadRatio)
+  let startTick = refTick - windowTicks * playheadRatio
+  let endTick = refTick + windowTicks * (1 - playheadRatio)
 
   // Clamp to valid range
   if (startTick < 0) {
@@ -120,9 +122,58 @@ function getVisibleTickRange(
   return { startTick, endTick }
 }
 
-// ── Idle Wave Animation ──────────────────────────────────────────────────────
+/** Draw the piano key sidebar */
+function drawPianoKeys(
+  ctx: CanvasRenderingContext2D,
+  height: number,
+  minPitch: number,
+  maxPitch: number,
+  noteHeight: number,
+) {
+  // Background
+  ctx.fillStyle = '#1A1510'
+  ctx.fillRect(0, 0, PIANO_KEY_WIDTH, height)
 
-/** Render idle waves, optionally with notes visible underneath at low opacity */
+  // Right border
+  ctx.strokeStyle = 'rgba(184, 146, 46, 0.3)'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(PIANO_KEY_WIDTH, 0)
+  ctx.lineTo(PIANO_KEY_WIDTH, height)
+  ctx.stroke()
+
+  // Draw keys and labels
+  for (let pitch = minPitch; pitch <= maxPitch; pitch++) {
+    const y = height - (pitch - minPitch + 1) * noteHeight
+    const black = isBlackKey(pitch)
+
+    // Key background
+    ctx.fillStyle = black ? '#0D0A07' : '#1A1510'
+    ctx.fillRect(0, y, PIANO_KEY_WIDTH - 1, noteHeight)
+
+    // Subtle line between keys
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
+    ctx.lineWidth = 0.5
+    ctx.beginPath()
+    ctx.moveTo(0, y + noteHeight)
+    ctx.lineTo(PIANO_KEY_WIDTH - 1, y + noteHeight)
+    ctx.stroke()
+
+    // Label C notes
+    if (pitch % 12 === 0) {
+      const noteName = midiToNoteName(pitch)
+      ctx.fillStyle = 'rgba(212, 166, 62, 0.7)'
+      ctx.font = `${Math.min(10, noteHeight * 0.8)}px sans-serif`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(noteName, PIANO_KEY_WIDTH / 2, y + noteHeight / 2)
+    }
+  }
+}
+
+// ── Idle Wave Animation (pre-generation only) ────────────────────────────────
+
+/** Render idle waves — shown only before first generation */
 function renderIdleWaves(time: number) {
   const canvas = canvasRef.value
   if (!canvas) return
@@ -135,41 +186,6 @@ function renderIdleWaves(time: number) {
   // Background
   ctx.fillStyle = '#0D0A07'
   ctx.fillRect(0, 0, width, height)
-
-  // If we have event data, render notes at very low opacity as backdrop
-  if (props.eventData && props.eventData.tracks && props.eventData.tracks.length > 0) {
-    const allNotes = collectAllNotes(props.eventData)
-    if (allNotes.length > 0) {
-      let minP = Infinity, maxP = -Infinity
-      for (const n of allNotes) {
-        if (n.pitch < minP) minP = n.pitch
-        if (n.pitch > maxP) maxP = n.pitch
-      }
-      minP -= SEMITONE_PADDING
-      maxP += SEMITONE_PADDING
-      const pRange = maxP - minP + 1
-      const totalTicks = props.eventData.total_ticks || 1
-      const drawW = width
-      const nH = height / pRange
-
-      ctx.globalAlpha = 0.12
-      for (const note of allNotes) {
-        const x = (note.start_tick / totalTicks) * drawW
-        const xEnd = ((note.start_tick + note.duration) / totalTicks) * drawW
-        const y = height - (note.pitch - minP + 1) * nH
-        const w = Math.max(xEnd - x, 1)
-        const h = Math.max(nH - 1, 1)
-        const color = getVoiceColor(note.voice)
-        ctx.fillStyle = color
-        ctx.fillRect(x, y, w, h)
-      }
-      ctx.globalAlpha = 1.0
-
-      // Darken overlay to push notes further back
-      ctx.fillStyle = 'rgba(13, 10, 7, 0.35)'
-      ctx.fillRect(0, 0, width, height)
-    }
-  }
 
   // Subtle horizontal grid suggesting staff lines
   ctx.strokeStyle = 'rgba(184, 146, 46, 0.025)'
@@ -196,10 +212,8 @@ function renderIdleWaves(time: number) {
 
   for (const w of waves) {
     const baseY = height * w.yRatio
-    // Breathing opacity cycle
     const breath = 0.12 + Math.sin(t * 0.35 + w.yRatio * Math.PI * 3) * 0.06
 
-    // Primary wave
     ctx.beginPath()
     ctx.strokeStyle = `rgba(${w.r}, ${w.g}, ${w.b}, ${breath})`
     ctx.lineWidth = w.lw
@@ -213,7 +227,6 @@ function renderIdleWaves(time: number) {
     }
     ctx.stroke()
 
-    // Harmonic overtone (fainter)
     ctx.beginPath()
     ctx.strokeStyle = `rgba(${w.r}, ${w.g}, ${w.b}, ${breath * 0.3})`
     ctx.lineWidth = w.lw * 0.5
@@ -227,7 +240,7 @@ function renderIdleWaves(time: number) {
     ctx.stroke()
   }
 
-  // Center glow — warm ambient light
+  // Center glow
   const glow = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, width * 0.4)
   glow.addColorStop(0, `rgba(184, 146, 46, ${0.025 + Math.sin(t * 0.25) * 0.01})`)
   glow.addColorStop(1, 'transparent')
@@ -253,7 +266,15 @@ function stopIdleLoop() {
 
 // ── Main Note Render ─────────────────────────────────────────────────────────
 
+/** Save playback position on every frame so it survives stop() resetting currentTick to 0 */
+function trackPlayPosition() {
+  if (props.isPlaying && props.currentTick > 0) {
+    lastPlayTick = props.currentTick
+  }
+}
+
 function render() {
+  trackPlayPosition()
   const canvas = canvasRef.value
   if (!canvas) return
 
@@ -285,12 +306,7 @@ function render() {
 
   // Calculate visible tick range
   const totalTicks = eventData.total_ticks || props.duration
-  const { startTick, endTick } = getVisibleTickRange(
-    props.currentTick,
-    totalTicks,
-    width,
-    props.isPlaying,
-  )
+  const { startTick, endTick } = getVisibleTickRange(props.currentTick, totalTicks)
   const visibleTicks = endTick - startTick
 
   // Drawing dimensions
@@ -325,7 +341,6 @@ function render() {
 
   // --- Draw time grid (bar lines) ---
   const ticksPerBar = PPQ * 4 // 4/4 time
-  const bpm = eventData.bpm || 100
   const firstBar = Math.floor(startTick / ticksPerBar)
   const lastBar = Math.ceil(endTick / ticksPerBar)
 
@@ -351,7 +366,6 @@ function render() {
     if (barTick < startTick || barTick > endTick) continue
     if (bar < 1) continue
     const x = tickToX(barTick)
-    // Only draw if there's enough space from the piano key sidebar
     if (x > PIANO_KEY_WIDTH + 2) {
       ctx.fillText(`${bar}`, x + 3, 4)
     }
@@ -367,8 +381,8 @@ function render() {
     const x = tickToX(Math.max(note.start_tick, startTick))
     const xEnd = tickToX(Math.min(noteEnd, endTick))
     const y = pitchToY(note.pitch)
-    const w = Math.max(xEnd - x, 1) // minimum 1px width
-    const h = Math.max(noteHeight - 1, 1) // small gap between notes
+    const w = Math.max(xEnd - x, 1)
+    const h = Math.max(noteHeight - 1, 1)
 
     // Voice-based color with velocity-based opacity
     const color = getVoiceColor(note.voice)
@@ -388,63 +402,38 @@ function render() {
   }
 
   // --- Draw piano key sidebar ---
-  // Background
-  ctx.fillStyle = '#1A1510'
-  ctx.fillRect(0, 0, PIANO_KEY_WIDTH, height)
-
-  // Right border
-  ctx.strokeStyle = 'rgba(184, 146, 46, 0.3)'
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.moveTo(PIANO_KEY_WIDTH, 0)
-  ctx.lineTo(PIANO_KEY_WIDTH, height)
-  ctx.stroke()
-
-  // Draw keys and labels
-  for (let pitch = minPitch; pitch <= maxPitch; pitch++) {
-    const y = pitchToY(pitch)
-    const black = isBlackKey(pitch)
-
-    // Key background
-    ctx.fillStyle = black ? '#0D0A07' : '#1A1510'
-    ctx.fillRect(0, y, PIANO_KEY_WIDTH - 1, noteHeight)
-
-    // Subtle line between keys
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
-    ctx.lineWidth = 0.5
-    ctx.beginPath()
-    ctx.moveTo(0, y + noteHeight)
-    ctx.lineTo(PIANO_KEY_WIDTH - 1, y + noteHeight)
-    ctx.stroke()
-
-    // Label C notes
-    if (pitch % 12 === 0) {
-      const noteName = midiToNoteName(pitch)
-      ctx.fillStyle = 'rgba(212, 166, 62, 0.7)' // Gold tint
-      ctx.font = `${Math.min(10, noteHeight * 0.8)}px sans-serif`
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.fillText(noteName, PIANO_KEY_WIDTH / 2, y + noteHeight / 2)
-    }
-  }
+  drawPianoKeys(ctx, height, minPitch, maxPitch, noteHeight)
 
   // --- Draw playhead ---
-  if (props.currentTick > 0 && props.currentTick >= startTick && props.currentTick <= endTick) {
-    const playheadX = tickToX(props.currentTick)
-    ctx.strokeStyle = PLAYHEAD_COLOR
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.moveTo(playheadX, 0)
-    ctx.lineTo(playheadX, height)
-    ctx.stroke()
+  const playheadTick = props.isPlaying ? props.currentTick : lastPlayTick
+  if (playheadTick > 0 && playheadTick >= startTick && playheadTick <= endTick) {
+    const playheadX = tickToX(playheadTick)
 
-    // Glow effect
-    ctx.strokeStyle = `rgba(138, 46, 62, 0.3)`
-    ctx.lineWidth = 6
-    ctx.beginPath()
-    ctx.moveTo(playheadX, 0)
-    ctx.lineTo(playheadX, height)
-    ctx.stroke()
+    if (props.isPlaying) {
+      // Active playhead
+      ctx.strokeStyle = PLAYHEAD_COLOR
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(playheadX, 0)
+      ctx.lineTo(playheadX, height)
+      ctx.stroke()
+
+      // Glow effect
+      ctx.strokeStyle = 'rgba(138, 46, 62, 0.3)'
+      ctx.lineWidth = 6
+      ctx.beginPath()
+      ctx.moveTo(playheadX, 0)
+      ctx.lineTo(playheadX, height)
+      ctx.stroke()
+    } else {
+      // Paused playhead — dimmed
+      ctx.strokeStyle = 'rgba(138, 46, 62, 0.4)'
+      ctx.lineWidth = 1.5
+      ctx.beginPath()
+      ctx.moveTo(playheadX, 0)
+      ctx.lineTo(playheadX, height)
+      ctx.stroke()
+    }
   }
 }
 
@@ -468,6 +457,187 @@ function stopPlayLoop() {
   }
 }
 
+// ── Paused Render Loop (notes + subtle waves) ───────────────────────────────
+
+let pausedRafId: number | null = null
+
+/** Render paused state: clear notes at reduced opacity + soft wave overlay */
+function renderPaused(time: number) {
+  const canvas = canvasRef.value
+  if (!canvas) return
+
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+
+  const { width, height } = ensureCanvasSize(canvas, ctx)
+
+  // Clear canvas
+  ctx.fillStyle = '#0D0A07'
+  ctx.fillRect(0, 0, width, height)
+
+  const eventData = props.eventData
+  if (!eventData || !eventData.tracks || eventData.tracks.length === 0) return
+
+  const allNotes = collectAllNotes(eventData)
+  if (allNotes.length === 0) return
+
+  // Calculate pitch range
+  let minPitch = Infinity
+  let maxPitch = -Infinity
+  for (const note of allNotes) {
+    if (note.pitch < minPitch) minPitch = note.pitch
+    if (note.pitch > maxPitch) maxPitch = note.pitch
+  }
+  minPitch -= SEMITONE_PADDING
+  maxPitch += SEMITONE_PADDING
+  const pitchRange = maxPitch - minPitch + 1
+
+  const totalTicks = eventData.total_ticks || props.duration
+  const { startTick, endTick } = getVisibleTickRange(0, totalTicks)
+  const visibleTicks = endTick - startTick
+
+  const drawWidth = width - PIANO_KEY_WIDTH
+  const noteHeight = height / pitchRange
+
+  function tickToX(tick: number): number {
+    return PIANO_KEY_WIDTH + ((tick - startTick) / visibleTicks) * drawWidth
+  }
+  function pitchToY(pitch: number): number {
+    return height - (pitch - minPitch + 1) * noteHeight
+  }
+
+  // --- Background semitone lanes ---
+  for (let pitch = minPitch; pitch <= maxPitch; pitch++) {
+    const y = pitchToY(pitch)
+    const black = isBlackKey(pitch)
+    ctx.fillStyle = black ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.015)'
+    ctx.fillRect(PIANO_KEY_WIDTH, y, drawWidth, noteHeight)
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)'
+    ctx.lineWidth = 0.5
+    ctx.beginPath()
+    ctx.moveTo(PIANO_KEY_WIDTH, y + noteHeight)
+    ctx.lineTo(width, y + noteHeight)
+    ctx.stroke()
+  }
+
+  // --- Bar lines ---
+  const ticksPerBar = PPQ * 4
+  const firstBar = Math.floor(startTick / ticksPerBar)
+  const lastBar = Math.ceil(endTick / ticksPerBar)
+
+  ctx.strokeStyle = 'rgba(184, 146, 46, 0.15)'
+  ctx.lineWidth = 0.5
+  for (let bar = firstBar; bar <= lastBar; bar++) {
+    const barTick = bar * ticksPerBar
+    if (barTick < startTick || barTick > endTick) continue
+    const x = tickToX(barTick)
+    ctx.beginPath()
+    ctx.moveTo(x, 0)
+    ctx.lineTo(x, height)
+    ctx.stroke()
+  }
+
+  // --- Bar numbers ---
+  ctx.fillStyle = 'rgba(212, 166, 62, 0.35)'
+  ctx.font = '9px "DM Sans", sans-serif'
+  ctx.textAlign = 'left'
+  ctx.textBaseline = 'top'
+  for (let bar = firstBar; bar <= lastBar; bar++) {
+    const barTick = bar * ticksPerBar
+    if (barTick < startTick || barTick > endTick) continue
+    if (bar < 1) continue
+    const x = tickToX(barTick)
+    if (x > PIANO_KEY_WIDTH + 2) {
+      ctx.fillText(`${bar}`, x + 3, 4)
+    }
+  }
+
+  // --- Notes at reduced opacity ---
+  ctx.globalAlpha = 0.25
+  for (const note of allNotes) {
+    const noteEnd = note.start_tick + note.duration
+    if (noteEnd < startTick || note.start_tick > endTick) continue
+
+    const x = tickToX(Math.max(note.start_tick, startTick))
+    const xEnd = tickToX(Math.min(noteEnd, endTick))
+    const y = pitchToY(note.pitch)
+    const w = Math.max(xEnd - x, 1)
+    const h = Math.max(noteHeight - 1, 1)
+
+    const color = getVoiceColor(note.voice)
+    const rgb = hexToRgb(color)
+    const velocityAlpha = 0.6 + (note.velocity / 127) * 0.4
+    ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${velocityAlpha})`
+
+    if (w > NOTE_CORNER_RADIUS * 2 && h > NOTE_CORNER_RADIUS * 2) {
+      ctx.beginPath()
+      ctx.roundRect(x, y, w, h, NOTE_CORNER_RADIUS)
+      ctx.fill()
+    } else {
+      ctx.fillRect(x, y, w, h)
+    }
+  }
+  ctx.globalAlpha = 1.0
+
+  // --- Subtle wave overlay ---
+  const t = time / 1000
+  const waves = [
+    { r: 212, g: 166, b: 62,  amp: 14, freq: 0.005, speed: 0.35, yRatio: 0.2,  lw: 1.6 },
+    { r: 138, g: 46,  b: 62,  amp: 10, freq: 0.007, speed: 0.28, yRatio: 0.4,  lw: 1.4 },
+    { r: 74,  g: 139, b: 107, amp: 12, freq: 0.004, speed: 0.4,  yRatio: 0.55, lw: 1.4 },
+    { r: 107, g: 123, b: 181, amp: 16, freq: 0.003, speed: 0.22, yRatio: 0.72, lw: 1.6 },
+  ]
+
+  for (const w of waves) {
+    const baseY = height * w.yRatio
+    const breath = 0.1 + Math.sin(t * 0.3 + w.yRatio * Math.PI * 3) * 0.05
+
+    ctx.beginPath()
+    ctx.strokeStyle = `rgba(${w.r}, ${w.g}, ${w.b}, ${breath})`
+    ctx.lineWidth = w.lw
+
+    for (let x = PIANO_KEY_WIDTH; x <= width; x += 2) {
+      const y = baseY +
+        Math.sin(x * w.freq + t * w.speed) * w.amp +
+        Math.sin(x * w.freq * 2.3 + t * w.speed * 0.7) * (w.amp * 0.2)
+      if (x === PIANO_KEY_WIDTH) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    }
+    ctx.stroke()
+  }
+
+  // --- Paused playhead ---
+  if (lastPlayTick > 0 && lastPlayTick >= startTick && lastPlayTick <= endTick) {
+    const playheadX = tickToX(lastPlayTick)
+    ctx.strokeStyle = 'rgba(138, 46, 62, 0.4)'
+    ctx.lineWidth = 1.5
+    ctx.beginPath()
+    ctx.moveTo(playheadX, 0)
+    ctx.lineTo(playheadX, height)
+    ctx.stroke()
+  }
+
+  // --- Piano keys (drawn last, on top) ---
+  drawPianoKeys(ctx, height, minPitch, maxPitch, noteHeight)
+}
+
+function startPausedLoop() {
+  stopPausedLoop()
+  function frame(time: number) {
+    renderPaused(time)
+    pausedRafId = requestAnimationFrame(frame)
+  }
+  pausedRafId = requestAnimationFrame(frame)
+}
+
+function stopPausedLoop() {
+  if (pausedRafId !== null) {
+    cancelAnimationFrame(pausedRafId)
+    pausedRafId = null
+  }
+}
+
 // ── Watchers ─────────────────────────────────────────────────────────────────
 
 // Watch isPlaying to start/stop playback animation
@@ -475,12 +645,16 @@ watch(
   () => props.isPlaying,
   (playing) => {
     if (playing) {
+      stopPausedLoop()
       stopIdleLoop()
       startPlayLoop()
     } else {
       stopPlayLoop()
-      // Always return to idle waves (notes show through at low opacity if eventData exists)
-      startIdleLoop()
+      if (props.eventData) {
+        startPausedLoop()
+      } else {
+        startIdleLoop()
+      }
     }
   },
 )
@@ -490,11 +664,13 @@ watch(
   () => props.eventData,
   (data) => {
     if (data) {
-      stopIdleLoop()
       if (!props.isPlaying) {
-        render()
+        stopIdleLoop()
+        startPausedLoop()
       }
     } else {
+      lastPlayTick = 0
+      stopPausedLoop()
       stopPlayLoop()
       startIdleLoop()
     }
@@ -502,39 +678,30 @@ watch(
   { deep: true },
 )
 
-// Watch currentTick when not playing (e.g., seek)
-watch(
-  () => props.currentTick,
-  () => {
-    if (!props.isPlaying && props.eventData) {
-      render()
-    }
-  },
-)
-
 onMounted(() => {
   const canvas = canvasRef.value
   if (!canvas) return
 
-  if (props.eventData) {
-    render()
+  if (props.isPlaying) {
+    startPlayLoop()
+  } else if (props.eventData) {
+    startPausedLoop()
   } else {
     startIdleLoop()
   }
 
-  // Observe container resize — invalidate cached dimensions
+  // Observe container resize
   resizeObserver = new ResizeObserver(() => {
     cachedWidth = 0
     cachedHeight = 0
-    if (props.eventData && !props.isPlaying) {
-      render()
-    }
+    // All loops pick up the new size on next frame automatically
   })
   resizeObserver.observe(canvas.parentElement!)
 })
 
 onUnmounted(() => {
   stopPlayLoop()
+  stopPausedLoop()
   stopIdleLoop()
   if (resizeObserver) {
     resizeObserver.disconnect()
@@ -553,15 +720,13 @@ onUnmounted(() => {
 .piano-roll {
   position: relative;
   width: 100%;
-  height: 220px;
-  min-height: 220px;
-  max-height: 220px;
+  height: 100%;
   background: #0D0A07;
   overflow: hidden;
 }
 .piano-roll canvas {
   display: block;
   width: 100%;
-  height: 220px;
+  height: 100%;
 }
 </style>

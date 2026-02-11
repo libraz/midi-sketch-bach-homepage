@@ -34,7 +34,8 @@
     "celloPrelude": "Cello Prelude",
     "celloPreludeDesc": "Unaccompanied prelude for solo cello",
     "chaconne": "Chaconne",
-    "chaconneDesc": "Monumental arch-form variations for solo instrument"
+    "chaconneDesc": "Monumental arch-form variations for solo instrument",
+    "bwvRef": "Ref: {bwv}"
   },
   "config": {
     "key": "Key",

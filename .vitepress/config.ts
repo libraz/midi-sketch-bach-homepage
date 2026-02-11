@@ -148,6 +148,7 @@ export default withMermaid(defineConfig({
                 { text: 'Generation Pipeline', link: '/docs/generation-pipeline' },
                 { text: 'Counterpoint & Voice Leading', link: '/docs/counterpoint' },
                 { text: 'Voice Architecture', link: '/docs/voice-architecture' },
+                { text: 'Physical Instrument Models', link: '/docs/physical-models' },
                 { text: 'Forms', link: '/docs/forms' },
               ]
             },
@@ -191,6 +192,7 @@ export default withMermaid(defineConfig({
                 { text: '生成パイプライン', link: '/ja/docs/generation-pipeline' },
                 { text: '対位法と声部進行', link: '/ja/docs/counterpoint' },
                 { text: '声部アーキテクチャ', link: '/ja/docs/voice-architecture' },
+                { text: '物理楽器モデル', link: '/ja/docs/physical-models' },
                 { text: '楽曲形式', link: '/ja/docs/forms' },
               ]
             },

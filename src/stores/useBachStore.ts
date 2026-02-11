@@ -84,12 +84,19 @@ export function useBachStore() {
     const preset = getFormPreset(config.form)
     const isOrgan = preset ? preset.category === 'organ' : true
 
+    // seed=0 means "random" — generate a random seed in JS to guarantee variety
+    // (avoids relying on WASM's internal random seeding which may be deterministic)
+    let seedValue = overrideSeed ?? config.seed
+    if (seedValue === 0) {
+      seedValue = Math.floor(Math.random() * 2147483647) + 1
+    }
+
     const cfg: BachConfig = {
       form: config.form,
       key: config.key,
       isMinor: config.isMinor,
       bpm: config.bpm,
-      seed: overrideSeed ?? config.seed,
+      seed: seedValue,
       instrument: config.instrument,
       scale: config.scale,
     }
