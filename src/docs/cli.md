@@ -11,17 +11,17 @@ MIDI Sketch Bach includes a command-line tool for generating Bach-style MIDI fil
 
 ```bash
 # Run without installing
-npx midi-sketch-bach [options]
+npx @libraz/midi-sketch-bach [options]
 
 # Or install globally
-npm install -g midi-sketch-bach
-midi-sketch-bach [options]
+npm install -g @libraz/midi-sketch-bach
+@libraz/midi-sketch-bach [options]
 ```
 
 ## Usage
 
 ```
-midi-sketch-bach [options]
+@libraz/midi-sketch-bach [options]
 ```
 
 ## Options
@@ -75,85 +75,85 @@ Use these names with the `--form` option:
 Generate a default piece (Fugue in C major):
 
 ```bash
-midi-sketch-bach -o fugue.mid
+@libraz/midi-sketch-bach -o fugue.mid
 ```
 
 ### Fugue in D Minor
 
 ```bash
-midi-sketch-bach --form fugue --key 2 --minor --voices 4 --bpm 76 -o fugue-dm.mid
+@libraz/midi-sketch-bach --form fugue --key 2 --minor --voices 4 --bpm 76 -o fugue-dm.mid
 ```
 
 ### Prelude and Fugue in C Major
 
 ```bash
-midi-sketch-bach --form prelude-and-fugue --key 0 --voices 4 -o prelude-fugue.mid
+@libraz/midi-sketch-bach --form prelude-and-fugue --key 0 --voices 4 -o prelude-fugue.mid
 ```
 
 ### Trio Sonata in F Major
 
 ```bash
-midi-sketch-bach --form trio-sonata --key 5 --bpm 90 -o trio-sonata.mid
+@libraz/midi-sketch-bach --form trio-sonata --key 5 --bpm 90 -o trio-sonata.mid
 ```
 
 ### Chorale Prelude in A Major
 
 ```bash
-midi-sketch-bach --form chorale-prelude --key 9 --voices 4 --bpm 66 -o chorale.mid
+@libraz/midi-sketch-bach --form chorale-prelude --key 9 --voices 4 --bpm 66 -o chorale.mid
 ```
 
 ### Toccata and Fugue in D Minor
 
 ```bash
-midi-sketch-bach --form toccata-and-fugue --key 2 --minor --voices 4 -o toccata-fugue.mid
+@libraz/midi-sketch-bach --form toccata-and-fugue --key 2 --minor --voices 4 -o toccata-fugue.mid
 ```
 
 ### Passacaglia in C Minor
 
 ```bash
-midi-sketch-bach --form passacaglia --key 0 --minor --voices 4 --scale long -o passacaglia.mid
+@libraz/midi-sketch-bach --form passacaglia --key 0 --minor --voices 4 --scale long -o passacaglia.mid
 ```
 
 ### Fantasia and Fugue in G Minor
 
 ```bash
-midi-sketch-bach --form fantasia-and-fugue --key 7 --minor --voices 4 -o fantasia-fugue.mid
+@libraz/midi-sketch-bach --form fantasia-and-fugue --key 7 --minor --voices 4 -o fantasia-fugue.mid
 ```
 
 ### Cello Prelude in G Major
 
 ```bash
-midi-sketch-bach --form cello-prelude --key 7 --instrument cello -o cello-prelude.mid
+@libraz/midi-sketch-bach --form cello-prelude --key 7 --instrument cello -o cello-prelude.mid
 ```
 
 ### Chaconne in D Minor
 
 ```bash
-midi-sketch-bach --form chaconne --key 2 --minor --instrument violin -o chaconne.mid
+@libraz/midi-sketch-bach --form chaconne --key 2 --minor --instrument violin -o chaconne.mid
 ```
 
 ### Deterministic Output with Seed
 
 ```bash
-midi-sketch-bach --form fugue --key 7 --minor --seed 42 -o fugue-seed42.mid
+@libraz/midi-sketch-bach --form fugue --key 7 --minor --seed 42 -o fugue-seed42.mid
 ```
 
 ### Full-Scale Passacaglia
 
 ```bash
-midi-sketch-bach --form passacaglia --key 2 --minor --scale full --voices 5 -o passacaglia-full.mid
+@libraz/midi-sketch-bach --form passacaglia --key 2 --minor --scale full --voices 5 -o passacaglia-full.mid
 ```
 
 ### Target a Specific Bar Count
 
 ```bash
-midi-sketch-bach --form invention --key 0 --target-bars 24 -o invention-24bars.mid
+@libraz/midi-sketch-bach --form invention --key 0 --target-bars 24 -o invention-24bars.mid
 ```
 
 ### Output JSON Event Data
 
 ```bash
-midi-sketch-bach --form fugue --key 2 --minor --json > fugue-events.json
+@libraz/midi-sketch-bach --form fugue --key 2 --minor --json > fugue-events.json
 ```
 
 ### Generate with npx
@@ -161,7 +161,7 @@ midi-sketch-bach --form fugue --key 2 --minor --json > fugue-events.json
 No installation required:
 
 ```bash
-npx midi-sketch-bach --form fugue --key 2 --minor -o fugue.mid
+npx @libraz/midi-sketch-bach --form fugue --key 2 --minor -o fugue.mid
 ```
 
 ## JSON Output Format

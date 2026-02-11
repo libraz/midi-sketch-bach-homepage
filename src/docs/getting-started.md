@@ -10,13 +10,13 @@ MIDI Sketch Bach is an algorithmic composition engine that generates Bach-style 
 ## Install
 
 ```bash
-npm install midi-sketch-bach
+npm install @libraz/midi-sketch-bach
 ```
 
 ## Quick Example
 
 ```js
-import { init, BachGenerator } from 'midi-sketch-bach'
+import { init, BachGenerator } from '@libraz/midi-sketch-bach'
 import { writeFileSync } from 'fs'
 
 // Initialize the WASM module
@@ -50,13 +50,13 @@ generator.destroy()
 Generate a MIDI file directly from the command line:
 
 ```bash
-npx midi-sketch-bach --form fugue --key 2 --minor -o output.mid
+npx @libraz/midi-sketch-bach --form fugue --key 2 --minor -o output.mid
 ```
 
 Generate a Toccata and Fugue in D minor:
 
 ```bash
-npx midi-sketch-bach --form "toccata-and-fugue" --key 2 --minor -o toccata.mid
+npx @libraz/midi-sketch-bach --form "toccata-and-fugue" --key 2 --minor -o toccata.mid
 ```
 
 ## What You Can Generate

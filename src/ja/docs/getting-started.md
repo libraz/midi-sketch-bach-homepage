@@ -10,13 +10,13 @@ MIDI Sketch Bachは、バロック音楽理論と対位法の規則に基づい�
 ## インストール
 
 ```bash
-npm install midi-sketch-bach
+npm install @libraz/midi-sketch-bach
 ```
 
 ## クイックスタート
 
 ```js
-import { init, BachGenerator } from 'midi-sketch-bach'
+import { init, BachGenerator } from '@libraz/midi-sketch-bach'
 import { writeFileSync } from 'fs'
 
 // WASMモジュールを初期化
@@ -50,13 +50,13 @@ generator.destroy()
 コマンドラインから直接MIDIファイルを生成できます。
 
 ```bash
-npx midi-sketch-bach --form fugue --key 2 --minor -o output.mid
+npx @libraz/midi-sketch-bach --form fugue --key 2 --minor -o output.mid
 ```
 
 ニ短調のトッカータとフーガを生成する例：
 
 ```bash
-npx midi-sketch-bach --form "toccata-and-fugue" --key 2 --minor -o toccata.mid
+npx @libraz/midi-sketch-bach --form "toccata-and-fugue" --key 2 --minor -o toccata.mid
 ```
 
 ## 生成できる楽曲

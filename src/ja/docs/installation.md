@@ -10,21 +10,21 @@ description: MIDI Sketch Bachのインストール方法 - npm、CLI、ブラウ
 Node.jsプロジェクトの依存関係としてインストールします。
 
 ```bash
-npm install midi-sketch-bach
+npm install @libraz/midi-sketch-bach
 ```
 
 ```bash
-yarn add midi-sketch-bach
+yarn add @libraz/midi-sketch-bach
 ```
 
 ```bash
-pnpm add midi-sketch-bach
+pnpm add @libraz/midi-sketch-bach
 ```
 
 インポートして使用します。
 
 ```js
-import { init, BachGenerator } from 'midi-sketch-bach'
+import { init, BachGenerator } from '@libraz/midi-sketch-bach'
 
 await init()
 const generator = new BachGenerator()
@@ -32,16 +32,16 @@ const generator = new BachGenerator()
 
 ## CLI（グローバルインストール）
 
-`midi-sketch-bach` コマンドをどこからでも使えるようにグローバルインストールします。
+`@libraz/midi-sketch-bach` コマンドをどこからでも使えるようにグローバルインストールします。
 
 ```bash
-npm install -g midi-sketch-bach
+npm install -g @libraz/midi-sketch-bach
 ```
 
 インストールせずに直接実行することもできます。
 
 ```bash
-npx midi-sketch-bach --form fugue -o fugue.mid
+npx @libraz/midi-sketch-bach --form fugue -o fugue.mid
 ```
 
 ## ブラウザでの利用
@@ -49,7 +49,7 @@ npx midi-sketch-bach --form fugue -o fugue.mid
 MIDI Sketch BachはWebAssemblyを介してブラウザ上で動作します。ブラウザ環境で使用する場合は、WASMファイルのパスを指定してください。
 
 ```js
-import { init, BachGenerator } from 'midi-sketch-bach'
+import { init, BachGenerator } from '@libraz/midi-sketch-bach'
 
 // ブラウザ環境ではWASMファイルの場所を指定
 await init({ wasmPath: '/wasm/midisketch.wasm' })
@@ -77,7 +77,7 @@ Viteプロジェクトでは、WASMファイルが正しく配信されるよう
 // vite.config.js
 export default {
   optimizeDeps: {
-    exclude: ['midi-sketch-bach']
+    exclude: ['@libraz/midi-sketch-bach']
   }
 }
 ```

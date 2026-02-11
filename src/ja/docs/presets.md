@@ -154,7 +154,7 @@ import {
   getKeys,
   getScales,
   getVersion
-} from 'midi-sketch-bach'
+} from '@libraz/midi-sketch-bach'
 
 // すべての形式を一覧
 const forms = getForms()

@@ -10,21 +10,21 @@ description: Installation methods for MIDI Sketch Bach - npm, CLI, and browser u
 Install MIDI Sketch Bach as a dependency in your Node.js project:
 
 ```bash
-npm install midi-sketch-bach
+npm install @libraz/midi-sketch-bach
 ```
 
 ```bash
-yarn add midi-sketch-bach
+yarn add @libraz/midi-sketch-bach
 ```
 
 ```bash
-pnpm add midi-sketch-bach
+pnpm add @libraz/midi-sketch-bach
 ```
 
 Then import and use it in your code:
 
 ```js
-import { init, BachGenerator } from 'midi-sketch-bach'
+import { init, BachGenerator } from '@libraz/midi-sketch-bach'
 
 await init()
 const generator = new BachGenerator()
@@ -32,16 +32,16 @@ const generator = new BachGenerator()
 
 ## CLI (Global Install)
 
-Install globally to use the `midi-sketch-bach` command anywhere:
+Install globally to use the `@libraz/midi-sketch-bach` command anywhere:
 
 ```bash
-npm install -g midi-sketch-bach
+npm install -g @libraz/midi-sketch-bach
 ```
 
 Or run directly without installing:
 
 ```bash
-npx midi-sketch-bach --form fugue -o fugue.mid
+npx @libraz/midi-sketch-bach --form fugue -o fugue.mid
 ```
 
 ## Browser Usage
@@ -49,7 +49,7 @@ npx midi-sketch-bach --form fugue -o fugue.mid
 MIDI Sketch Bach runs in the browser via WebAssembly. When using in a browser environment, specify the path to the WASM file:
 
 ```js
-import { init, BachGenerator } from 'midi-sketch-bach'
+import { init, BachGenerator } from '@libraz/midi-sketch-bach'
 
 // Specify the WASM file location for browser environments
 await init({ wasmPath: '/wasm/midisketch.wasm' })
@@ -77,7 +77,7 @@ For Vite projects, ensure the WASM file is served correctly:
 // vite.config.js
 export default {
   optimizeDeps: {
-    exclude: ['midi-sketch-bach']
+    exclude: ['@libraz/midi-sketch-bach']
   }
 }
 ```

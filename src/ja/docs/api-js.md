@@ -12,7 +12,7 @@ description: MIDI Sketch BachのJavaScript APIリファレンス。
 WASMモジュールをロードし初期化します。`BachGenerator` インスタンスを作成する前に必ず呼び出してください。
 
 ```js
-import { init } from 'midi-sketch-bach'
+import { init } from '@libraz/midi-sketch-bach'
 
 // Node.js（WASMパスは自動解決）
 await init()
@@ -226,7 +226,7 @@ interface NoteEvent {
 ### `getForms()`
 
 ```js
-import { getForms } from 'midi-sketch-bach'
+import { getForms } from '@libraz/midi-sketch-bach'
 
 const forms = getForms()
 // [{ index: 0, name: "Fugue", ... }, ...]
@@ -235,7 +235,7 @@ const forms = getForms()
 ### `getInstruments()`
 
 ```js
-import { getInstruments } from 'midi-sketch-bach'
+import { getInstruments } from '@libraz/midi-sketch-bach'
 
 const instruments = getInstruments()
 // [{ index: 0, name: "Organ", ... }, ...]
@@ -244,7 +244,7 @@ const instruments = getInstruments()
 ### `getCharacters()`
 
 ```js
-import { getCharacters } from 'midi-sketch-bach'
+import { getCharacters } from '@libraz/midi-sketch-bach'
 
 const characters = getCharacters()
 ```
@@ -252,7 +252,7 @@ const characters = getCharacters()
 ### `getKeys()`
 
 ```js
-import { getKeys } from 'midi-sketch-bach'
+import { getKeys } from '@libraz/midi-sketch-bach'
 
 const keys = getKeys()
 // [{ index: 0, name: "C", ... }, { index: 1, name: "C#", ... }, ...]
@@ -261,7 +261,7 @@ const keys = getKeys()
 ### `getScales()`
 
 ```js
-import { getScales } from 'midi-sketch-bach'
+import { getScales } from '@libraz/midi-sketch-bach'
 
 const scales = getScales()
 // [{ index: 0, name: "Short", ... }, ...]
@@ -270,7 +270,7 @@ const scales = getScales()
 ### `getVersion()`
 
 ```js
-import { getVersion } from 'midi-sketch-bach'
+import { getVersion } from '@libraz/midi-sketch-bach'
 
 const version = getVersion()
 // "1.0.0"
@@ -283,7 +283,7 @@ const version = getVersion()
 ### フーガを生成して保存
 
 ```js
-import { init, BachGenerator } from 'midi-sketch-bach'
+import { init, BachGenerator } from '@libraz/midi-sketch-bach'
 import { writeFileSync } from 'fs'
 
 await init()
@@ -314,7 +314,7 @@ generator.destroy()
 ### すべての形式を生成
 
 ```js
-import { init, BachGenerator, getForms } from 'midi-sketch-bach'
+import { init, BachGenerator, getForms } from '@libraz/midi-sketch-bach'
 import { writeFileSync } from 'fs'
 
 await init()
@@ -341,7 +341,7 @@ generator.destroy()
 ### ブラウザ: 生成してダウンロード
 
 ```js
-import { init, BachGenerator } from 'midi-sketch-bach'
+import { init, BachGenerator } from '@libraz/midi-sketch-bach'
 
 await init({ wasmPath: '/wasm/midisketch.wasm' })
 

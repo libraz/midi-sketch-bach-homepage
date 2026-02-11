@@ -11,17 +11,17 @@ MIDI Sketch Bachには、ターミナルから直接バッハスタイルのMIDI
 
 ```bash
 # インストールせずに実行
-npx midi-sketch-bach [options]
+npx @libraz/midi-sketch-bach [options]
 
 # グローバルインストール
-npm install -g midi-sketch-bach
-midi-sketch-bach [options]
+npm install -g @libraz/midi-sketch-bach
+@libraz/midi-sketch-bach [options]
 ```
 
 ## 使い方
 
 ```
-midi-sketch-bach [options]
+@libraz/midi-sketch-bach [options]
 ```
 
 ## オプション
@@ -75,85 +75,85 @@ midi-sketch-bach [options]
 デフォルトの楽曲（ハ長調のフーガ）を生成：
 
 ```bash
-midi-sketch-bach -o fugue.mid
+@libraz/midi-sketch-bach -o fugue.mid
 ```
 
 ### ニ短調のフーガ
 
 ```bash
-midi-sketch-bach --form fugue --key 2 --minor --voices 4 --bpm 76 -o fugue-dm.mid
+@libraz/midi-sketch-bach --form fugue --key 2 --minor --voices 4 --bpm 76 -o fugue-dm.mid
 ```
 
 ### ハ長調の前奏曲とフーガ
 
 ```bash
-midi-sketch-bach --form prelude-and-fugue --key 0 --voices 4 -o prelude-fugue.mid
+@libraz/midi-sketch-bach --form prelude-and-fugue --key 0 --voices 4 -o prelude-fugue.mid
 ```
 
 ### ヘ長調のトリオ・ソナタ
 
 ```bash
-midi-sketch-bach --form trio-sonata --key 5 --bpm 90 -o trio-sonata.mid
+@libraz/midi-sketch-bach --form trio-sonata --key 5 --bpm 90 -o trio-sonata.mid
 ```
 
 ### イ長調のコラール前奏曲
 
 ```bash
-midi-sketch-bach --form chorale-prelude --key 9 --voices 4 --bpm 66 -o chorale.mid
+@libraz/midi-sketch-bach --form chorale-prelude --key 9 --voices 4 --bpm 66 -o chorale.mid
 ```
 
 ### ニ短調のトッカータとフーガ
 
 ```bash
-midi-sketch-bach --form toccata-and-fugue --key 2 --minor --voices 4 -o toccata-fugue.mid
+@libraz/midi-sketch-bach --form toccata-and-fugue --key 2 --minor --voices 4 -o toccata-fugue.mid
 ```
 
 ### ハ短調のパッサカリア
 
 ```bash
-midi-sketch-bach --form passacaglia --key 0 --minor --voices 4 --scale long -o passacaglia.mid
+@libraz/midi-sketch-bach --form passacaglia --key 0 --minor --voices 4 --scale long -o passacaglia.mid
 ```
 
 ### ト短調の幻想曲とフーガ
 
 ```bash
-midi-sketch-bach --form fantasia-and-fugue --key 7 --minor --voices 4 -o fantasia-fugue.mid
+@libraz/midi-sketch-bach --form fantasia-and-fugue --key 7 --minor --voices 4 -o fantasia-fugue.mid
 ```
 
 ### ト長調のチェロ前奏曲
 
 ```bash
-midi-sketch-bach --form cello-prelude --key 7 --instrument cello -o cello-prelude.mid
+@libraz/midi-sketch-bach --form cello-prelude --key 7 --instrument cello -o cello-prelude.mid
 ```
 
 ### ニ短調のシャコンヌ
 
 ```bash
-midi-sketch-bach --form chaconne --key 2 --minor --instrument violin -o chaconne.mid
+@libraz/midi-sketch-bach --form chaconne --key 2 --minor --instrument violin -o chaconne.mid
 ```
 
 ### シードによる決定論的出力
 
 ```bash
-midi-sketch-bach --form fugue --key 7 --minor --seed 42 -o fugue-seed42.mid
+@libraz/midi-sketch-bach --form fugue --key 7 --minor --seed 42 -o fugue-seed42.mid
 ```
 
 ### フルスケールのパッサカリア
 
 ```bash
-midi-sketch-bach --form passacaglia --key 2 --minor --scale full --voices 5 -o passacaglia-full.mid
+@libraz/midi-sketch-bach --form passacaglia --key 2 --minor --scale full --voices 5 -o passacaglia-full.mid
 ```
 
 ### 特定の小節数を目標にする
 
 ```bash
-midi-sketch-bach --form fugue --key 0 --target-bars 24 -o fugue-24bars.mid
+@libraz/midi-sketch-bach --form fugue --key 0 --target-bars 24 -o fugue-24bars.mid
 ```
 
 ### JSONイベントデータの出力
 
 ```bash
-midi-sketch-bach --form fugue --key 2 --minor --json > fugue-events.json
+@libraz/midi-sketch-bach --form fugue --key 2 --minor --json > fugue-events.json
 ```
 
 ### npxで実行
@@ -161,7 +161,7 @@ midi-sketch-bach --form fugue --key 2 --minor --json > fugue-events.json
 インストール不要で実行できます。
 
 ```bash
-npx midi-sketch-bach --form fugue --key 2 --minor -o fugue.mid
+npx @libraz/midi-sketch-bach --form fugue --key 2 --minor -o fugue.mid
 ```
 
 ## JSON出力形式
