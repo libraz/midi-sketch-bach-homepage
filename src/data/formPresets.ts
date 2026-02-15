@@ -8,7 +8,7 @@ export interface FormPreset {
   displayKey: string
   descKey: string
   bwv: string
-  category: 'organ' | 'solo'
+  category: 'organ' | 'solo' | 'keyboard'
   defaultInstrument: string
   defaultBpm: number
   defaultVoices: number
@@ -136,12 +136,26 @@ export const FORM_PRESETS: FormPreset[] = [
     minVoices: 2,
     maxVoices: 4,
   },
+  // ── Keyboard forms ──────────────────────────────────────────────────────
+  {
+    id: 9,
+    name: 'goldberg_variations',
+    displayKey: 'form.goldbergVariations',
+    descKey: 'form.goldbergVariationsDesc',
+    bwv: 'BWV 988',
+    category: 'keyboard',
+    defaultInstrument: 'harpsichord',
+    defaultBpm: 60,
+    defaultVoices: 2,
+    minVoices: 2,
+    maxVoices: 4,
+  },
 ]
 
 export function getFormPreset(id: number): FormPreset | undefined {
   return FORM_PRESETS.find(f => f.id === id)
 }
 
-export function getFormsByCategory(category: 'organ' | 'solo'): FormPreset[] {
+export function getFormsByCategory(category: 'organ' | 'solo' | 'keyboard'): FormPreset[] {
   return FORM_PRESETS.filter(f => f.category === category)
 }

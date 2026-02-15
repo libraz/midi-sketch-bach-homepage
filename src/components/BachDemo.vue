@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from '@/composables/useI18n'
 import { useBachGeneration } from '@/composables/useBachGeneration'
 import { useBachPlayer } from '@/composables/useBachPlayer'
@@ -16,9 +16,10 @@ const store = useBachStore()
 // ── Local UI state ──────────────────────────────────────────────────────────
 
 const showSettings = ref(false)
-const activeCategory = ref<'organ' | 'solo'>('organ')
+const activeCategory = ref<'organ' | 'solo' | 'keyboard'>('organ')
 const isLoading = ref(true) // true until WASM init completes
 const isRegenerating = ref(false)
+const formCardsRef = ref<HTMLElement | null>(null)
 
 
 // ── Instrument ID → name mapping ────────────────────────────────────────────
@@ -74,6 +75,7 @@ watch(
 const categories = computed(() => [
   { id: 'organ' as const, labelKey: 'form.organSystem' },
   { id: 'solo' as const, labelKey: 'form.soloString' },
+  { id: 'keyboard' as const, labelKey: 'form.keyboard' },
 ])
 
 const filteredForms = computed(() => getFormsByCategory(activeCategory.value))
@@ -237,7 +239,54 @@ function selectForm(formId: number) {
     // Switch to the right category tab
     activeCategory.value = preset.category
   }
+
+  nextTick(() => scrollToSelected())
 }
+
+/** Smooth-scroll the selected card to the horizontal center */
+let scrollRafId: number | null = null
+
+function scrollToSelected() {
+  const container = formCardsRef.value
+  if (!container) return
+  const selected = container.querySelector('.form-card--selected') as HTMLElement | null
+  if (!selected) return
+
+  const containerRect = container.getBoundingClientRect()
+  const target = selected.offsetLeft - container.offsetLeft
+    - (containerRect.width / 2) + (selected.offsetWidth / 2)
+
+  // Cancel any running scroll animation
+  if (scrollRafId !== null) cancelAnimationFrame(scrollRafId)
+
+  const start = container.scrollLeft
+  const delta = target - start
+  if (Math.abs(delta) < 1) return
+
+  const duration = 400 // ms
+  let startTime: number | null = null
+
+  function easeOutCubic(t: number) { return 1 - Math.pow(1 - t, 3) }
+
+  function step(now: number) {
+    if (startTime === null) startTime = now
+    const elapsed = now - startTime
+    const progress = Math.min(elapsed / duration, 1)
+    container.scrollLeft = start + delta * easeOutCubic(progress)
+    if (progress < 1) {
+      scrollRafId = requestAnimationFrame(step)
+    } else {
+      scrollRafId = null
+    }
+  }
+
+  scrollRafId = requestAnimationFrame(step)
+}
+
+// Scroll to selected card when tab changes
+watch(activeCategory, () => {
+  nextTick(() => scrollToSelected())
+})
 
 // ── Settings helpers ────────────────────────────────────────────────────────
 
@@ -251,6 +300,20 @@ function toggleMode() {
 
 function randomizeSeed() {
   store.config.seed = 0
+}
+
+// ── Seek ──────────────────────────────────────────────────────────────────
+
+async function handleSeek(targetTick: number) {
+  if (!store.eventData.value) return
+
+  try {
+    await player.ensureAudioContext()
+    player.stop()
+    await player.play(store.eventData.value, targetTick, currentInstrumentName.value)
+  } catch (e) {
+    console.error('Seek failed:', e)
+  }
 }
 
 // ── Download ────────────────────────────────────────────────────────────────
@@ -267,11 +330,12 @@ function handleDownload() {
     <header class="bach-demo__header">
       <div class="header-ornament">
         <span class="header-ornament__line"></span>
-        <span class="header-ornament__diamond"></span>
+        <span class="header-ornament__trefoil"></span>
         <span class="header-ornament__line"></span>
       </div>
       <h1 class="bach-demo__title">{{ t('demo.title') }}</h1>
       <p class="bach-demo__subtitle">{{ t('demo.subtitle') }}</p>
+      <p v-if="t('demo.notice')" class="bach-demo__notice">{{ t('demo.notice') }}</p>
     </header>
 
     <!-- Stage: Piano Roll + Integrated Controls -->
@@ -281,6 +345,7 @@ function handleDownload() {
         :currentTick="player.currentTick.value"
         :isPlaying="player.isPlaying.value"
         :duration="player.duration.value"
+        @seek="handleSeek"
       />
 
       <!-- Centered play overlay (before first generation) -->
@@ -294,6 +359,22 @@ function handleDownload() {
             :disabled="isLoading || generation.isGenerating.value"
             @click="handlePlay"
           >
+            <!-- Gothic tracery ring -->
+            <svg class="stage-play-btn__tracery" viewBox="0 0 80 80" fill="none">
+              <circle cx="40" cy="40" r="38" stroke="rgba(100,120,170,0.2)" stroke-width="0.5" />
+              <circle cx="40" cy="40" r="35" stroke="rgba(100,120,170,0.12)" stroke-width="0.3" />
+              <!-- 12 radial spokes -->
+              <line v-for="n in 12" :key="n"
+                x1="40" y1="40"
+                :x2="40 + 38 * Math.cos((n * 30 - 90) * Math.PI / 180)"
+                :y2="40 + 38 * Math.sin((n * 30 - 90) * Math.PI / 180)"
+                stroke="rgba(100,120,170,0.1)" stroke-width="0.3" />
+              <!-- 4 trefoil accents at cardinal points -->
+              <circle v-for="n in 4" :key="'t'+n"
+                :cx="40 + 36.5 * Math.cos((n * 90 - 90) * Math.PI / 180)"
+                :cy="40 + 36.5 * Math.sin((n * 90 - 90) * Math.PI / 180)"
+                r="2" stroke="rgba(100,120,170,0.15)" stroke-width="0.4" fill="none" />
+            </svg>
             <span v-if="isLoading || generation.isGenerating.value" class="stage-play-btn__loader"></span>
             <svg
               v-else
@@ -378,7 +459,7 @@ function handleDownload() {
     <!-- Ornamental Divider -->
     <div class="bach-demo__divider">
       <span class="divider__line"></span>
-      <span class="divider__diamond"></span>
+      <span class="divider__trefoil"></span>
       <span class="divider__line"></span>
     </div>
 
@@ -395,7 +476,7 @@ function handleDownload() {
           {{ t(cat.labelKey) }}
         </button>
       </div>
-      <div class="form-cards">
+      <div ref="formCardsRef" class="form-cards">
         <button
           v-for="form in filteredForms"
           :key="form.id"
@@ -557,6 +638,7 @@ function handleDownload() {
         </div>
       </Transition>
     </section>
+
   </div>
 </template>
 
@@ -595,24 +677,49 @@ function handleDownload() {
 .header-ornament__line {
   width: 36px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(184, 146, 46, 0.35));
+  background: linear-gradient(90deg, transparent, rgba(100, 120, 170, 0.3));
 }
 
 .header-ornament__line:last-child {
-  background: linear-gradient(90deg, rgba(184, 146, 46, 0.35), transparent);
+  background: linear-gradient(90deg, rgba(100, 120, 170, 0.3), transparent);
 }
 
-.header-ornament__diamond {
-  width: 6px;
-  height: 6px;
-  border: 1px solid rgba(184, 146, 46, 0.4);
-  transform: rotate(45deg);
-  animation: breathe-diamond 4s ease-in-out infinite;
+.header-ornament__trefoil {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  animation: breathe-trefoil 5s ease-in-out infinite;
 }
 
-@keyframes breathe-diamond {
-  0%, 100% { border-color: rgba(184, 146, 46, 0.25); }
-  50% { border-color: rgba(184, 146, 46, 0.55); }
+/* Three overlapping circles forming a trefoil (Gothic tracery motif) */
+.header-ornament__trefoil::before,
+.header-ornament__trefoil::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(100, 120, 170, 0.5);
+}
+
+/* Top circle */
+.header-ornament__trefoil::before {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Bottom-left circle + bottom-right circle (via box-shadow) */
+.header-ornament__trefoil::after {
+  bottom: 0;
+  left: 0;
+  box-shadow: 8px 0 0 -1px rgba(7, 8, 13, 0), 8px 0 0 0 rgba(100, 120, 170, 0.5);
+}
+
+@keyframes breathe-trefoil {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
 
 .bach-demo__title {
@@ -629,10 +736,20 @@ function handleDownload() {
   margin: 0;
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 0.68rem;
-  color: rgba(228, 224, 218, 0.3);
+  color: rgba(228, 224, 218, 0.6);
   letter-spacing: 0.16em;
   font-weight: 500;
   text-transform: uppercase;
+}
+
+.bach-demo__notice {
+  margin: -0.15rem 0 0;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.6rem;
+  color: rgba(228, 224, 218, 0.55);
+  letter-spacing: 0.02em;
+  font-weight: 400;
+  line-height: 1.4;
 }
 
 /* ── Stage: Piano Roll + Controls ─────────────────────────────────────── */
@@ -642,18 +759,26 @@ function handleDownload() {
   width: 100%;
   height: 320px;
   box-sizing: border-box;
-  border: 1px solid rgba(184, 146, 46, 0.12);
+  border: 1px solid rgba(58, 91, 160, 0.18);
   border-radius: 10px;
   overflow: hidden;
   box-shadow:
     0 0 0 1px rgba(10, 10, 14, 0.5),
     0 4px 24px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(184, 146, 46, 0.06);
+    inset 0 1px 0 rgba(58, 91, 160, 0.1),
+    0 0 40px rgba(58, 91, 160, 0.04),
+    0 0 60px rgba(155, 35, 53, 0.02);
   transition: border-color 0.4s ease, box-shadow 0.4s ease;
 }
 
 .bach-demo__stage:hover {
-  border-color: rgba(184, 146, 46, 0.18);
+  border-color: rgba(58, 91, 160, 0.28);
+  box-shadow:
+    0 0 0 1px rgba(10, 10, 14, 0.5),
+    0 4px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(58, 91, 160, 0.12),
+    0 0 50px rgba(58, 91, 160, 0.06),
+    0 0 80px rgba(155, 35, 53, 0.03);
 }
 
 /* ── Centered Play Overlay (Pre-Generation) ───────────────────────────── */
@@ -667,15 +792,16 @@ function handleDownload() {
   align-items: center;
   justify-content: center;
   gap: 0.7rem;
-  background: rgba(13, 10, 7, 0.15);
+  background: rgba(7, 8, 13, 0.15);
   backdrop-filter: blur(0.5px);
 }
 
 .stage-play-btn {
+  position: relative;
   border-radius: 50%;
-  border: 1.5px solid rgba(184, 146, 46, 0.35);
-  background: rgba(13, 10, 7, 0.7);
-  color: #C4B498;
+  border: 1.5px solid rgba(100, 120, 170, 0.3);
+  background: rgba(7, 8, 13, 0.7);
+  color: #A0B0D0;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -688,12 +814,12 @@ function handleDownload() {
 .stage-play-btn--lg {
   width: 64px;
   height: 64px;
-  animation: breathe-glow 3s ease-in-out infinite;
+  animation: breathe-glow 5s ease-in-out infinite;
 }
 
 .stage-play-btn--lg:hover:not(:disabled) {
-  border-color: rgba(184, 146, 46, 0.6);
-  background: rgba(13, 10, 7, 0.85);
+  border-color: rgba(100, 120, 170, 0.55);
+  background: rgba(7, 8, 13, 0.85);
   transform: scale(1.06);
 }
 
@@ -704,26 +830,48 @@ function handleDownload() {
 .stage-play-btn--lg:disabled {
   cursor: not-allowed;
   opacity: 0.7;
-  animation: breathe-glow-loading 2s ease-in-out infinite;
+  animation: breathe-glow-loading 2.5s ease-in-out infinite;
+}
+
+/* Gothic tracery ring overlay */
+.stage-play-btn__tracery {
+  position: absolute;
+  inset: -12px;
+  width: calc(100% + 24px);
+  height: calc(100% + 24px);
+  pointer-events: none;
+  opacity: 0.7;
+  animation: breathe-tracery 5s ease-in-out infinite;
+}
+
+@keyframes breathe-tracery {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.9; }
 }
 
 @keyframes breathe-glow {
   0%, 100% {
-    box-shadow: 0 0 16px rgba(184, 146, 46, 0.08), 0 0 32px rgba(184, 146, 46, 0.04);
+    box-shadow:
+      0 0 20px rgba(58, 91, 160, 0.15),
+      0 0 40px rgba(155, 35, 53, 0.06),
+      0 0 60px rgba(195, 155, 55, 0.04);
   }
   50% {
-    box-shadow: 0 0 22px rgba(184, 146, 46, 0.16), 0 0 44px rgba(184, 146, 46, 0.08);
+    box-shadow:
+      0 0 30px rgba(58, 91, 160, 0.28),
+      0 0 55px rgba(155, 35, 53, 0.12),
+      0 0 80px rgba(195, 155, 55, 0.07);
   }
 }
 
 @keyframes breathe-glow-loading {
   0%, 100% {
-    box-shadow: 0 0 12px rgba(184, 146, 46, 0.06);
-    border-color: rgba(184, 146, 46, 0.2);
+    box-shadow: 0 0 12px rgba(58, 91, 160, 0.08);
+    border-color: rgba(100, 120, 170, 0.2);
   }
   50% {
-    box-shadow: 0 0 20px rgba(184, 146, 46, 0.12);
-    border-color: rgba(184, 146, 46, 0.4);
+    box-shadow: 0 0 20px rgba(58, 91, 160, 0.15);
+    border-color: rgba(100, 120, 170, 0.4);
   }
 }
 
@@ -736,8 +884,8 @@ function handleDownload() {
 .stage-play-btn__loader {
   width: 20px;
   height: 20px;
-  border: 2px solid rgba(184, 146, 46, 0.12);
-  border-top-color: #A89878;
+  border: 2px solid rgba(100, 120, 170, 0.12);
+  border-top-color: #8090B0;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -769,8 +917,8 @@ function handleDownload() {
   pointer-events: auto;
   position: absolute;
   border-radius: 50%;
-  border: 1px solid rgba(168, 152, 120, 0.2);
-  background: rgba(13, 10, 7, 0.8);
+  border: 1px solid rgba(100, 120, 170, 0.18);
+  background: rgba(7, 8, 13, 0.8);
   color: rgba(228, 224, 218, 0.5);
   cursor: pointer;
   display: flex;
@@ -782,9 +930,9 @@ function handleDownload() {
 }
 
 .ctrl-btn:hover:not(:disabled) {
-  border-color: rgba(168, 152, 120, 0.45);
-  color: #C4B498;
-  background: rgba(13, 10, 7, 0.9);
+  border-color: rgba(100, 120, 170, 0.4);
+  color: #A0B0D0;
+  background: rgba(7, 8, 13, 0.9);
 }
 
 .ctrl-btn:active:not(:disabled) {
@@ -813,8 +961,8 @@ function handleDownload() {
   display: flex;
   align-items: center;
   gap: 0;
-  background: rgba(13, 10, 7, 0.82);
-  border: 1px solid rgba(184, 146, 46, 0.2);
+  background: rgba(7, 8, 13, 0.82);
+  border: 1px solid rgba(100, 120, 170, 0.18);
   border-radius: 28px;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -824,13 +972,13 @@ function handleDownload() {
 }
 
 .stage-transport:hover {
-  border-color: rgba(184, 146, 46, 0.3);
+  border-color: rgba(100, 120, 170, 0.28);
 }
 
 .transport-divider {
   width: 1px;
   height: 20px;
-  background: rgba(168, 152, 120, 0.15);
+  background: rgba(100, 120, 170, 0.12);
   flex-shrink: 0;
 }
 
@@ -848,8 +996,8 @@ function handleDownload() {
 }
 
 .transport-btn:hover:not(:disabled) {
-  color: #C4B498;
-  background: rgba(168, 152, 120, 0.1);
+  color: #A0B0D0;
+  background: rgba(100, 120, 170, 0.1);
 }
 
 .transport-btn:active:not(:disabled) {
@@ -865,7 +1013,7 @@ function handleDownload() {
 .transport-btn--play {
   width: 42px;
   height: 42px;
-  color: #C4B498;
+  color: #A0B0D0;
 }
 
 .transport-btn--play svg {
@@ -878,8 +1026,8 @@ function handleDownload() {
 }
 
 .transport-btn--play:hover:not(:disabled) {
-  color: #D4C8B0;
-  background: rgba(184, 146, 46, 0.12);
+  color: #B0C0E0;
+  background: rgba(58, 91, 160, 0.12);
 }
 
 .transport-btn--is-stop {
@@ -964,23 +1112,44 @@ function handleDownload() {
 .divider__line {
   flex: 1;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(184, 146, 46, 0.18), transparent);
+  background: linear-gradient(90deg, transparent, rgba(100, 120, 170, 0.15), transparent);
 }
 
 .divider__line:first-child {
-  background: linear-gradient(90deg, transparent, rgba(184, 146, 46, 0.18));
+  background: linear-gradient(90deg, transparent, rgba(100, 120, 170, 0.15));
 }
 
 .divider__line:last-child {
-  background: linear-gradient(90deg, rgba(184, 146, 46, 0.18), transparent);
+  background: linear-gradient(90deg, rgba(100, 120, 170, 0.15), transparent);
 }
 
-.divider__diamond {
+.divider__trefoil {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+.divider__trefoil::before,
+.divider__trefoil::after {
+  content: '';
+  position: absolute;
   width: 5px;
   height: 5px;
-  border: 1px solid rgba(184, 146, 46, 0.25);
-  transform: rotate(45deg);
-  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(100, 120, 170, 0.25);
+}
+
+.divider__trefoil::before {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.divider__trefoil::after {
+  bottom: 0;
+  left: 0;
+  box-shadow: 6px 0 0 -1px transparent, 6px 0 0 0 rgba(100, 120, 170, 0.25);
 }
 
 /* ── Form Selector ─────────────────────────────────────────────────────── */
@@ -999,7 +1168,7 @@ function handleDownload() {
 .category-tab {
   flex: 1;
   padding: 0.55rem 1rem;
-  border: 1px solid rgba(168, 152, 120, 0.1);
+  border: 1px solid rgba(100, 120, 170, 0.1);
   border-radius: 6px;
   background: rgba(26, 26, 34, 0.4);
   color: rgba(228, 224, 218, 0.4);
@@ -1018,18 +1187,18 @@ function handleDownload() {
 }
 
 .category-tab--active {
-  background: rgba(168, 152, 120, 0.08);
-  border-color: rgba(168, 152, 120, 0.25);
-  color: #C4B498;
+  background: rgba(100, 120, 170, 0.08);
+  border-color: rgba(100, 120, 170, 0.25);
+  color: #A0B0D0;
 }
 
 .form-cards {
   display: flex;
-  gap: 0.4rem;
-  overflow-x: auto;
+  gap: 0.35rem;
   padding: 0.25rem;
+  overflow-x: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(168, 152, 120, 0.15) transparent;
+  scrollbar-color: rgba(100, 120, 170, 0.12) transparent;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -1042,65 +1211,92 @@ function handleDownload() {
 }
 
 .form-cards::-webkit-scrollbar-thumb {
-  background: rgba(168, 152, 120, 0.15);
+  background: rgba(100, 120, 170, 0.12);
   border-radius: 3px;
 }
 
 .form-card {
-  flex: 0 0 auto;
-  min-width: 130px;
-  max-width: 170px;
-  padding: 0.7rem 0.8rem;
-  border: 1px solid rgba(168, 152, 120, 0.08);
-  border-radius: 6px;
+  flex: 0 0 130px;
+  position: relative;
+  padding: 0.55rem 0.5rem;
+  border: 1px solid rgba(100, 120, 170, 0.08);
+  border-radius: 4px;
   background: rgba(26, 26, 34, 0.5);
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  text-align: left;
-  transition: all 0.2s ease;
+  gap: 0.2rem;
+  text-align: center;
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+/* Subtle pointed-arch accent at the top of every card */
+.form-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 3px;
+  background: rgba(100, 120, 170, 0.06);
+  clip-path: polygon(0% 100%, 50% 0%, 100% 100%);
+  transition: all 0.25s ease;
 }
 
 .form-card:hover {
-  border-color: rgba(168, 152, 120, 0.2);
+  border-color: rgba(100, 120, 170, 0.22);
   background: rgba(26, 26, 34, 0.7);
 }
 
+.form-card:hover::before {
+  background: rgba(100, 120, 170, 0.15);
+  height: 4px;
+}
+
 .form-card--selected {
-  border-color: rgba(168, 152, 120, 0.35);
-  background: rgba(168, 152, 120, 0.06);
-  box-shadow: 0 0 12px rgba(168, 152, 120, 0.06);
+  border-color: rgba(58, 91, 160, 0.35);
+  background: rgba(58, 91, 160, 0.06);
+  box-shadow:
+    0 0 12px rgba(58, 91, 160, 0.1),
+    inset 0 0 20px rgba(58, 91, 160, 0.03);
+}
+
+.form-card--selected::before {
+  background: linear-gradient(to right, rgba(155, 35, 53, 0.5), rgba(58, 91, 160, 0.6), rgba(45, 122, 95, 0.5));
+  width: 80%;
+  height: 4px;
 }
 
 .form-card__name {
   font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   font-weight: 600;
   color: #E4E0DA;
   line-height: 1.3;
 }
 
 .form-card--selected .form-card__name {
-  color: #C4B498;
+  color: #B0C0E0;
 }
 
 .form-card__bwv {
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 0.64rem;
-  font-weight: 500;
-  color: rgba(184, 146, 46, 0.4);
-  letter-spacing: 0.04em;
+  font-family: 'JetBrains Mono', 'DM Mono', monospace;
+  font-size: 0.58rem;
+  font-weight: 400;
+  color: rgba(100, 120, 170, 0.4);
+  letter-spacing: 0.06em;
 }
 
 .form-card--selected .form-card__bwv {
-  color: rgba(184, 146, 46, 0.6);
+  color: rgba(100, 120, 170, 0.65);
 }
 
 .form-card__desc {
-  font-size: 0.68rem;
-  color: rgba(228, 224, 218, 0.35);
-  line-height: 1.4;
+  font-size: 0.64rem;
+  color: rgba(228, 224, 218, 0.3);
+  line-height: 1.35;
 }
 
 /* ── Settings Panel ────────────────────────────────────────────────────── */
@@ -1116,7 +1312,7 @@ function handleDownload() {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.65rem 1rem;
-  border: 1px solid rgba(168, 152, 120, 0.1);
+  border: 1px solid rgba(100, 120, 170, 0.1);
   border-radius: 6px;
   background: rgba(26, 26, 34, 0.4);
   color: rgba(228, 224, 218, 0.45);
@@ -1147,7 +1343,7 @@ function handleDownload() {
 .settings-panel {
   margin-top: 0.6rem;
   padding: 1.2rem 1.4rem;
-  border: 1px solid rgba(168, 152, 120, 0.1);
+  border: 1px solid rgba(100, 120, 170, 0.1);
   border-radius: 6px;
   background: rgba(26, 26, 34, 0.5);
   display: grid;
@@ -1175,10 +1371,10 @@ function handleDownload() {
   display: flex;
   flex-wrap: wrap;
   gap: 1px;
-  border: 1px solid rgba(168, 152, 120, 0.12);
+  border: 1px solid rgba(100, 120, 170, 0.12);
   border-radius: 5px;
   overflow: hidden;
-  background: rgba(168, 152, 120, 0.15);
+  background: rgba(100, 120, 170, 0.12);
 }
 
 .settings-group:has(.key-buttons) {
@@ -1207,13 +1403,13 @@ function handleDownload() {
 }
 
 .key-btn:hover {
-  background: rgba(168, 152, 120, 0.08);
+  background: rgba(100, 120, 170, 0.08);
   color: #E4E0DA;
 }
 
 .key-btn--selected {
-  background: rgba(168, 152, 120, 0.12);
-  color: #C4B498;
+  background: rgba(100, 120, 170, 0.12);
+  color: #A0B0D0;
 }
 
 /* Unified segment control (.seg) */
@@ -1221,7 +1417,7 @@ function handleDownload() {
   display: flex;
   border-radius: 5px;
   overflow: hidden;
-  border: 1px solid rgba(168, 152, 120, 0.12);
+  border: 1px solid rgba(100, 120, 170, 0.12);
 }
 
 .seg__btn {
@@ -1240,12 +1436,12 @@ function handleDownload() {
 }
 
 .seg:not(.seg--wrap) > .seg__btn + .seg__btn {
-  border-left: 1px solid rgba(168, 152, 120, 0.06);
+  border-left: 1px solid rgba(100, 120, 170, 0.06);
 }
 
 .seg__btn--active {
-  background: rgba(168, 152, 120, 0.1);
-  color: #C4B498;
+  background: rgba(100, 120, 170, 0.1);
+  color: #A0B0D0;
 }
 
 .seg__btn:hover:not(.seg__btn--active):not(:disabled) {
@@ -1262,7 +1458,7 @@ function handleDownload() {
 .seg--wrap {
   flex-wrap: wrap;
   gap: 1px;
-  background: rgba(168, 152, 120, 0.15);
+  background: rgba(100, 120, 170, 0.12);
 }
 
 .seg--wrap .seg__btn {
@@ -1274,7 +1470,7 @@ function handleDownload() {
 }
 
 .seg--wrap .seg__btn--active {
-  background: rgba(168, 152, 120, 0.12);
+  background: rgba(100, 120, 170, 0.12);
 }
 
 /* Full-width settings group */
@@ -1285,7 +1481,7 @@ function handleDownload() {
 /* Number input */
 .settings-input {
   padding: 0.4rem 0.55rem;
-  border: 1px solid rgba(168, 152, 120, 0.12);
+  border: 1px solid rgba(100, 120, 170, 0.12);
   border-radius: 5px;
   background: rgba(26, 26, 34, 0.5);
   color: #E4E0DA;
@@ -1305,7 +1501,7 @@ function handleDownload() {
 
 .settings-input:hover,
 .settings-input:focus {
-  border-color: rgba(168, 152, 120, 0.3);
+  border-color: rgba(100, 120, 170, 0.3);
 }
 
 /* Range slider */
@@ -1314,7 +1510,7 @@ function handleDownload() {
   height: 3px;
   appearance: none;
   -webkit-appearance: none;
-  background: rgba(168, 152, 120, 0.12);
+  background: rgba(100, 120, 170, 0.12);
   border-radius: 2px;
   outline: none;
   margin-top: 4px;
@@ -1325,22 +1521,22 @@ function handleDownload() {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #A89878;
-  border: 2px solid #0A0A0E;
+  background: #7888B0;
+  border: 2px solid #08080E;
   cursor: pointer;
   transition: box-shadow 0.2s ease;
 }
 
 .settings-slider::-webkit-slider-thumb:hover {
-  box-shadow: 0 0 8px rgba(168, 152, 120, 0.3);
+  box-shadow: 0 0 8px rgba(100, 120, 170, 0.3);
 }
 
 .settings-slider::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #A89878;
-  border: 2px solid #0A0A0E;
+  background: #7888B0;
+  border: 2px solid #08080E;
   cursor: pointer;
 }
 
@@ -1357,10 +1553,10 @@ function handleDownload() {
 
 .seed-random-btn {
   padding: 0.4rem 0.7rem;
-  border: 1px solid rgba(168, 152, 120, 0.18);
+  border: 1px solid rgba(100, 120, 170, 0.18);
   border-radius: 5px;
-  background: rgba(168, 152, 120, 0.06);
-  color: #C4B498;
+  background: rgba(100, 120, 170, 0.06);
+  color: #A0B0D0;
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 0.72rem;
   font-weight: 600;
@@ -1371,8 +1567,8 @@ function handleDownload() {
 }
 
 .seed-random-btn:hover {
-  background: rgba(168, 152, 120, 0.12);
-  border-color: rgba(168, 152, 120, 0.3);
+  background: rgba(100, 120, 170, 0.12);
+  border-color: rgba(100, 120, 170, 0.3);
 }
 
 
@@ -1470,8 +1666,15 @@ function handleDownload() {
   }
 
   .form-card {
-    min-width: 115px;
-    max-width: 155px;
+    flex: 0 0 110px;
+  }
+
+  .form-card__name {
+    font-size: 0.68rem;
+  }
+
+  .form-card__desc {
+    display: none;
   }
 
   .bach-demo__divider {

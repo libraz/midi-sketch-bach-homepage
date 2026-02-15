@@ -1,7 +1,14 @@
 {
+  "alphaBanner": {
+    "badge": "ALPHA",
+    "message": "This demo is an early development preview",
+    "cta": "Send Feedback",
+    "dismiss": "Dismiss"
+  },
   "demo": {
     "title": "MIDI SKETCH BACH",
-    "subtitle": "Algorithmic Bach Instrumental MIDI Generator",
+    "subtitle": "Algorithmic Bach Composition Engine",
+    "notice": "",
     "play": "PLAY",
     "stop": "STOP",
     "loading": "Loading...",
@@ -11,12 +18,14 @@
     "download": "Download MIDI",
     "settings": "Settings",
     "showSettings": "Show Settings",
-    "hideSettings": "Hide Settings"
+    "hideSettings": "Hide Settings",
+    "feedbackCta": "Noticed a musical issue? File it on GitHub Issues"
   },
   "form": {
     "title": "Musical Form",
     "organSystem": "Organ System",
     "soloString": "Solo String",
+    "keyboard": "Keyboard",
     "toccataAndFugue": "Toccata and Fugue",
     "toccataAndFugueDesc": "Dramatic toccata followed by a strict fugue",
     "preludeAndFugue": "Prelude and Fugue",
@@ -35,6 +44,8 @@
     "celloPreludeDesc": "Unaccompanied prelude for solo cello",
     "chaconne": "Chaconne",
     "chaconneDesc": "Monumental arch-form variations for solo instrument",
+    "goldbergVariations": "Goldberg Variations",
+    "goldbergVariationsDesc": "32 variations over a sarabande bass: canons, dances, and a quodlibet",
     "bwvRef": "Ref: {bwv}"
   },
   "config": {

@@ -82,7 +82,7 @@ export function useBachStore() {
 
   function toBachConfig(overrideSeed?: number): BachConfig {
     const preset = getFormPreset(config.form)
-    const isOrgan = preset ? preset.category === 'organ' : true
+    const isOrgan = preset?.category === 'organ'
 
     // seed=0 means "random" — generate a random seed in JS to guarantee variety
     // (avoids relying on WASM's internal random seeding which may be deterministic)

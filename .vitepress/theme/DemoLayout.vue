@@ -1,14 +1,27 @@
 <script setup lang="ts">
 import BachDemo from '@/components/BachDemo.vue'
+import { useI18n } from '@/composables/useI18n'
 import { useData } from 'vitepress'
-import { computed, onMounted } from 'vue'
+import { computed, ref } from 'vue'
 import wasmMeta from '@/wasm/meta.json'
 import { useBachStore } from '@/stores/useBachStore'
 
 const { lang } = useData()
+const { t } = useI18n()
 const store = useBachStore()
 
 const wasmHash = computed(() => wasmMeta.md5.slice(0, 7))
+
+// Alpha banner
+const alphaDismissed = ref(false)
+const buildDate = computed(() => {
+  const d = new Date(wasmMeta.updatedAt)
+  if (lang.value === 'ja') {
+    return `${d.getUTCMonth() + 1}月${d.getUTCDate()}日版`
+  }
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  return `${months[d.getUTCMonth()]} ${d.getUTCDate()} Build`
+})
 
 // Locale configuration
 const locales = {
@@ -33,7 +46,8 @@ const otherLocales = computed(() =>
   <div class="demo-page" :class="`demo-page--${lang}`">
     <!-- Ambient Background -->
     <div class="demo-page__backdrop">
-      <div class="demo-page__pipes"></div>
+      <div class="demo-page__arches"></div>
+      <div class="demo-page__arch-silhouette"></div>
       <div class="demo-page__wave demo-page__wave--1"></div>
       <div class="demo-page__wave demo-page__wave--2"></div>
       <div class="demo-page__wave demo-page__wave--3"></div>
@@ -42,6 +56,26 @@ const otherLocales = computed(() =>
       <div class="demo-page__orb demo-page__orb--3"></div>
       <div class="demo-page__noise"></div>
     </div>
+
+    <!-- Alpha Banner -->
+    <Transition name="alpha-banner">
+      <div v-if="!alphaDismissed" class="alpha-banner" role="status">
+        <div class="alpha-banner__inner">
+          <span class="alpha-banner__badge">{{ t('alphaBanner.badge') }}</span>
+          <span class="alpha-banner__date">{{ buildDate }}</span>
+          <p class="alpha-banner__message">{{ t('alphaBanner.message') }}</p>
+          <button
+            class="alpha-banner__dismiss"
+            :aria-label="t('alphaBanner.dismiss')"
+            @click="alphaDismissed = true"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+              <path d="M4 4l6 6M10 4l-6 6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </Transition>
 
     <!-- Main Demo Area -->
     <main class="demo-page__main">
@@ -66,6 +100,20 @@ const otherLocales = computed(() =>
         <a :href="localePath('/docs/getting-started')" class="demo-page__link">
           <span>{{ currentLocale.docsLabel }}</span>
         </a>
+        <span class="demo-page__divider">&middot;</span>
+        <a
+          href="https://github.com/libraz/midi-sketch-bach/issues"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="demo-page__link"
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2.5 13.5L5 11l6.5-6.5a1.4 1.4 0 0 0-2-2L3 9l-2.5 2.5" />
+            <path d="M9.5 2.5l2 2" />
+            <line x1="2" y1="14" x2="5" y2="14" />
+          </svg>
+          <span>{{ t('alphaBanner.cta') }}</span>
+        </a>
         <template v-for="locale in otherLocales" :key="locale.key">
           <span class="demo-page__divider">&middot;</span>
           <a :href="locale.path || '/'" class="demo-page__link demo-page__lang-switch">
@@ -84,7 +132,7 @@ const otherLocales = computed(() =>
 
 <style scoped>
 .demo-page {
-  --demo-bg: #0A0A0E;
+  --demo-bg: #08080E;
   --demo-text: rgba(228, 224, 218, 0.55);
   --demo-text-muted: rgba(228, 224, 218, 0.3);
 
@@ -106,21 +154,31 @@ const otherLocales = computed(() =>
   z-index: 0;
 }
 
-.demo-page__pipes {
+.demo-page__arches {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 35vh;
-  background: repeating-linear-gradient(
-    90deg,
-    transparent,
-    transparent 20px,
-    rgba(184, 146, 46, 0.012) 20px,
-    rgba(184, 146, 46, 0.012) 21px
-  );
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 100%);
+  height: 40vh;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='160' viewBox='0 0 120 160'%3E%3Cpath d='M0 160 Q60 20 120 160' fill='none' stroke='rgba(100,120,170,0.025)' stroke-width='0.8'/%3E%3Cpath d='M10 160 Q60 40 110 160' fill='none' stroke='rgba(100,120,170,0.015)' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-size: 120px 160px;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%);
+}
+
+/* Gothic arch silhouette — looking up through a cathedral window */
+.demo-page__arch-silhouette {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 450px;
+  height: 65vh;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 450 600' fill='none'%3E%3Cpath d='M50 600 Q225 40 400 600' stroke='rgba(100,120,170,0.04)' stroke-width='1.5' fill='none'/%3E%3Cpath d='M80 600 Q225 80 370 600' stroke='rgba(100,120,170,0.025)' stroke-width='1' fill='none'/%3E%3Cpath d='M140 600 Q225 150 310 600' stroke='rgba(100,120,170,0.02)' stroke-width='0.8' fill='none'/%3E%3Cline x1='225' y1='40' x2='225' y2='600' stroke='rgba(100,120,170,0.015)' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  opacity: 0.8;
 }
 
 /* Atmospheric waves — slow undulating light */
@@ -135,22 +193,22 @@ const otherLocales = computed(() =>
 
 .demo-page__wave--1 {
   background:
-    radial-gradient(ellipse 80% 40% at 30% 60%, rgba(168, 152, 120, 0.035) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 50% at 70% 40%, rgba(168, 152, 120, 0.025) 0%, transparent 60%);
+    radial-gradient(ellipse 80% 40% at 30% 60%, rgba(58, 91, 160, 0.03) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 70% 40%, rgba(100, 120, 170, 0.02) 0%, transparent 60%);
   animation: wave-drift-1 45s ease-in-out infinite;
 }
 
 .demo-page__wave--2 {
   background:
-    radial-gradient(ellipse 70% 35% at 55% 55%, rgba(138, 46, 62, 0.02) 0%, transparent 65%),
-    radial-gradient(ellipse 50% 45% at 25% 45%, rgba(168, 152, 120, 0.02) 0%, transparent 55%);
+    radial-gradient(ellipse 70% 35% at 55% 55%, rgba(155, 35, 53, 0.02) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 45% at 25% 45%, rgba(58, 91, 160, 0.018) 0%, transparent 55%);
   animation: wave-drift-2 55s ease-in-out infinite;
 }
 
 .demo-page__wave--3 {
   background:
-    radial-gradient(ellipse 90% 30% at 45% 70%, rgba(61, 74, 92, 0.025) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 55% at 80% 30%, rgba(168, 152, 120, 0.018) 0%, transparent 55%);
+    radial-gradient(ellipse 90% 30% at 45% 70%, rgba(45, 122, 95, 0.022) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 55% at 80% 30%, rgba(195, 155, 55, 0.015) 0%, transparent 55%);
   animation: wave-drift-3 65s ease-in-out infinite;
 }
 
@@ -180,13 +238,13 @@ const otherLocales = computed(() =>
 .demo-page__orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(120px);
+  filter: blur(90px);
 }
 
 .demo-page__orb--1 {
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(168, 152, 120, 0.1) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(58, 91, 160, 0.08) 0%, transparent 60%);
   top: -20%;
   left: 50%;
   transform: translateX(-50%);
@@ -196,7 +254,7 @@ const otherLocales = computed(() =>
 .demo-page__orb--2 {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(138, 46, 62, 0.06) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(155, 35, 53, 0.06) 0%, transparent 60%);
   bottom: -5%;
   left: -8%;
   animation: float-orb-2 30s ease-in-out infinite;
@@ -205,7 +263,7 @@ const otherLocales = computed(() =>
 .demo-page__orb--3 {
   width: 300px;
   height: 300px;
-  background: radial-gradient(circle, rgba(61, 74, 92, 0.05) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(45, 122, 95, 0.05) 0%, transparent 60%);
   top: 35%;
   right: -5%;
   animation: float-orb-3 20s ease-in-out infinite;
@@ -233,6 +291,121 @@ const otherLocales = computed(() =>
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   opacity: 0.015;
   mix-blend-mode: overlay;
+}
+
+/* ── Alpha Banner — illuminated manuscript ribbon ────────────────────── */
+
+.alpha-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: linear-gradient(180deg, #1E1A14 0%, #16130E 100%);
+  border-bottom: 1px solid rgba(212, 166, 62, 0.25);
+  box-shadow:
+    inset 0 1px 0 rgba(212, 166, 62, 0.06),
+    0 2px 20px rgba(0, 0, 0, 0.6);
+}
+
+/* Faint warm glow along the bottom edge — candlelight through glass */
+.alpha-banner::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 5%,
+    rgba(212, 166, 62, 0.12) 30%,
+    rgba(100, 120, 170, 0.08) 50%,
+    rgba(212, 166, 62, 0.12) 70%,
+    transparent 95%
+  );
+}
+
+.alpha-banner__inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.45rem 1.2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.alpha-banner__badge {
+  flex-shrink: 0;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #08080E;
+  background: rgba(212, 166, 62, 0.8);
+  padding: 0.2rem 0.5rem 0.16rem;
+  line-height: 1;
+}
+
+.alpha-banner__date {
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', 'DM Mono', monospace;
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: rgba(212, 166, 62, 0.75);
+}
+
+.alpha-banner__message {
+  margin: 0;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: rgba(228, 224, 218, 0.88);
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+}
+
+.alpha-banner__dismiss {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(228, 224, 218, 0.2);
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+  padding: 0;
+  margin-left: 0.15rem;
+}
+
+.alpha-banner__dismiss:hover {
+  color: rgba(228, 224, 218, 0.5);
+  background: rgba(228, 224, 218, 0.05);
+}
+
+/* Banner transition */
+.alpha-banner-enter-active {
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+
+.alpha-banner-leave-active {
+  transition: opacity 0.3s ease-in, transform 0.3s ease-in;
+}
+
+.alpha-banner-enter-from {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+.alpha-banner-leave-to {
+  opacity: 0;
+  transform: translateY(-100%);
 }
 
 /* Main Content */
@@ -286,7 +459,7 @@ const otherLocales = computed(() =>
 
 .demo-page__link:hover {
   color: var(--demo-text);
-  background: rgba(168, 152, 120, 0.08);
+  background: rgba(100, 120, 170, 0.08);
 }
 
 .demo-page__link svg {
@@ -324,6 +497,26 @@ const otherLocales = computed(() =>
 
 /* Responsive */
 @media (max-width: 768px) {
+  .alpha-banner__inner {
+    flex-wrap: wrap;
+    gap: 0.3rem 0.5rem;
+    padding: 0.4rem 0.75rem;
+  }
+
+  .alpha-banner__badge { order: 1; }
+  .alpha-banner__date { order: 2; }
+
+  .alpha-banner__dismiss {
+    order: 3;
+    margin-left: auto;
+  }
+
+  .alpha-banner__message {
+    flex: 1 1 100%;
+    order: 4;
+    font-size: 0.72rem;
+  }
+
   .demo-page__main {
     padding: 1rem 0.75rem;
     align-items: flex-start;
