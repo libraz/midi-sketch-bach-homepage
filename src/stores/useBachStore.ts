@@ -20,11 +20,11 @@ export interface BachStoreConfig {
 }
 
 const DEFAULT_CONFIG: BachStoreConfig = {
-  form: 4,        // Toccata and Fugue
+  form: 0,        // Fugue
   key: 0,         // C
   isMinor: false, // C major
   numVoices: 4,
-  bpm: 100,
+  bpm: 85,
   seed: 0,
   character: 0,
   instrument: 0,  // Organ
