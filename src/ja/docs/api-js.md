@@ -52,7 +52,7 @@ generator.generate({
   form: 'fugue',
   key: 2,
   isMinor: true,
-  numVoices: 4,
+  character: 'severe',
   bpm: 80,
   seed: 42
 })
@@ -61,6 +61,10 @@ generator.generate({
 **パラメータ**: 後述の [BachConfig](#bachconfig) を参照。
 
 **戻り値**: `void`
+
+::: warning 厳格な検証
+無効な `form`、`character`、`instrument`、`scale` 文字列、および範囲外の `bpm`（0 または 40--200 以外）は、デフォルトへ暗黙的にフォールバックせず**エラーをスロー**するようになりました。禁止されたキャラクター/形式の組み合わせ（[オプション関係](/ja/docs/option-relationships#キャラクターと形式)を参照）もスローします。
+:::
 
 ### `getMidi()`
 
@@ -79,12 +83,16 @@ const midi = generator.getMidi()
 
 ```js
 const events = generator.getEvents()
-console.log(events.form)        // "Fugue"
-console.log(events.key)         // "D minor"
+console.log(events.form)        // "fugue"
+console.log(events.key)         // 使用されたピッチクラス（0 = C）
 console.log(events.bpm)         // 80
-console.log(events.total_bars)  // 32
+console.log(events.total_bars)  // 42
 console.log(events.tracks)      // TrackDataの配列
 ```
+
+::: info ピッチはCで生成される
+エンジンは内部的にCで作曲し、指定された `key` はMIDIファイル書き出し時に適用されます。そのためイベントJSONのピッチはCのまま報告され、`getMidi()` が返す `.mid` ファイルは選択した調に移調されます。
+:::
 
 **戻り値**: [EventData](#eventdata)
 
@@ -94,7 +102,13 @@ console.log(events.tracks)      // TrackDataの配列
 
 ```js
 const info = generator.getInfo()
+console.log(info.seedUsed)    // 解決されたシード（seed: 0 を指定しても非ゼロ）
+console.log(info.totalBars)   // 解決された小節数
+console.log(info.bpm)         // 実際に使用されたBPM
+console.log(info.trackCount)  // トラック数
 ```
+
+`seed: 0`（ランダム）を渡すと、この実行で実際に選択されたシードが `getInfo().seedUsed` として報告されます。同じ出力を再現するにはその値を再利用してください。
 
 **戻り値**: `BachInfo`
 
@@ -118,16 +132,19 @@ generator.destroy()
 
 | フィールド | 型 | デフォルト | 説明 |
 |-----------|------|----------|------|
-| `form` | `number \| string` | `0` | 楽曲形式（0--8または名前）。[楽曲形式](/ja/docs/forms)と[プリセットリファレンス](/ja/docs/presets)を参照。 |
+| `form` | `number \| string` | `"fugue"` | 楽曲形式（0--9または名前）。[楽曲形式](/ja/docs/forms)と[プリセットリファレンス](/ja/docs/presets)を参照。 |
 | `key` | `number` | `0` | 調（0--11のピッチクラス: 0=C, 1=C#, 2=D, ... 11=B） |
 | `isMinor` | `boolean` | `false` | `true` で短調、`false` で長調 |
-| `numVoices` | `number` | 形式のデフォルト | 声部数（2--5） |
-| `bpm` | `number` | `100` | テンポ（BPM、40--200、0はデフォルトの100） |
-| `seed` | `number` | `0` | ランダムシード（0 = ランダム） |
-| `character` | `number \| string` | `0` | 主題キャラクタータイプ（0--3） |
-| `instrument` | `number \| string` | 形式のデフォルト | 楽器プリセット（0--5） |
-| `scale` | `number \| string` | `1` | 長さスケール（0=short, 1=medium, 2=long, 3=full） |
-| `targetBars` | `number` | -- | 目標小節数（scaleを上書き） |
+| `bpm` | `number` | `100` | テンポ（BPM）。`0` はデフォルトの100を使用。それ以外は 40--200 の範囲が必須（範囲外はスロー）。 |
+| `seed` | `number` | `0` | ランダムシード。`0` は非ゼロのランダムシードを選び、`getInfo().seedUsed` で報告。 |
+| `character` | `string \| number` | `"severe"` | 主題キャラクター（`"severe"`、`"playful"`、`"noble"`、`"restless"`）。無効値はスロー。 |
+| `instrument` | `string \| number` | 形式のデフォルト | 楽器（`"organ"`、`"harpsichord"`、`"piano"`、`"violin"`、`"cello"`、`"guitar"`）。無効値はスロー。 |
+| `scale` | `string \| number` | `"short"` | 形式の自然長に対する倍率: `"short"`（約1倍）、`"medium"`（約2倍）、`"long"`（約3倍）、`"full"`（約4倍）。無効値はスロー。 |
+| `targetBars` | `number` | -- | 明示的な小節数。`> 0` のとき `scale` を上書きし、形式の刻みにスナップして `[最小, 128]` にクランプ。 |
+
+::: warning `numVoices` は廃止されました
+声部数は `form` によって決定されます（[楽曲形式](/ja/docs/forms)の表を参照）。後方互換のため `num_voices`/`numVoices` の指定は受理されますが無視されます。エラーにはならず、効果もありません。
+:::
 
 ### 楽曲形式の値
 
@@ -136,14 +153,15 @@ generator.destroy()
 | 番号 | 文字列 |
 |------|--------|
 | `0` | `"fugue"` |
-| `1` | `"prelude-and-fugue"` |
-| `2` | `"trio-sonata"` |
-| `3` | `"chorale-prelude"` |
-| `4` | `"toccata-and-fugue"` |
+| `1` | `"prelude_and_fugue"` |
+| `2` | `"trio_sonata"` |
+| `3` | `"chorale_prelude"` |
+| `4` | `"toccata_and_fugue"` |
 | `5` | `"passacaglia"` |
-| `6` | `"fantasia-and-fugue"` |
-| `7` | `"cello-prelude"` |
+| `6` | `"fantasia_and_fugue"` |
+| `7` | `"cello_prelude"` |
 | `8` | `"chaconne"` |
+| `9` | `"goldberg_variations"` |
 
 ### 楽器の値
 
@@ -158,21 +176,23 @@ generator.destroy()
 
 ### キャラクターの値
 
-| 番号 | 説明 |
-|------|------|
-| `0` | デフォルトのバランス型 |
-| `1` | 叙情的、順次進行 |
-| `2` | 活動的、広い音程 |
-| `3` | 劇的、リズムに変化あり |
+| 番号 | 文字列 | 説明 |
+|------|--------|------|
+| `0` | `"severe"` | 厳格で知的に緻密（デフォルト） |
+| `1` | `"playful"` | 軽快で機敏、リズミカル |
+| `2` | `"noble"` | 荘重で広やか、威厳のある |
+| `3` | `"restless"` | 推進力があり半音階的で劇的 |
 
 ### スケールの値
 
-| 番号 | 文字列 | 説明 |
+`scale` は形式の自然長を倍率で伸ばします（[楽曲形式](/ja/docs/forms)を参照）。`targetBars` がこれを上書きします。
+
+| 番号 | 文字列 | おおよその長さ |
 |------|--------|------|
-| `0` | `"short"` | コンパクト |
-| `1` | `"medium"` | 標準（デフォルト） |
-| `2` | `"long"` | 拡張 |
-| `3` | `"full"` | 最大長 |
+| `0` | `"short"` | 自然長の約1倍（デフォルト） |
+| `1` | `"medium"` | 自然長の約2倍 |
+| `2` | `"long"` | 自然長の約3倍 |
+| `3` | `"full"` | 自然長の約4倍 |
 
 ---
 
@@ -182,10 +202,10 @@ generator.destroy()
 
 ```ts
 interface EventData {
-  form: string          // 形式名（例: "Fugue"）
-  key: string           // 調の説明（例: "D minor"）
+  form: string          // 形式名（例: "fugue"）
+  key: number           // ピッチクラス（イベントJSONはCのまま）
   bpm: number           // テンポ
-  seed: number          // 生成に使用されたシード
+  seed: number          // 生成に使用された解決済みシード
   total_ticks: number   // MIDIティック単位の総時間
   total_bars: number    // 総小節数
   description: string   // 人間が読める説明文
@@ -209,13 +229,21 @@ interface TrackData {
 
 ```ts
 interface NoteEvent {
-  pitch: number         // MIDIノート番号（0-127）
+  pitch: number         // MIDIノート番号（0-127）、Cで生成
   velocity: number      // ノートベロシティ（0-127）
   start_tick: number    // MIDIティック単位の開始時間
   duration: number      // MIDIティック単位の長さ
   voice: number         // 声部インデックス
+  source: string        // 由来: "material" | "compose" | "ornament"
 }
 ```
+
+::: info ノートの由来（`source`）
+すべてのノートは生成方法を記録する `source` タグを持ちます。
+- `"material"` — 形式が割り当てた固定素材（主題、グラウンドバス、定旋律）。
+- `"compose"` — 和声プランに対して候補探索が選択したノート。
+- `"ornament"` — 装飾パス（トリル、モルデント、ナッハシュラーク）が追加したノート。
+:::
 
 ---
 
@@ -293,7 +321,7 @@ generator.generate({
   form: 'fugue',
   key: 2,
   isMinor: true,
-  numVoices: 4,
+  character: 'severe',
   bpm: 76,
   seed: 12345
 })

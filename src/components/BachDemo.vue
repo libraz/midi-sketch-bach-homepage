@@ -57,7 +57,6 @@ watch(
     store.config.form,
     store.config.key,
     store.config.isMinor,
-    store.config.numVoices,
     store.config.bpm,
     store.config.character,
     store.config.instrument,
@@ -79,8 +78,6 @@ const categories = computed(() => [
 ])
 
 const filteredForms = computed(() => getFormsByCategory(activeCategory.value))
-
-const currentPreset = computed(() => getFormPreset(store.config.form))
 
 const currentInstrumentName = computed(() => INSTRUMENT_NAMES[store.config.instrument] ?? 'organ')
 
@@ -224,7 +221,7 @@ async function handleRegenerate() {
 function selectForm(formId: number) {
   store.config.form = formId
 
-  // Apply form defaults for instrument and voices
+  // Apply form defaults for instrument and tempo
   const preset = getFormPreset(formId)
   if (preset) {
     const instId = INSTRUMENT_OPTIONS.find(
@@ -233,7 +230,6 @@ function selectForm(formId: number) {
     if (instId !== undefined) {
       store.config.instrument = instId
     }
-    store.config.numVoices = preset.defaultVoices
     store.config.bpm = preset.defaultBpm
 
     // Switch to the right category tab
@@ -542,24 +538,6 @@ function handleDownload() {
                 :class="{ 'seg__btn--active': !store.config.isMinor }"
                 @click="store.config.isMinor = false"
               >{{ t('config.major') }}</button>
-            </div>
-          </div>
-
-          <!-- Voices -->
-          <div class="settings-group">
-            <label class="settings-label">{{ t('config.voices') }}</label>
-            <div class="seg">
-              <button
-                v-for="v in [2, 3, 4, 5]"
-                :key="v"
-                class="seg__btn"
-                :class="{
-                  'seg__btn--active': store.config.numVoices === v,
-                  'seg__btn--disabled': currentPreset && (v < currentPreset.minVoices || v > currentPreset.maxVoices),
-                }"
-                :disabled="currentPreset ? (v < currentPreset.minVoices || v > currentPreset.maxVoices) : false"
-                @click="store.config.numVoices = v"
-              >{{ v }}</button>
             </div>
           </div>
 

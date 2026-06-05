@@ -11,7 +11,6 @@ export interface BachStoreConfig {
   form: number
   key: number
   isMinor: boolean
-  numVoices: number
   bpm: number
   seed: number
   character: number
@@ -23,7 +22,6 @@ const DEFAULT_CONFIG: BachStoreConfig = {
   form: 0,        // Fugue
   key: 0,         // C
   isMinor: false, // C major
-  numVoices: 4,
   bpm: 85,
   seed: 0,
   character: 0,
@@ -63,7 +61,6 @@ export function useBachStore() {
       config.form !== last.form ||
       config.key !== last.key ||
       config.isMinor !== last.isMinor ||
-      config.numVoices !== last.numVoices ||
       config.bpm !== last.bpm ||
       config.character !== last.character ||
       config.instrument !== last.instrument ||
@@ -103,7 +100,6 @@ export function useBachStore() {
 
     // Only include organ-specific options for organ forms
     if (isOrgan) {
-      cfg.numVoices = config.numVoices
       cfg.character = config.character
     }
 

@@ -5,10 +5,10 @@ description: The Baroque music theory rules governing voice interaction in MIDI 
 
 # Counterpoint & Voice Leading
 
-This page explains the music theory rules that MIDI Sketch Bach uses to generate authentic Baroque-style counterpoint. These rules govern how multiple independent melodic lines (voices) interact with each other.
+This page explains the music theory rules that MIDI Sketch Bach uses to generate authentic Baroque-style counterpoint, and how the composer engine enforces them.
 
-::: info Counterpoint for Engineers
-Think of counterpoint as a constraint satisfaction problem. Each voice is an independent thread that must satisfy interval constraints relative to every other voice at every beat. The rules below are the constraints; the engine finds solutions that satisfy all of them simultaneously while also sounding musically compelling.
+::: info How the engine applies these rules
+Counterpoint here is a two-part process. The **candidate search** selects notes per beat, anchored to chord tones of a harmonic plan, so each new pitch is consonant with the harmony and with the other voices. The **rule validator** then checks the assembled voices against the constraints below and fails fast on a violation, reporting the offending rule. The rules are the constraints; the search finds solutions that satisfy them while staying musically compelling.
 :::
 
 ## Consonance and Dissonance
@@ -180,7 +180,6 @@ When the subject enters in a second voice, it is transposed to the dominant key 
 graph TD
     A["Subject in Voice 1<br>(Tonic key)"] --> B["Answer in Voice 2<br>(Dominant key)"]
     B --> C["Subject in Voice 3<br>(Tonic key)"]
-    C --> D["Answer in Voice 4<br>(Dominant key)"]
 ```
 
 ### Countersubject
@@ -201,12 +200,12 @@ The closer the entries, the more intense the stretto. Bach often saved the close
 
 ## Ostinato-Based Forms
 
-In the Passacaglia and Chaconne, the bass theme (passacaglia) or harmonic progression (chaconne) repeats throughout the piece. Additional counterpoint constraints apply:
+In the Passacaglia and Chaconne, the ground bass repeats throughout the piece (in 3/4). Additional counterpoint constraints apply:
 
-- The bass pattern must remain recognizable across all variations
-- Upper voices gain increasing independence and complexity
-- Voice count may increase as variations progress
-- The final variations often feature the densest counterpoint
+- The ground bass is immutable and must remain recognizable across all variations
+- The upper voice gains increasing independence and complexity
+- Variations near the climax (~80% of the span) feature the densest writing
+- The form's fixed voice count holds across every variation
 
 ## Cantus Firmus Treatment
 

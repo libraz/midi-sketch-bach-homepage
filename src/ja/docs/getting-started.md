@@ -28,7 +28,7 @@ generator.generate({
   form: 'fugue',
   key: 2,
   isMinor: true,
-  numVoices: 4,
+  character: 'severe',
   bpm: 80
 })
 
@@ -56,16 +56,18 @@ npx @libraz/midi-sketch-bach --form fugue --key 2 --minor -o output.mid
 ニ短調のトッカータとフーガを生成する例：
 
 ```bash
-npx @libraz/midi-sketch-bach --form "toccata-and-fugue" --key 2 --minor -o toccata.mid
+npx @libraz/midi-sketch-bach --form toccata_and_fugue --key 2 --minor -o toccata.mid
 ```
 
 ## 生成できる楽曲
 
-MIDI Sketch Bachは2つのシステムにまたがる9つの楽曲形式をサポートしています。
+MIDI Sketch Bachは3つのシステムにまたがる10種類の楽曲形式をサポートしています。
 
 **オルガンシステム** -- フーガ、前奏曲とフーガ、トリオ・ソナタ、コラール前奏曲、トッカータとフーガ、パッサカリア、幻想曲とフーガ
 
 **独奏楽器システム** -- チェロ前奏曲、シャコンヌ
+
+**変奏システム** -- ゴルトベルク変奏曲
 
 各形式はバロック時代の声部進行、対位法、和声構造に関する正統的な作曲規則に従います。
 

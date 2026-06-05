@@ -85,9 +85,6 @@ function configToJson(config) {
   if (config.isMinor !== void 0) {
     obj.is_minor = config.isMinor;
   }
-  if (config.numVoices !== void 0) {
-    obj.num_voices = config.numVoices;
-  }
   if (config.bpm !== void 0) {
     obj.bpm = config.bpm;
   }

@@ -28,7 +28,7 @@ generator.generate({
   form: 'fugue',
   key: 2,
   isMinor: true,
-  numVoices: 4,
+  character: 'severe',
   bpm: 80
 })
 
@@ -56,16 +56,18 @@ npx @libraz/midi-sketch-bach --form fugue --key 2 --minor -o output.mid
 Generate a Toccata and Fugue in D minor:
 
 ```bash
-npx @libraz/midi-sketch-bach --form "toccata-and-fugue" --key 2 --minor -o toccata.mid
+npx @libraz/midi-sketch-bach --form toccata_and_fugue --key 2 --minor -o toccata.mid
 ```
 
 ## What You Can Generate
 
-MIDI Sketch Bach supports 9 musical forms across two systems:
+MIDI Sketch Bach supports 10 musical forms across three systems:
 
 **Organ System** -- Fugue, Prelude and Fugue, Trio Sonata, Chorale Prelude, Toccata and Fugue, Passacaglia, Fantasia and Fugue
 
 **Solo Instrument System** -- Cello Prelude, Chaconne
+
+**Variation System** -- Goldberg Variations
 
 Each form follows authentic Baroque compositional rules for voice leading, counterpoint, and harmonic structure.
 

@@ -9,19 +9,24 @@ Complete reference for all configurable presets in MIDI Sketch Bach.
 
 ## Forms Reference
 
-### All 9 Forms
+### All 10 Forms
 
-| ID | Name | String | Category | Default Instrument | Default BPM | Default Voices |
-|----|------|--------|----------|-------------------|-------------|----------------|
-| 0 | Fugue | `"fugue"` | Organ | Organ | 85 | 4 |
-| 1 | Prelude and Fugue | `"prelude-and-fugue"` | Organ | Organ | 90 | 4 |
-| 2 | Trio Sonata | `"trio-sonata"` | Organ | Organ | 90 | 3 |
-| 3 | Chorale Prelude | `"chorale-prelude"` | Organ | Organ | 72 | 4 |
-| 4 | Toccata and Fugue | `"toccata-and-fugue"` | Organ | Organ | 100 | 4 |
-| 5 | Passacaglia | `"passacaglia"` | Organ | Organ | 76 | 4 |
-| 6 | Fantasia and Fugue | `"fantasia-and-fugue"` | Organ | Organ | 88 | 4 |
-| 7 | Cello Prelude | `"cello-prelude"` | Solo | Cello | 80 | 3 |
-| 8 | Chaconne | `"chaconne"` | Solo | Violin | 76 | 3 |
+| ID | Name | String | Category | Default Instrument | Voices | Meter | Natural Bars |
+|----|------|--------|----------|-------------------|--------|-------|--------------|
+| 0 | Fugue | `"fugue"` | Organ | Organ | 3 | 4/4 | 42 |
+| 1 | Prelude and Fugue | `"prelude_and_fugue"` | Organ | Organ | 3 | 4/4 | 24 |
+| 2 | Trio Sonata | `"trio_sonata"` | Organ | Organ | 3 | 4/4 | 16 |
+| 3 | Chorale Prelude | `"chorale_prelude"` | Organ | Organ | 2 | 4/4 | 16 |
+| 4 | Toccata and Fugue | `"toccata_and_fugue"` | Organ | Organ | 3 | 4/4 | 32 |
+| 5 | Passacaglia | `"passacaglia"` | Organ | Organ | 2 | 3/4 | 24 |
+| 6 | Fantasia and Fugue | `"fantasia_and_fugue"` | Organ | Organ | 3 | 4/4 | 32 |
+| 7 | Cello Prelude | `"cello_prelude"` | Solo | Cello | 1 | 4/4 | 8 |
+| 8 | Chaconne | `"chaconne"` | Solo | Violin | 2 | 3/4 | 16 |
+| 9 | Goldberg Variations | `"goldberg_variations"` | Variation | Harpsichord | 3 | 4/4 | 20 |
+
+::: info Bar counts
+"Natural Bars" is the length when `scale: "short"`. The `scale` option multiplies it (~1x/2x/3x/4x), and `targetBars` overrides it. Every form caps at 128 bars.
+:::
 
 ### Form Selection Flowchart
 
@@ -31,6 +36,7 @@ graph TD
     B -->|"Organ"| C{{"Style?"}}
     B -->|"Solo Cello"| D["7: Cello Prelude"]
     B -->|"Solo Violin"| E["8: Chaconne"]
+    B -->|"Harpsichord"| M["9: Goldberg Variations"]
     C -->|"Strict counterpoint"| F["0: Fugue"]
     C -->|"Prelude + Fugue"| G["1: Prelude and Fugue"]
     C -->|"Three voices"| H["2: Trio Sonata"]
@@ -45,7 +51,11 @@ The seven organ forms cover the major genres of Bach's organ repertoire. All def
 :::
 
 ::: info Solo Instrument System (Forms 7--8)
-The two solo forms generate music for unaccompanied string instruments. They use implied polyphony — a single melodic line that suggests multiple simultaneous voices through register shifts, arpeggiation, and chordal writing.
+The two solo forms generate music for unaccompanied string instruments. The cello prelude is a single continuous line; the chaconne pairs a ground bass with an upper line. Implied polyphony emerges through register shifts, arpeggiation, and chordal writing.
+:::
+
+::: info Variation System (Form 9)
+The Goldberg Variations form is a theme-and-variations cycle over an immutable bass, defaulting to harpsichord.
 :::
 
 ::: details BWV References by Form
@@ -60,6 +70,7 @@ The two solo forms generate music for unaccompanied string instruments. They use
 | Fantasia and Fugue | BWV 537, 542, 561 |
 | Cello Prelude | BWV 1007--1012 (Cello Suites) |
 | Chaconne | BWV 1004/5 (Partita No. 2 in D minor) |
+| Goldberg Variations | BWV 988 |
 :::
 
 ## Instruments Reference
@@ -67,7 +78,7 @@ The two solo forms generate music for unaccompanied string instruments. They use
 | ID | Name | String | GM Program | Sound | Typical Forms |
 |----|------|--------|-----------|-------|---------------|
 | 0 | Organ | `"organ"` | 19 | Church Organ | All organ forms (0--6) |
-| 1 | Harpsichord | `"harpsichord"` | 6 | Harpsichord | Any form |
+| 1 | Harpsichord | `"harpsichord"` | 6 | Harpsichord | Goldberg Variations (9), any form |
 | 2 | Piano | `"piano"` | 0 | Acoustic Grand Piano | Any form |
 | 3 | Violin | `"violin"` | 40 | Violin | Chaconne (8) |
 | 4 | Cello | `"cello"` | 42 | Cello | Cello Prelude (7) |
@@ -81,26 +92,28 @@ While each form has a default instrument, you can override it with any instrumen
 
 | ID | Name | String | Effect |
 |----|------|--------|--------|
-| 0 | Balanced | `"balanced"` | Mix of steps and leaps, moderate rhythm |
-| 1 | Lyrical | `"lyrical"` | Predominantly stepwise, smooth contour |
-| 2 | Energetic | `"energetic"` | Wider intervals, rhythmic variety |
-| 3 | Dramatic | `"dramatic"` | Bold leaps, dotted rhythms, chromatic elements |
+| 0 | Severe | `"severe"` | Strict, intellectually rigorous (default) |
+| 1 | Playful | `"playful"` | Light, agile, rhythmically lively |
+| 2 | Noble | `"noble"` | Stately, broad, dignified |
+| 3 | Restless | `"restless"` | Driving, chromatic, dramatically charged |
 
 ::: info
-The character parameter affects the melodic profile of the fugue subject or primary thematic material. It has the most noticeable effect on fugal forms (Fugue, Prelude and Fugue, Toccata and Fugue, Fantasia and Fugue), where the subject defines the character of the entire piece.
+The character parameter affects the melodic profile of the fugue subject or primary thematic material. It has the most noticeable effect on fugal forms, where the subject defines the character of the entire piece. Two combinations are forbidden and throw: `chorale_prelude` rejects `playful`/`restless`, and `toccata_and_fugue` rejects `noble`.
 :::
 
 ## Scale Modes
 
-| ID | Name | String | Approximate Effect |
+`scale` multiplies the form's natural length. `targetBars` overrides it.
+
+| ID | Name | String | Approximate Length |
 |----|------|--------|--------------------|
-| 0 | Short | `"short"` | Compact — fewer variations/episodes |
-| 1 | Medium | `"medium"` | Standard length (default) |
-| 2 | Long | `"long"` | Extended — more development |
-| 3 | Full | `"full"` | Maximum — full formal structure |
+| 0 | Short | `"short"` | ~1x natural (default) |
+| 1 | Medium | `"medium"` | ~2x natural |
+| 2 | Long | `"long"` | ~3x natural |
+| 3 | Full | `"full"` | ~4x natural |
 
 ::: tip
-The actual output length depends on the form. A "short" passacaglia will still be longer than a "short" fugue because the passacaglia form requires a minimum number of variations to be musically coherent. Use `targetBars` for precise length control.
+The actual output length depends on each form's natural length (see the Forms Reference table above): the same `scale` produces different bar counts for different forms because each scales from its own natural length. Use `targetBars` for precise length control; values are clamped to `[form minimum, 128]`.
 :::
 
 ## Key Reference
@@ -128,19 +141,20 @@ All keys work with both `isMinor: false` (major) and `isMinor: true` (minor).
 
 ## Default Mapping
 
-Cross-reference of form defaults:
+Cross-reference of form defaults (voices and meter are fixed by the form; BPM defaults to 100 unless you set it):
 
-| Form | Instrument | Voices | BPM | Key |
-|------|-----------|--------|-----|-----|
-| Fugue | Organ (0) | 4 | 85 | Any |
-| Prelude and Fugue | Organ (0) | 4 | 90 | Any |
-| Trio Sonata | Organ (0) | 3 | 90 | Any |
-| Chorale Prelude | Organ (0) | 4 | 72 | Any |
-| Toccata and Fugue | Organ (0) | 4 | 100 | Any |
-| Passacaglia | Organ (0) | 4 | 76 | Any |
-| Fantasia and Fugue | Organ (0) | 4 | 88 | Any |
-| Cello Prelude | Cello (4) | 3 | 80 | Any |
-| Chaconne | Violin (3) | 3 | 76 | Any |
+| Form | Instrument | Voices | Meter | Natural Bars |
+|------|-----------|--------|-------|--------------|
+| Fugue | Organ (0) | 3 | 4/4 | 42 |
+| Prelude and Fugue | Organ (0) | 3 | 4/4 | 24 |
+| Trio Sonata | Organ (0) | 3 | 4/4 | 16 |
+| Chorale Prelude | Organ (0) | 2 | 4/4 | 16 |
+| Toccata and Fugue | Organ (0) | 3 | 4/4 | 32 |
+| Passacaglia | Organ (0) | 2 | 3/4 | 24 |
+| Fantasia and Fugue | Organ (0) | 3 | 4/4 | 32 |
+| Cello Prelude | Cello (4) | 1 | 4/4 | 8 |
+| Chaconne | Violin (3) | 2 | 3/4 | 16 |
+| Goldberg Variations | Harpsichord (1) | 3 | 4/4 | 20 |
 
 ## Programmatic Access
 
@@ -170,6 +184,7 @@ for (const form of forms) {
 // 6: Fantasia and Fugue
 // 7: Cello Prelude
 // 8: Chaconne
+// 9: Goldberg Variations
 
 // List all instruments
 const instruments = getInstruments()

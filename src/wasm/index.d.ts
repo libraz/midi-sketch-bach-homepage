@@ -15,8 +15,6 @@ export interface BachConfig {
     key?: number;
     /** True for minor mode, false for major. */
     isMinor?: boolean;
-    /** Number of voices (2-5). */
-    numVoices?: number;
     /** Tempo in BPM (40-200, 0 = default 100). */
     bpm?: number;
     /** Random seed (0 = random). */
@@ -50,6 +48,8 @@ export interface NoteEvent {
     start_tick: number;
     duration: number;
     voice: number;
+    /** Provenance tag describing how the note was generated. */
+    source?: string;
 }
 /** A track from the event data (JSON keys match C API snake_case). */
 export interface TrackData {

@@ -55,7 +55,7 @@ import { init, BachGenerator } from '@libraz/midi-sketch-bach'
 await init({ wasmPath: '/wasm/midisketch.wasm' })
 
 const generator = new BachGenerator()
-generator.generate({ form: 'invention', key: 0 })
+generator.generate({ form: 'fugue', key: 0 })
 
 const midi = generator.getMidi()
 // ダウンロードリンクを作成

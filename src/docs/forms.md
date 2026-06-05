@@ -1,11 +1,28 @@
 ---
 title: Forms
-description: Detailed descriptions of all 9 musical forms available in MIDI Sketch Bach.
+description: Detailed descriptions of all 10 musical forms available in MIDI Sketch Bach.
 ---
 
 # Forms
 
-MIDI Sketch Bach generates compositions in nine Baroque instrumental forms. Each form follows specific compositional rules and produces distinct musical structures.
+MIDI Sketch Bach generates compositions in ten Baroque instrumental forms. Each form follows specific compositional rules and produces distinct musical structures.
+
+::: info The form decides the voice count
+Each form fixes its own number of voices, meter, and natural length. There is no `numVoices` option — choose the form to choose the texture. The `scale` and `targetBars` options stretch the length; the maximum for every form is 128 bars. See [Option Relationships](/docs/option-relationships) for details.
+:::
+
+| Form | Voices | Meter | Natural Length | Default Instrument |
+|------|--------|-------|----------------|--------------------|
+| `fugue` | 3 | 4/4 | 42 bars | Organ |
+| `prelude_and_fugue` | 3 | 4/4 | 24 bars | Organ |
+| `trio_sonata` | 3 | 4/4 | 16 bars | Organ |
+| `chorale_prelude` | 2 | 4/4 | 16 bars | Organ |
+| `toccata_and_fugue` | 3 | 4/4 | 32 bars | Organ |
+| `passacaglia` | 2 | 3/4 | 24 bars | Organ |
+| `fantasia_and_fugue` | 3 | 4/4 | 32 bars | Organ |
+| `cello_prelude` | 1 | 4/4 | 8 bars | Cello |
+| `chaconne` | 2 | 3/4 | 16 bars | Violin |
+| `goldberg_variations` | 3 | 4/4 | 20 bars | Harpsichord |
 
 ## Organ System (Forms 0--6)
 
@@ -18,8 +35,9 @@ A pure contrapuntal fugue -- the cornerstone of Baroque polyphony.
 **Structure**: Opens with a single-voice subject statement, followed by the answer (typically at the fifth). Additional voices enter with the subject in turn (exposition). The middle section alternates episodes (free counterpoint) with subject entries in new keys. Culminates in stretto (overlapping entries) and a final statement in the home key.
 
 - **Default instrument**: Organ
-- **Default BPM**: 85
-- **Default voices**: 4
+- **Voices**: 3
+- **Meter**: 4/4
+- **Natural length**: 42 bars
 - **Character**: Intellectual, architecturally rigorous
 
 ::: info Bach's Fugues
@@ -31,8 +49,7 @@ generator.generate({
   form: 'fugue',
   key: 7,        // G
   isMinor: true,
-  numVoices: 4,
-  character: 1
+  character: 'playful'
 })
 ```
 
@@ -45,9 +62,10 @@ A flowing prelude paired with an elaborate fugue, following the model of Bach's 
 **Structure**: The prelude establishes the key through idiomatic keyboard figuration -- arpeggiated patterns, sequential passages, or motivic development. The fugue that follows is a complete contrapuntal work with exposition, episodes, and final entry.
 
 - **Default instrument**: Organ
-- **Default BPM**: 90
-- **Default voices**: 4
-- **Character**: Balanced, with a lyrical prelude and intellectual fugue
+- **Voices**: 3
+- **Meter**: 4/4
+- **Natural length**: 24 bars
+- **Character**: Balanced, with a flowing prelude and intellectual fugue
 
 ::: info Bach's Preludes and Fugues
 The pairing of prelude and fugue is one of Bach's signature forms, represented in both the Well-Tempered Clavier (BWV 846--893) and the great organ preludes and fugues (BWV 532, 541, 548).
@@ -55,10 +73,9 @@ The pairing of prelude and fugue is one of Bach's signature forms, represented i
 
 ```js
 generator.generate({
-  form: 'prelude-and-fugue',
+  form: 'prelude_and_fugue',
   key: 0,        // C
-  isMinor: false,
-  numVoices: 4
+  isMinor: false
 })
 ```
 
@@ -71,8 +88,9 @@ A three-voice texture modeled on Bach's organ trio sonatas, where two upper voic
 **Structure**: The two upper voices engage in imitative counterpoint, trading melodic ideas while maintaining independence. The bass voice (typically played on the organ pedals) provides a foundation with its own melodic character. Multiple movements may be generated depending on the scale setting.
 
 - **Default instrument**: Organ
-- **Default BPM**: 90
-- **Default voices**: 3
+- **Voices**: 3
+- **Meter**: 4/4
+- **Natural length**: 16 bars
 - **Character**: Conversational, with two "treble" voices in dialogue
 
 ::: info Bach's Trio Sonatas
@@ -81,7 +99,7 @@ Bach's six organ trio sonatas (BWV 525--530) are among the most demanding works 
 
 ```js
 generator.generate({
-  form: 'trio-sonata',
+  form: 'trio_sonata',
   key: 5,        // F
   isMinor: false,
   bpm: 90
@@ -97,9 +115,14 @@ A setting of a hymn melody (chorale) with contrapuntal accompaniment.
 **Structure**: A cantus firmus (the chorale melody) appears in one voice, typically the soprano, in long notes. The other voices weave around it with independent contrapuntal lines that embellish and harmonize the chorale. The result is a meditative, richly textured piece.
 
 - **Default instrument**: Organ
-- **Default BPM**: 72
-- **Default voices**: 4
-- **Character**: Devotional, meditative, richly layered
+- **Voices**: 2
+- **Meter**: 4/4
+- **Natural length**: 16 bars
+- **Character**: Devotional, meditative; cantus firmus plus one contrapuntal voice
+
+::: warning Character restriction
+`playful` and `restless` characters are rejected for the chorale prelude — generation throws. Use `severe` or `noble` for this devotional form.
+:::
 
 ::: info Bach's Chorale Preludes
 Bach composed over 150 chorale preludes throughout his career, from the Orgelbüchlein (BWV 599--644) to the "Leipzig" Chorales (BWV 651--668). The chorale prelude tradition was central to the Lutheran liturgy.
@@ -107,10 +130,10 @@ Bach composed over 150 chorale preludes throughout his career, from the Orgelbü
 
 ```js
 generator.generate({
-  form: 'chorale-prelude',
+  form: 'chorale_prelude',
   key: 9,        // A
   isMinor: false,
-  numVoices: 4,
+  character: 'noble',
   bpm: 66
 })
 ```
@@ -124,9 +147,14 @@ A dramatic two-part work combining a free-form toccata with a strict fugue.
 **Structure**: The toccata section opens with virtuosic passages, dramatic scales, and sustained chords. It transitions into a fully developed fugue with subject entries in all voices, episodes, and a concluding climax.
 
 - **Default instrument**: Organ
-- **Default BPM**: 100
-- **Default voices**: 4
+- **Voices**: 3
+- **Meter**: 4/4
+- **Natural length**: 32 bars
 - **Character**: Grand, dramatic, and virtuosic
+
+::: warning Character restriction
+The `noble` character is rejected for the toccata and fugue — generation throws. The form's virtuosic energy suits `severe`, `playful`, or `restless`.
+:::
 
 ::: info Bach's Toccatas and Fugues
 The Toccata and Fugue in D minor (BWV 565) is perhaps Bach's most famous organ work. The toccata (from Italian "toccare" — to touch) showcases the player's virtuosity with free-flowing passage work before the structured fugue begins.
@@ -134,10 +162,10 @@ The Toccata and Fugue in D minor (BWV 565) is perhaps Bach's most famous organ w
 
 ```js
 generator.generate({
-  form: 'toccata-and-fugue',
+  form: 'toccata_and_fugue',
   key: 2,        // D
   isMinor: true,
-  numVoices: 4,
+  character: 'restless',
   bpm: 80
 })
 ```
@@ -148,11 +176,12 @@ generator.generate({
 
 A variation form built over a repeating bass theme (ostinato).
 
-**Structure**: Opens with a bass theme statement, typically 4 or 8 bars long. Successive variations layer new melodic and rhythmic material over the repeating bass, growing in complexity. The texture thickens from a single voice to full polyphony. May conclude with a fugue based on the bass theme.
+**Structure**: Opens with a bass theme statement. Successive variations layer new melodic and rhythmic material over the repeating ground bass, growing in complexity and building toward a climax near the end. The ground bass is immutable across all variations.
 
 - **Default instrument**: Organ
-- **Default BPM**: 76
-- **Default voices**: 4
+- **Voices**: 2
+- **Meter**: 3/4
+- **Natural length**: 24 bars
 - **Character**: Building intensity, monumental
 
 ::: info Bach's Passacaglia
@@ -164,7 +193,6 @@ generator.generate({
   form: 'passacaglia',
   key: 0,        // C
   isMinor: true,
-  numVoices: 4,
   scale: 'long'
 })
 ```
@@ -178,8 +206,9 @@ A pairing of a free-form fantasia with a structured fugue.
 **Structure**: The fantasia section features improvisatory, rhapsodic writing — bold harmonic explorations, unexpected modulations, and dramatic gestures unconstrained by strict form. This leads into a fully developed fugue that provides contrapuntal rigor and formal closure.
 
 - **Default instrument**: Organ
-- **Default BPM**: 88
-- **Default voices**: 4
+- **Voices**: 3
+- **Meter**: 4/4
+- **Natural length**: 32 bars
 - **Character**: Imaginative fantasia, disciplined fugue
 
 ::: info Bach's Fantasias and Fugues
@@ -188,10 +217,9 @@ Bach's organ fantasias and fugues (BWV 537, 542, 561) combine the improvisatory 
 
 ```js
 generator.generate({
-  form: 'fantasia-and-fugue',
+  form: 'fantasia_and_fugue',
   key: 7,        // G
   isMinor: true,
-  numVoices: 4,
   bpm: 88
 })
 ```
@@ -206,11 +234,12 @@ Two forms for unaccompanied string instruments.
 
 A flowing prelude for solo cello, modeled on the opening movements of Bach's Cello Suites.
 
-**Structure**: Continuous, arpeggiated figuration that outlines harmonic progressions through a single melodic line. Multiple implied voices emerge from the cello's register shifts — bass notes, inner harmonies, and upper melodies interweave within a single instrument's capabilities.
+**Structure**: A single continuous line of arpeggiated figuration that outlines harmonic progressions. Implied voices emerge from register shifts — bass notes, inner harmonies, and upper melodies interweave within one melodic line.
 
 - **Default instrument**: Cello
-- **Default BPM**: 80
-- **Default voices**: 3
+- **Voices**: 1
+- **Meter**: 4/4
+- **Natural length**: 8 bars
 - **Character**: Flowing, harmonically rich, meditative
 
 ::: info Bach's Cello Suites
@@ -219,7 +248,7 @@ The six Suites for Unaccompanied Cello (BWV 1007--1012) are cornerstones of the 
 
 ```js
 generator.generate({
-  form: 'cello-prelude',
+  form: 'cello_prelude',
   key: 7,        // G
   isMinor: false,
   instrument: 'cello'
@@ -232,11 +261,12 @@ generator.generate({
 
 A monumental variation form for solo violin, inspired by the Chaconne from Bach's Partita No. 2 in D minor.
 
-**Structure**: Built over a repeating harmonic progression (typically 4 or 8 bars), the chaconne unfolds as a series of variations that explore every expressive possibility of the instrument. Multiple implied voices — chordal writing, arpeggiated passages, and single-line melodies — create a symphonic texture on a solo instrument.
+**Structure**: Built over a repeating ground-bass harmonic cycle in 3/4, the chaconne unfolds as a series of variations that explore every expressive possibility of the instrument. The two-voice texture pairs the ground bass with an increasingly elaborate upper line.
 
 - **Default instrument**: Violin
-- **Default BPM**: 76
-- **Default voices**: 3
+- **Voices**: 2
+- **Meter**: 3/4
+- **Natural length**: 16 bars
 - **Character**: Epic, intensely expressive, architecturally grand
 
 ::: info Bach's Chaconne
@@ -254,6 +284,35 @@ generator.generate({
 
 ---
 
+## Variation System (Form 9)
+
+### 9. Goldberg Variations
+
+A theme-and-variations cycle modeled on Bach's Goldberg Variations (BWV 988), built over an immutable bass line.
+
+**Structure**: An opening aria states the theme, followed by thirty variations over the same bass, including canons at progressively widening intervals. The bass line is fixed across the whole cycle while the upper voices are reinvented variation by variation.
+
+- **Default instrument**: Harpsichord
+- **Voices**: 3
+- **Meter**: 4/4
+- **Natural length**: 20 bars
+- **Character**: Inventive, encyclopedic, architecturally unified
+
+::: info Bach's Goldberg Variations
+The Goldberg Variations (BWV 988) are a pinnacle of the variation form: an aria and thirty variations, with every third variation a canon at an interval one step wider than the last, all anchored to the aria's bass.
+:::
+
+```js
+generator.generate({
+  form: 'goldberg_variations',
+  key: 7,        // G
+  isMinor: false,
+  instrument: 'harpsichord'
+})
+```
+
+---
+
 ## Form Selection by Use Case
 
 | Use Case | Recommended Forms |
@@ -265,8 +324,8 @@ generator.generate({
 | Meditative/devotional | Chorale Prelude |
 | Variation techniques | Passacaglia, Chaconne |
 | Chamber ensemble texture | Trio Sonata |
-| Quick generation | Fugue (compact with 3 voices) |
-| Complex polyphony | Passacaglia, Fugue (4 voices) |
+| Theme and variations | Goldberg Variations |
+| Complex polyphony | Fugue, Fantasia and Fugue |
 | Dramatic, virtuosic work | Toccata and Fugue, Fantasia and Fugue |
 
 ::: tip

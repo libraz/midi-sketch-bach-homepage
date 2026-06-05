@@ -52,7 +52,7 @@ generator.generate({
   form: 'fugue',
   key: 2,
   isMinor: true,
-  numVoices: 4,
+  character: 'severe',
   bpm: 80,
   seed: 42
 })
@@ -61,6 +61,10 @@ generator.generate({
 **Parameters**: See [BachConfig](#bachconfig) below.
 
 **Returns**: `void`
+
+::: warning Strict validation
+Invalid `form`, `character`, `instrument`, or `scale` strings — and out-of-range `bpm` (anything other than 0 or 40--200) — now throw an error instead of silently falling back to a default. Forbidden character/form combinations (see [Option Relationships](/docs/option-relationships#character-and-form)) also throw.
+:::
 
 ### `getMidi()`
 
@@ -79,12 +83,16 @@ Returns structured event data with metadata and individual note events.
 
 ```js
 const events = generator.getEvents()
-console.log(events.form)        // "Fugue"
-console.log(events.key)         // "D minor"
+console.log(events.form)        // "fugue"
+console.log(events.key)         // pitch class used (0 = C)
 console.log(events.bpm)         // 80
-console.log(events.total_bars)  // 32
+console.log(events.total_bars)  // 42
 console.log(events.tracks)      // Array of TrackData
 ```
+
+::: info Pitches are generated in C
+The engine composes internally in C; the requested `key` is applied when the MIDI file is written. The events JSON therefore reports pitches in C, while the `.mid` file from `getMidi()` is transposed to your chosen key.
+:::
 
 **Returns**: [EventData](#eventdata)
 
@@ -94,7 +102,13 @@ Returns information about the generator and its current state.
 
 ```js
 const info = generator.getInfo()
+console.log(info.seedUsed)    // resolved seed (non-zero, even when seed: 0 was requested)
+console.log(info.totalBars)   // resolved bar count
+console.log(info.bpm)         // actual BPM used
+console.log(info.trackCount)  // number of tracks
 ```
+
+When you pass `seed: 0` (random), the actual seed chosen for this run is reported as `getInfo().seedUsed`. Reuse that value to reproduce the same output.
 
 **Returns**: `BachInfo`
 
@@ -118,16 +132,19 @@ Configuration object passed to `generate()`. All fields are optional.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `form` | `number \| string` | `0` | Musical form (0--8 or name). See [Forms](/docs/forms) and [Presets Reference](/docs/presets). |
+| `form` | `number \| string` | `"fugue"` | Musical form (0--9 or name). See [Forms](/docs/forms) and [Presets Reference](/docs/presets). |
 | `key` | `number` | `0` | Key (0--11 pitch class: 0=C, 1=C#, 2=D, ... 11=B) |
 | `isMinor` | `boolean` | `false` | Minor key when `true`, major when `false` |
-| `numVoices` | `number` | Form default | Number of voices (2--5) |
-| `bpm` | `number` | `100` | Tempo in BPM (40--200, 0 uses default of 100) |
-| `seed` | `number` | `0` | Random seed (0 = random) |
-| `character` | `number \| string` | `0` | Subject character type (0--3) |
-| `instrument` | `number \| string` | Form default | Instrument preset (0--5) |
-| `scale` | `number \| string` | `1` | Duration scale (0=short, 1=medium, 2=long, 3=full) |
-| `targetBars` | `number` | -- | Target bar count (overrides scale) |
+| `bpm` | `number` | `100` | Tempo in BPM. `0` uses the default of 100; any other value must be in 40--200 (out of range throws). |
+| `seed` | `number` | `0` | Random seed. `0` picks a random non-zero seed, reported via `getInfo().seedUsed`. |
+| `character` | `string \| number` | `"severe"` | Subject character (`"severe"`, `"playful"`, `"noble"`, `"restless"`). Invalid value throws. |
+| `instrument` | `string \| number` | Form default | Instrument (`"organ"`, `"harpsichord"`, `"piano"`, `"violin"`, `"cello"`, `"guitar"`). Invalid value throws. |
+| `scale` | `string \| number` | `"short"` | Length multiplier of the form's natural length: `"short"` (~1x), `"medium"` (~2x), `"long"` (~3x), `"full"` (~4x). Invalid value throws. |
+| `targetBars` | `number` | -- | Explicit bar count. When `> 0` it overrides `scale`; the value is snapped to the form's granularity and clamped to `[min, 128]`. |
+
+::: warning `numVoices` was removed
+The voice count is now decided by the `form` — see the [Forms](/docs/forms) table. Passing `num_voices`/`numVoices` is accepted and ignored for backward compatibility; it is never an error and has no effect.
+:::
 
 ### Form Values
 
@@ -136,14 +153,15 @@ Forms can be specified by number or name string:
 | Number | String |
 |--------|--------|
 | `0` | `"fugue"` |
-| `1` | `"prelude-and-fugue"` |
-| `2` | `"trio-sonata"` |
-| `3` | `"chorale-prelude"` |
-| `4` | `"toccata-and-fugue"` |
+| `1` | `"prelude_and_fugue"` |
+| `2` | `"trio_sonata"` |
+| `3` | `"chorale_prelude"` |
+| `4` | `"toccata_and_fugue"` |
 | `5` | `"passacaglia"` |
-| `6` | `"fantasia-and-fugue"` |
-| `7` | `"cello-prelude"` |
+| `6` | `"fantasia_and_fugue"` |
+| `7` | `"cello_prelude"` |
 | `8` | `"chaconne"` |
+| `9` | `"goldberg_variations"` |
 
 ### Instrument Values
 
@@ -158,21 +176,23 @@ Forms can be specified by number or name string:
 
 ### Character Values
 
-| Number | Description |
-|--------|-------------|
-| `0` | Default balanced |
-| `1` | Lyrical, stepwise |
-| `2` | Energetic, wider intervals |
-| `3` | Dramatic, rhythmically varied |
+| Number | String | Description |
+|--------|--------|-------------|
+| `0` | `"severe"` | Strict, intellectually rigorous (default) |
+| `1` | `"playful"` | Light, agile, rhythmically lively |
+| `2` | `"noble"` | Stately, broad, dignified |
+| `3` | `"restless"` | Driving, chromatic, dramatically charged |
 
 ### Scale Values
 
-| Number | String | Description |
-|--------|--------|-------------|
-| `0` | `"short"` | Compact |
-| `1` | `"medium"` | Standard (default) |
-| `2` | `"long"` | Extended |
-| `3` | `"full"` | Maximum length |
+`scale` multiplies the form's natural length (see [Forms](/docs/forms)). `targetBars` overrides it.
+
+| Number | String | Approximate Length |
+|--------|--------|--------------------|
+| `0` | `"short"` | ~1x natural (default) |
+| `1` | `"medium"` | ~2x natural |
+| `2` | `"long"` | ~3x natural |
+| `3` | `"full"` | ~4x natural |
 
 ---
 
@@ -182,10 +202,10 @@ Forms can be specified by number or name string:
 
 ```ts
 interface EventData {
-  form: string          // Form name (e.g., "Fugue")
-  key: string           // Key description (e.g., "D minor")
+  form: string          // Form name (e.g., "fugue")
+  key: number           // Pitch class (events JSON stays in C)
   bpm: number           // Tempo
-  seed: number          // Seed used for generation
+  seed: number          // Resolved seed used for generation
   total_ticks: number   // Total duration in MIDI ticks
   total_bars: number    // Total bar count
   description: string   // Human-readable description
@@ -209,13 +229,21 @@ interface TrackData {
 
 ```ts
 interface NoteEvent {
-  pitch: number         // MIDI note number (0-127)
+  pitch: number         // MIDI note number (0-127), generated in C
   velocity: number      // Note velocity (0-127)
   start_tick: number    // Start time in MIDI ticks
   duration: number      // Duration in MIDI ticks
   voice: number         // Voice index
+  source: string        // Provenance: "material" | "compose" | "ornament"
 }
 ```
+
+::: info Note provenance (`source`)
+Every note carries a `source` tag recording how it was produced:
+- `"material"` — fixed material assigned by the form (subjects, ground basses, cantus firmus).
+- `"compose"` — selected by the candidate search against the harmonic plan.
+- `"ornament"` — added by the deterministic ornament pass (trills, mordents, Nachschlag).
+:::
 
 ---
 
@@ -293,7 +321,7 @@ generator.generate({
   form: 'fugue',
   key: 2,
   isMinor: true,
-  numVoices: 4,
+  character: 'severe',
   bpm: 76,
   seed: 12345
 })

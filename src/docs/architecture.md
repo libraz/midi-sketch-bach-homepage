@@ -1,6 +1,6 @@
 ---
 title: Architecture
-description: Technical architecture of MIDI Sketch Bach - generation pipeline, voice system, and WASM integration.
+description: Technical architecture of MIDI Sketch Bach - the composer engine, its pipeline, and WASM integration.
 ---
 
 # Architecture
@@ -8,10 +8,10 @@ description: Technical architecture of MIDI Sketch Bach - generation pipeline, v
 ## Overview
 
 ::: info What is MIDI Sketch Bach?
-MIDI Sketch Bach is an algorithmic composition engine that generates Baroque-style instrumental MIDI using rule-based counterpoint, not machine learning. Every note is determined by music theory constraints and deterministic algorithms, producing editable MIDI data you can import into any DAW.
+MIDI Sketch Bach is an algorithmic composition engine that generates Baroque-style instrumental MIDI using rule-based composition, not machine learning. Every note is determined by a harmonic plan and counterpoint constraints, producing editable MIDI you can import into any DAW.
 :::
 
-MIDI Sketch Bach compiles a core composition engine into WebAssembly, providing a high-level JavaScript API on top:
+A C++ composer engine is compiled to WebAssembly, with a JavaScript API on top:
 
 ```mermaid
 graph TD
@@ -21,86 +21,52 @@ graph TD
     subgraph EM["Emscripten Bridge"]
         B["JS ↔ WASM bindings"]
     end
-    subgraph CORE["Core Composition Engine — C++ → WASM"]
-        C["Organ System<br>(Forms 0–6)"]
-        D["Solo Instrument<br>(Forms 7–8)"]
-        E["Counterpoint / Voice Leading<br>MIDI Encoding"]
+    subgraph CORE["Composer Engine — C++ → WASM"]
+        C["Form Director"]
+        D["Candidate Search"]
+        E["Rule Validator"]
+        F["Renderer + Ornament/Expression"]
+        G["MIDI Writer"]
+        C --> D --> E --> F --> G
     end
     JS --> EM --> CORE
 ```
 
-## Two Composition Systems
+## The Composer Engine
 
-### Organ System (Forms 0--6)
+A single composer subsystem handles every form. Rather than separate generators per genre, the engine expresses each form as a **layout of voice intents** over a harmonic plan, then fills, validates, and renders that layout. The form decides the texture (voice count, meter, natural length); there is no voice-count option.
 
-The Organ System handles the large-scale organ works -- seven forms spanning the major genres of Bach's organ repertoire:
+The pipeline is:
 
-- **Fugue** (0) -- standalone fugue with exposition, development, and stretto
-- **Prelude and Fugue** (1) -- flowing prelude leading into an elaborate fugue
-- **Trio Sonata** (2) -- three-voice texture (two upper voices + pedal bass)
-- **Chorale Prelude** (3) -- cantus firmus treatment with independent accompaniment
-- **Toccata and Fugue** (4) -- multi-section piece with free toccata and strict fugue
-- **Passacaglia** (5) -- continuous variation form over an ostinato bass
-- **Fantasia and Fugue** (6) -- free-form fantasia paired with a structured fugue
+1. **Compose Request** — resolve and validate the config; resolve the seed; fix voice count / meter / length from the form.
+2. **Form Director** — assign per-form voice intents (subjects, grounds, cantus firmus, figuration, variations) to bar spans.
+3. **Candidate Search** — per-beat, chord-tone-anchored note selection against the harmonic plan.
+4. **Rule Validator** — counterpoint and structure checks, fail-fast.
+5. **Renderer** — voices to tracks.
+6. **Ornament & Expression** — opt-in deterministic post-passes.
+7. **MIDI Writer** — key transposition and Standard MIDI File output.
 
-These forms typically use 3--4 voices and default to organ registration.
+See the [Generation Pipeline](/docs/generation-pipeline) for a step-by-step breakdown.
 
-### Solo Instrument System (Forms 7--8)
+## Design-Value Arc
 
-The Solo Instrument System handles works for unaccompanied string instruments:
+Structure follows a fixed design arc — **establish → develop → climax (at ~80% of the span) → resolve** — that controls density, register, and velocity tiers. The arc is a property of the form, not something searched per seed, which keeps output musically shaped and reproducible.
 
-- **Cello Prelude** (7) -- flowing prelude for solo cello, modeled on Bach's Cello Suites
-- **Chaconne** (8) -- monumental variation form for solo violin, inspired by the Partita No. 2 Chaconne
+## Form Families
 
-These forms use 3 voices and default to cello or violin.
+The form director handles several layout families:
 
-## Generation Pipeline
+- **Fugal** (`fugue`, `prelude_and_fugue`, `toccata_and_fugue`, `fantasia_and_fugue`) — subject/answer entries with episodes.
+- **Ground-bass variation** (`passacaglia`, `chaconne`, `goldberg_variations`) — an immutable bass with successive variation cycles; `goldberg_variations` builds an aria plus thirty variations including canons at widening intervals, and `passacaglia`/`chaconne` run their cycles in 3/4.
+- **Cantus firmus** (`chorale_prelude`) — a fixed chorale line plus a contrapuntal voice.
+- **Linear / figural** (`trio_sonata`, `cello_prelude`) — interacting or continuous figuration.
 
-When you call `generator.generate(config)`, a six-step pipeline executes. For a detailed breakdown of each step, see the [Generation Pipeline](/docs/generation-pipeline) page.
+## Determinism
 
-```mermaid
-graph TD
-    A["BachConfig"] --> B
-    B["1. Configuration Resolution"] --> C
-    C["2. Subject / Theme Generation"] --> D
-    D["3. Formal Structure"] --> E
-    E["4. Voice Generation"] --> F
-    F["5. Counterpoint Rules"] --> G
-    G["6. MIDI Encoding"]
-```
-
-1. **Configuration Resolution** -- Resolve all options, apply form defaults for unspecified fields
-2. **Subject/Theme Generation** -- Generate primary melodic material based on key, mode, and character
-3. **Formal Structure** -- Build the macro-level structure (exposition, episodes, variations, etc.)
-4. **Voice Generation** -- Generate each voice independently within its register
-5. **Counterpoint Rules** -- Validate and adjust interval relationships between voices
-6. **MIDI Encoding** -- Map to Standard MIDI File format
-
-::: tip
-See [Generation Pipeline](/docs/generation-pipeline) for detailed explanations of each step, including how different form families handle structure differently.
-:::
-
-## Voice Architecture
-
-Each voice in a MIDI Sketch Bach composition operates as an independent melodic line, following Baroque conventions for voice independence and voice leading. For a deep dive, see the [Voice Architecture](/docs/voice-architecture) page.
-
-Key principles:
-
-- **Registral separation** -- voices have distinct ranges that minimize overlap
-- **Rhythmic independence** -- different rhythmic patterns maintain voice identity
-- **Stepwise motion preferred** -- voices move by step more often than by leap
-- **Leap resolution** -- large leaps are followed by stepwise motion in the opposite direction
-- **Cadential patterns** -- standard formulas close phrases and sections
-
-::: tip
-See [Counterpoint & Voice Leading](/docs/counterpoint) for the music theory rules governing how voices interact.
-:::
+The engine is fully deterministic: the same config and seed produce byte-identical output. Composition runs internally in C; the requested key is applied only by the MIDI writer, so the events JSON always reports pitches in C while the `.mid` file is transposed.
 
 ## WASM Integration
 
-The composition engine is compiled to WebAssembly for portable, high-performance execution:
-
-- **Initialization**: `init()` loads and instantiates the WASM module
-- **Memory management**: `BachGenerator` allocates WASM memory; `destroy()` frees it
-- **Data transfer**: MIDI output is copied from WASM memory to a JavaScript `Uint8Array`
-- **Event data**: Structured event data is serialized from WASM and parsed in JavaScript
+- **Initialization**: `init()` loads and instantiates the WASM module.
+- **Memory management**: `BachGenerator` allocates WASM memory; `destroy()` frees it.
+- **Data transfer**: MIDI output is copied from WASM memory to a JavaScript `Uint8Array`; event data is serialized from WASM and parsed in JavaScript.

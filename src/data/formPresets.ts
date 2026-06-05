@@ -11,9 +11,6 @@ export interface FormPreset {
   category: 'organ' | 'solo' | 'keyboard'
   defaultInstrument: string
   defaultBpm: number
-  defaultVoices: number
-  minVoices: number
-  maxVoices: number
 }
 
 export const FORM_PRESETS: FormPreset[] = [
@@ -27,9 +24,6 @@ export const FORM_PRESETS: FormPreset[] = [
     category: 'organ',
     defaultInstrument: 'organ',
     defaultBpm: 85,
-    defaultVoices: 4,
-    minVoices: 2,
-    maxVoices: 5,
   },
   {
     id: 1,
@@ -40,9 +34,6 @@ export const FORM_PRESETS: FormPreset[] = [
     category: 'organ',
     defaultInstrument: 'organ',
     defaultBpm: 90,
-    defaultVoices: 4,
-    minVoices: 2,
-    maxVoices: 5,
   },
   {
     id: 2,
@@ -53,9 +44,6 @@ export const FORM_PRESETS: FormPreset[] = [
     category: 'organ',
     defaultInstrument: 'organ',
     defaultBpm: 90,
-    defaultVoices: 3,
-    minVoices: 3,
-    maxVoices: 3,
   },
   {
     id: 3,
@@ -66,9 +54,6 @@ export const FORM_PRESETS: FormPreset[] = [
     category: 'organ',
     defaultInstrument: 'organ',
     defaultBpm: 72,
-    defaultVoices: 4,
-    minVoices: 3,
-    maxVoices: 5,
   },
   {
     id: 4,
@@ -79,9 +64,6 @@ export const FORM_PRESETS: FormPreset[] = [
     category: 'organ',
     defaultInstrument: 'organ',
     defaultBpm: 100,
-    defaultVoices: 4,
-    minVoices: 3,
-    maxVoices: 5,
   },
   {
     id: 5,
@@ -92,9 +74,6 @@ export const FORM_PRESETS: FormPreset[] = [
     category: 'organ',
     defaultInstrument: 'organ',
     defaultBpm: 76,
-    defaultVoices: 4,
-    minVoices: 3,
-    maxVoices: 5,
   },
   {
     id: 6,
@@ -105,9 +84,6 @@ export const FORM_PRESETS: FormPreset[] = [
     category: 'organ',
     defaultInstrument: 'organ',
     defaultBpm: 88,
-    defaultVoices: 4,
-    minVoices: 3,
-    maxVoices: 5,
   },
   // ── Solo forms ───────────────────────────────────────────────────────
   {
@@ -119,9 +95,6 @@ export const FORM_PRESETS: FormPreset[] = [
     category: 'solo',
     defaultInstrument: 'cello',
     defaultBpm: 80,
-    defaultVoices: 3,
-    minVoices: 2,
-    maxVoices: 3,
   },
   {
     id: 8,
@@ -132,9 +105,6 @@ export const FORM_PRESETS: FormPreset[] = [
     category: 'solo',
     defaultInstrument: 'violin',
     defaultBpm: 76,
-    defaultVoices: 3,
-    minVoices: 2,
-    maxVoices: 4,
   },
   // ── Keyboard forms ──────────────────────────────────────────────────────
   {
@@ -146,9 +116,6 @@ export const FORM_PRESETS: FormPreset[] = [
     category: 'keyboard',
     defaultInstrument: 'harpsichord',
     defaultBpm: 60,
-    defaultVoices: 2,
-    minVoices: 2,
-    maxVoices: 4,
   },
 ]
 

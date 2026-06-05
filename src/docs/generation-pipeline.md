@@ -1,203 +1,77 @@
 ---
 title: Generation Pipeline
-description: Deep dive into MIDI Sketch Bach's six-step composition pipeline - from configuration to MIDI output.
+description: How the composer engine turns a config into a Bach-style composition - form director, candidate search, validator, renderer, and post passes.
 ---
 
 # Generation Pipeline
 
-When you call `generator.generate(config)`, the engine executes a six-step pipeline that transforms a configuration object into a complete Bach-style composition.
+When you call `generator.generate(config)`, the composer engine runs a fixed pipeline that turns the request into a complete, deterministic composition.
 
 ```mermaid
 graph TD
-    A["BachConfig"] --> B["1. Configuration<br>Resolution"]
-    B --> C["2. Subject/Theme<br>Generation"]
-    C --> D["3. Formal<br>Structure"]
-    D --> E["4. Voice<br>Generation"]
-    E --> F["5. Counterpoint<br>Rules"]
-    F --> G["6. MIDI<br>Encoding"]
-    G --> H["Standard MIDI File<br>+ Event Data"]
+    A["BachConfig"] --> B["1. Compose Request<br>(resolve & validate)"]
+    B --> C["2. Form Director<br>(per-form layout)"]
+    C --> D["3. Candidate Search<br>(chord-tone selection)"]
+    D --> E["4. Rule Validator<br>(fail-fast)"]
+    E --> F["5. Renderer<br>(tracks)"]
+    F --> G["6. Ornament & Expression<br>(opt-in passes)"]
+    G --> H["7. MIDI Writer<br>(key transposition)"]
+    H --> I["Standard MIDI File<br>+ Event Data"]
 ```
 
-## Step 1: Configuration Resolution
+The whole pipeline is deterministic: the same config and seed always yield byte-identical output.
 
-The engine resolves all configuration options, filling in defaults for unspecified fields. Each form defines a default instrument, voice count, and tempo.
+## Step 1: Compose Request
 
-```mermaid
-graph LR
-    A["User Config"] --> B["Merge with<br>Form Defaults"]
-    B --> C["Validate<br>Ranges"]
-    C --> D["Initialize<br>RNG with Seed"]
-    D --> E["Resolved<br>Config"]
-```
+The raw config is resolved into a compose request. Defaults are filled in, the seed is resolved (a `seed` of `0` becomes a concrete non-zero value, reported via `getInfo().seedUsed`), and the request is validated.
 
-::: info How Defaults Cascade
-When you specify `form: 'fugue'` without other options, the engine applies: instrument = organ, voices = 4, BPM = 85. Any field you explicitly set overrides the form default. See [Option Relationships](/docs/option-relationships) for the complete dependency graph.
-:::
+Validation is strict: unknown `form`/`character`/`instrument`/`scale` values and out-of-range `bpm` are rejected, as are forbidden character/form pairs (`chorale_prelude` rejects `playful`/`restless`; `toccata_and_fugue` rejects `noble`). The `form` fixes the voice count, meter, and natural length; `scale`/`targetBars` resolve the final bar count (snapped to the form's granularity and clamped to `[min, 128]`).
 
-| Field | Resolution Order |
-|-------|-----------------|
-| `form` | Required (default: 0 = Fugue) |
-| `instrument` | User value → form default |
-| `numVoices` | User value → form default |
-| `bpm` | User value → form default (0 uses form default) |
-| `key` | User value → 0 (C) |
-| `isMinor` | User value → false (major) |
-| `seed` | User value → 0 (random) |
-| `scale` | User value → 1 (medium) |
-| `targetBars` | User value → determined by scale |
-| `character` | User value → 0 (balanced) |
+## Step 2: Form Director
 
-## Step 2: Subject/Theme Generation
-
-The engine generates the primary melodic material that will serve as the compositional seed for the entire piece. The approach varies by form family.
+The form director lays out the piece. For the chosen form it assigns **voice intents** to bar spans — subjects and answers, ground basses, cantus firmus, figuration, variation material — across the resolved length.
 
 ```mermaid
 graph TD
-    A["Form Type"] --> B{{"Form Family?"}}
-    B -->|"Fugal<br>(0,1,4,6)"| C["Generate<br>Fugue Subject"]
-    B -->|"Cantus Firmus<br>(3)"| D["Generate<br>Chorale Melody"]
-    B -->|"Ostinato<br>(5,8)"| E["Generate<br>Bass Theme"]
-    B -->|"Free<br>(2,7)"| F["Generate<br>Motivic Material"]
+    A["Form Type"] --> B{{"Layout"}}
+    B -->|"Fugal"| C["Subject / answer entries<br>+ episodes"]
+    B -->|"Ground-bass"| D["Immutable bass<br>+ variation cycles"]
+    B -->|"Cantus firmus"| E["Fixed chorale line<br>+ contrapuntal voice"]
+    B -->|"Linear / figural"| F["Continuous figuration"]
 ```
 
-::: info What is a Fugue Subject?
-In Baroque music, the fugue subject (Latin: *subjectum*) is a short melodic theme — typically 1 to 4 bars — that serves as the entire fugue's foundation. Every voice will eventually state this subject, and all episodes and development sections derive from it. The quality of the subject largely determines the quality of the entire fugue.
-:::
+The layout follows a **design-value arc** — establish, develop, climax at roughly 80% of the span, then resolve — that drives the density, register, and velocity tiers used downstream. The arc is fixed by the form, not searched.
 
-### Character Influence
+## Step 3: Candidate Search
 
-The `character` parameter shapes the melodic profile of the generated theme:
+Against a harmonic plan (chords, modulation, cadences), the candidate search selects notes for each non-fixed voice. Selection is **per-beat and chord-tone anchored**: at each beat the search prefers pitches that are consonant with the harmony and with the other voices, falling back through ranked alternatives when the first choice violates a constraint. Material assigned by the form director (subjects, grounds, cantus firmus) is fixed and is not re-selected here.
 
-| Character | Effect on Subject |
-|-----------|-------------------|
-| 0 (Balanced) | Mix of steps and leaps, moderate rhythm |
-| 1 (Lyrical) | Predominantly stepwise motion, smooth contour |
-| 2 (Energetic) | Wider intervals, more rhythmic variety |
-| 3 (Dramatic) | Bold leaps, dotted rhythms, chromatic elements |
+## Step 4: Rule Validator
 
-## Step 3: Formal Structure
+The validator checks the assembled voices against counterpoint and structure rules and fails fast on a violation. It reports failures with rule identifiers so the responsible span can be located. See [Counterpoint & Voice Leading](/docs/counterpoint) for the rule set.
 
-The engine plans the macro-level structure of the piece. This is where different form families diverge most significantly.
+## Step 5: Renderer
 
-### Fugal Forms (Fugue, Prelude and Fugue, Toccata and Fugue, Fantasia and Fugue)
+The validated voices are rendered into tracks — one track per voice — with channels, the instrument's General MIDI program, and note timings.
 
-```mermaid
-graph LR
-    A["Exposition"] --> B["Episode 1"]
-    B --> C["Middle Entries"]
-    C --> D["Episode 2"]
-    D --> E["Stretto"]
-    E --> F["Final Entry"]
-```
+## Step 6: Ornament & Expression (opt-in)
 
-The fugue structure follows a well-defined plan:
+Deterministic post-passes decorate the rendered tracks:
 
-- **Exposition**: Each voice enters in turn with the subject. The first answer is typically at the fifth (dominant).
-- **Episodes**: Free counterpoint that modulates to related keys, often derived from the subject.
-- **Middle entries**: The subject appears in new keys (relative major/minor, subdominant, etc.).
-- **Stretto**: Voices enter with the subject in increasingly close overlap, building tension.
-- **Final entry**: The subject returns in the home key for a conclusive statement.
+- **Ornaments** — trills, mordents, and Nachschlag, with density depending on character and instrument. Ground-bass and cantus-firmus lines are never ornamented.
+- **Expression** — organ registration as a CC#7/#11 curve following the form's energy arc, and closing ritardando tempo events.
 
-For compound forms like Toccata and Fugue or Fantasia and Fugue, a free section precedes the fugue:
+Notes added by these passes carry the `source: "ornament"` provenance tag (versus `"material"` and `"compose"`).
 
-```mermaid
-graph LR
-    A["Free Section<br>(Toccata/Fantasia)"] --> B["Transition"] --> C["Complete Fugue"]
-```
+## Step 7: MIDI Writer
 
-### Variation Forms (Passacaglia, Chaconne)
-
-```mermaid
-graph LR
-    A["Bass Theme<br>Statement"] --> B["Variation 1"]
-    B --> C["Variation 2"]
-    C --> D["..."]
-    D --> E["Variation N"]
-    E --> F["Climax /<br>Fugue"]
-```
-
-- The bass theme (passacaglia) or harmonic progression (chaconne) repeats throughout
-- Each variation adds new melodic and rhythmic material
-- Texture and complexity build progressively
-- The `scale` parameter controls the number of variations
-
-### Cantus Firmus Forms (Chorale Prelude)
-
-```mermaid
-graph LR
-    A["Chorale Melody<br>in Soprano"] --> B["Contrapuntal<br>Accompaniment"]
-    B --> C["Phrase-by-Phrase<br>Treatment"]
-    C --> D["Cadential<br>Closure"]
-```
-
-- The chorale melody appears in long notes in one voice (typically soprano)
-- Other voices weave independent contrapuntal lines around it
-- Each phrase of the chorale is treated as a unit
-
-### Trio Sonata / Cello Prelude
-
-These forms follow their own structural conventions — the trio sonata with two interacting upper voices over a bass, and the cello prelude with continuous arpeggiated figuration.
-
-::: tip
-The `scale` parameter controls how many sections or variations are generated. Use `scale: 'short'` for compact pieces or `scale: 'full'` for maximum development.
-:::
-
-## Step 4: Voice Generation
-
-Each voice is generated independently within its assigned register. For a detailed breakdown of voice roles and ranges, see [Voice Architecture](/docs/voice-architecture).
-
-Key aspects of voice generation:
-
-- **Register assignment**: Each voice is assigned a pitch range based on its role (soprano, alto, tenor, bass) and the instrument
-- **Melodic contour**: Voices follow natural melodic shapes — arch contours, descending lines, sequence patterns
-- **Rhythmic identity**: Each voice maintains its own rhythmic character to ensure independence
-- **Motivic development**: Thematic material from Step 2 is developed differently in each voice
-
-## Step 5: Counterpoint Rules
-
-The counterpoint module validates and adjusts the voice interactions. For the complete rule set, see [Counterpoint & Voice Leading](/docs/counterpoint).
-
-```mermaid
-graph TD
-    A["Raw Voice<br>Output"] --> B["Check Parallel<br>5ths/8ths"]
-    B --> C["Validate<br>Dissonance Treatment"]
-    C --> D["Apply Cadential<br>Formulas"]
-    D --> E["Check Voice<br>Crossing"]
-    E --> F["Verify<br>Interval Usage"]
-    F --> G["Refined<br>Voice Output"]
-```
-
-Key rules applied:
-
-- **Parallel motion**: No parallel fifths or octaves between any pair of voices
-- **Dissonance treatment**: All dissonances must be properly prepared and resolved (suspensions, passing tones, neighbor tones)
-- **Cadential formulas**: Standard cadences close phrases — authentic (V→I), half (→V), deceptive (V→vi)
-- **Voice crossing**: Voices should not cross into another voice's register without musical justification
-- **Leap resolution**: Large intervals are followed by stepwise motion in the opposite direction
-
-## Step 6: MIDI Encoding
-
-The final step maps the internal representation to Standard MIDI:
-
-| Internal Concept | MIDI Representation |
-|-----------------|---------------------|
-| Voice | MIDI Track |
-| Instrument preset | General MIDI Program Change |
-| Tempo | MIDI Tempo meta-event |
-| Key | Key Signature meta-event |
-| Note | Note On / Note Off events |
-| Bar structure | Time Signature meta-event |
-
-- Each voice becomes a separate MIDI track (Type 1 MIDI file)
-- Instrument presets map to General MIDI program numbers (e.g., organ = program 19, harpsichord = program 6)
-- The output is a valid Standard MIDI File that can be opened in any DAW
+The internal representation is composed entirely in C. The MIDI writer is the **only** place where the requested `key` is applied — pitches are transposed on the way out, time signatures are written (3/4 for passacaglia and chaconne, 4/4 otherwise), and the result is a Type 1 Standard MIDI File.
 
 ```js
-// Access the output
-const midi = generator.getMidi()       // Uint8Array (MIDI file)
-const events = generator.getEvents()   // Structured event data
+const midi = generator.getMidi()       // Uint8Array (transposed to your key)
+const events = generator.getEvents()   // Event data (pitches stay in C)
 ```
 
 ::: tip
-The structured event data from `getEvents()` provides programmatic access to every note, track, and metadata field. See the [JavaScript API](/docs/api-js#eventdata) for the complete type definitions.
+The events JSON from `getEvents()` reports pitches in C and tags every note with its `source`. See the [JavaScript API](/docs/api-js#eventdata) for the full type definitions.
 :::
