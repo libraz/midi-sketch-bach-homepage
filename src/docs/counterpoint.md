@@ -1,217 +1,77 @@
 ---
-title: Counterpoint & Voice Leading
-description: The Baroque music theory rules governing voice interaction in MIDI Sketch Bach.
+title: Counterpoint Course
+description: A staff-notation course on the Baroque counterpoint rules enforced by the MIDI Sketch Bach validator.
 ---
 
-# Counterpoint & Voice Leading
+# Counterpoint Course
 
-This page explains the music theory rules that MIDI Sketch Bach uses to generate authentic Baroque-style counterpoint, and how the composer engine enforces them.
+MIDI Sketch Bach does not treat counterpoint as decorative theory text. The composer builds material, searches for playable candidate notes, then validates the result against explicit musical constraints — 47 named rules in the current validator. This course teaches those constraints the way the engine sees them: as small, checkable contracts, each shown on staff notation you can also listen to.
 
-::: info How the engine applies these rules
-Counterpoint here is a two-part process. The **candidate search** selects notes per beat, anchored to chord tones of a harmonic plan, so each new pitch is consonant with the harmony and with the other voices. The **rule validator** then checks the assembled voices against the constraints below and fails fast on a violation, reporting the offending rule. The rules are the constraints; the search finds solutions that satisfy them while staying musically compelling.
+::: tip Start here if the words are new
+The course defines each rule locally, but it assumes the basic nouns **voice**, **bar**, **chord**, **interval**, **fifth**, **cadence**, and **strong beat**. The short foundation — including how to read the staff figures and why beat 1 of a bar is special — is [Music Primer for Engineers](/docs/music-primer).
 :::
 
-## Consonance and Dissonance
+## Why a course, not a rule list
 
-In Baroque counterpoint, every interval between two voices is classified as consonant (stable, restful) or dissonant (unstable, requiring resolution).
+A rule ID such as `parallel_fifth` is the *end* of a chain of musical reasoning. Reading the chain backwards — "this is forbidden because the voices fuse, and voices fusing matters because counterpoint is the art of simultaneous independent lines" — is what makes a validation report readable instead of arbitrary. The course walks that chain forward:
 
-### Interval Classification
+| Chapter | What you learn | Rules covered |
+|---------|----------------|---------------|
+| [1. Intervals & Consonance](/docs/counterpoint/intervals) | How two simultaneous notes are classified: perfect, imperfect, dissonant, and the ambivalent fourth | foundation for all vertical rules |
+| [2. Motion & Forbidden Parallels](/docs/counterpoint/motion) | The four types of relative motion; why parallel and hidden perfects are banned; crossing, spacing, invertible counterpoint | `parallel_fifth`, `parallel_octave`, `hidden_parallel_fifth`, `hidden_parallel_octave`, `voice_crossing`, `spacing_adjacent_voices_within_octave`, `invertible_at_octave`, `fourth_only_on_weak_beat` |
+| [3. Dissonance Treatment](/docs/counterpoint/dissonance) | Strong beats demand chord tones; weak beats tolerate passing and neighbor tones; the four suspension figures | `strong_beat_dissonance`, `vertical_dissonance`, `unprepared_dissonance`, `suspension_preparation`, `suspension_resolution_step_down`, `suspension_seventh_sixth` |
+| [4. Melodic Writing](/docs/counterpoint/melody) | Each voice judged as a line: forbidden leaps, leap recovery, the leading tone's obligation | `augmented_melodic`, `diminished_melodic`, `tritone_melodic`, `consecutive_leaps`, `leading_tone_resolution`, `voice_range_integrity` |
+| [5. Tonal Grammar](/docs/counterpoint/tonality) | The seven cadence types, tendency-tone doubling, cross relations, applied dominants, pivot modulation | `cadence_voice_leading`, `doubling_no_leading_tone`, `doubling_no_seventh`, `cross_relation`, `secondary_dominant_resolution`, `modulation_pivot_chord_required` |
+| [6. Fugal Devices](/docs/counterpoint/fugue) | Subject and answer, countersubject, episodes and sequences, imitation, stretto, pedal points | `tonal_answer_dominant_mapping`, `countersubject_continuous`, `episode_motif_derived`, `sequence_pattern_consistency`, `imitation_entry_match`, `middle_entry_in_related_key`, `stretto_overlap_valid`, `pedal_point_tonic_or_dominant` |
+| [7. Form-Specific Constraints](/docs/counterpoint/form-constraints) | Immutable grounds and cantus firmi, figuration harmony, implied voices in solo strings, phrase grids, texture rules | `ground_bass_immutable`, `passacaglia_ground_immutable`, `cantus_firmus_immutable`, `variation_role_ornament_constraint`, `figuration_harmonic_consistency`, `toccata_archetype_compatible`, `implicit_voice_counterpoint`, `arpeggio_no_parallel_perfect`, `phrase_periodicity_4_or_8_bar`, `anacrusis_consistent`, `pedal_range_soft_penalty`, `voice_independence_threshold`, `section_contrast_required` |
 
-| Interval | Semitones | Classification | Usage |
-|----------|-----------|----------------|-------|
-| Unison | 0 | Perfect consonance | Beginnings and endings |
-| Minor 2nd | 1 | Dissonance | Passing tones, suspensions |
-| Major 2nd | 2 | Dissonance | Passing tones, suspensions |
-| Minor 3rd | 3 | Imperfect consonance | Freely used |
-| Major 3rd | 4 | Imperfect consonance | Freely used |
-| Perfect 4th | 5 | Context-dependent | Consonant in upper voices; dissonant against bass |
-| Tritone | 6 | Dissonance | Must resolve |
-| Perfect 5th | 7 | Perfect consonance | Strong harmonic support |
-| Minor 6th | 8 | Imperfect consonance | Freely used |
-| Major 6th | 9 | Imperfect consonance | Freely used |
-| Minor 7th | 10 | Dissonance | Suspensions, dominant function |
-| Major 7th | 11 | Dissonance | Suspensions, leading tone |
-| Octave | 12 | Perfect consonance | Beginnings and endings |
+For the flat, debugging-oriented index of every rule ID, see the [Validator Rule Reference](/docs/validator-rules).
 
-::: tip
-Imperfect consonances (3rds and 6ths) are the "sweet spot" of counterpoint — they sound harmonious while allowing voice independence. The engine favors these intervals in normal contrapuntal motion.
+## Reading the examples
+
+Every chapter teaches with staff examples rendered by the same component. They use two staves even when the real engine generates more voices: like a unit test, each example isolates one rule in the smallest musical situation that triggers (or legally avoids) it.
+
+<CounterpointStaff example="parallelFifths" locale="en" />
+
+::: info If you do not read notation yet
+Read the staff examples as diagrams. A **voice** is one independent line, like one stream in a concurrent program. The upper staff is the higher line; the lower staff is the lower line. Colored labels, rings, boxes, and arrows show the exact place the validator is explaining; they are analysis overlays, not extra musical notes.
 :::
 
-## Forbidden Parallels
+How to inspect an example:
 
-The most fundamental rules of Baroque counterpoint concern *parallel motion* — when two voices move in the same direction by the same interval.
+1. Read the **title** and the **rule chips** (the red monospace tags are validator rule IDs).
+2. Press the **play button** in the header to hear it — the sounding notes light up on the staff as it plays, so the eye and the ear stay synchronized. Forbidden patterns are usually audible: parallel octaves really do sound like one voice.
+3. Find the colored overlay. Red marks a violation, amber marks a scoped or conditionally allowed sonority, green marks the correct resolution.
+4. For motion rules, compare the previous note pair with the current note pair. For dissonance rules, ask whether the marked note belongs to the chord and whether it resolves by step.
 
-::: warning Parallel Fifths and Octaves
-Two voices must never move in parallel fifths (both voices moving up or down while maintaining a perfect 5th between them) or parallel octaves/unisons. These parallels destroy voice independence by making the two voices sound like a single doubled line.
+## How the engine applies these rules
+
+The public generation path is `bach_generate_from_json`: parse config, resolve the form and bar count, build a form fixture, run the composer, validate it, optionally apply ornaments (never on immutable ground or cantus-firmus voices), assign instruments, then export MIDI and event JSON. Counterpoint validation lives in `../midi-sketch-bach/src/composer/validator.cpp`; material declarations live in `material.h`.
+
+The validator separates local sonority from source ownership:
+
+| Term | Meaning in the engine |
+|------|-----------------------|
+| Compose note | A note chosen by candidate search and therefore fixable by the composer. |
+| Material note | A predeclared subject, answer, ground bass, cantus firmus, variation, or other carrier payload. |
+| Immutable carrier | Ground bass, passacaglia ground, or cantus firmus. These voices are exempt from the ornament pass so the structural line stays recognizable. |
+| Strong beat | The downbeat of a bar — literally `start_tick % ticks_per_bar == 0`. The engine checks chord membership more strictly here ([primer](/docs/music-primer#strong-and-weak-beats)). |
+| Weak beat | A non-downbeat position where prepared non-chord tones can function as passing or ornamental tones. |
+
+Several checks are skipped when **both** notes of a pair are immutable material, because the composer cannot rewrite fixed inputs. If either side is a generated Compose note, the problem is considered fixable and the rule fires, blaming the Compose side.
+
+## Failure kinds
+
+Every reported failure carries a `FailKind` that tells you which layer broke:
+
+| Kind | Meaning | Rules that use it |
+|------|---------|-------------------|
+| `MusicalFail` | A counterpoint or harmony contract was violated. The default for almost all rules. | parallels, dissonance, melodic, doubling, fugal, phrase, and texture rules |
+| `StructuralFail` | The form's structural promise was broken. | `ground_bass_immutable`, `passacaglia_ground_immutable`, `cantus_firmus_immutable`; also `cadence_voice_leading` when the cadence layout itself is malformed |
+| `ConfigFail` | The request itself was invalid (reported before composition). | configuration validation, not counterpoint rules |
+
+::: tip Practical mental model
+The form director declares what kind of musical object is being built. Candidate search fills editable spans. Material carriers replay fixed spans. The validator rejects results that break the declared musical contract.
 :::
 
-```mermaid
-graph LR
-    A["Voice 1: C → D<br>Voice 2: G → A<br>(parallel 5th)"] -->|"❌ Forbidden"| B["Both move up<br>by a step,<br>maintaining P5"]
-    C["Voice 1: C → D<br>Voice 2: E → F<br>(parallel 3rd)"] -->|"✓ Allowed"| D["Parallel 3rds<br>are fine"]
-```
-
-The engine also checks for **direct (hidden) fifths and octaves**: when two voices move in the same direction to arrive at a perfect 5th or octave, even if they weren't at that interval before. These are avoided in outer voices (soprano and bass).
-
-### Validation Flow
-
-```mermaid
-graph TD
-    A["Check interval<br>between voices"] --> B{{"Both move in<br>same direction?"}}
-    B -->|No| C["✓ OK<br>(contrary/oblique)"]
-    B -->|Yes| D{{"Arrive at<br>P5 or P8?"}}
-    D -->|No| E["✓ OK"]
-    D -->|Yes| F{{"Were at P5<br>or P8 before?"}}
-    F -->|Yes| G["❌ Parallel<br>(always forbidden)"]
-    F -->|No| H{{"Outer voices?"}}
-    H -->|Yes| I["❌ Direct<br>(forbidden in<br>outer voices)"]
-    H -->|No| J["⚠ Allowed<br>with caution"]
-```
-
-## Dissonance Treatment
-
-In Baroque counterpoint, dissonances are never left unresolved. Every dissonance must be introduced and resolved according to specific patterns.
-
-### Suspensions
-
-A suspension is the most expressive form of dissonance treatment — a consonant note is *held over* (suspended) into a beat where it becomes dissonant, then resolves downward by step.
-
-```mermaid
-graph LR
-    A["Preparation<br>(consonant)"] -->|"held over"| B["Suspension<br>(dissonant)"]
-    B -->|"resolves down<br>by step"| C["Resolution<br>(consonant)"]
-```
-
-Common suspension types:
-
-| Suspension | Intervals | Resolution |
-|------------|-----------|------------|
-| 4-3 | 4th resolves to 3rd | Most common in upper voices |
-| 7-6 | 7th resolves to 6th | Common in upper voices |
-| 9-8 | 9th resolves to octave | Creates strong tension |
-| 2-3 | 2nd resolves to 3rd | "Bass suspension" (resolves upward) |
-
-::: tip
-Suspensions are one of the primary sources of expressive beauty in Baroque counterpoint. The momentary clash between the held note and the moving voice creates emotional tension that resolves satisfyingly. Bach used suspensions extensively, especially in slow movements and chorale preludes.
-:::
-
-### Passing Tones
-
-A passing tone fills in the gap between two consonant notes by stepwise motion. It occurs on a weak beat and connects two consonances:
-
-- The note before is consonant
-- The passing tone is dissonant (on a weak beat)
-- The note after is consonant
-- Motion is stepwise in one direction
-
-### Neighbor Tones
-
-A neighbor tone decorates a consonant note by stepping away and returning:
-
-- Start on a consonance
-- Move by step to a dissonance (on a weak beat)
-- Return by step to the original note
-
-## Voice Leading Principles
-
-### Stepwise Motion
-
-Voices should move predominantly by step (seconds). Leaps (thirds or larger) should be used sparingly and deliberately:
-
-| Motion Type | Interval | Usage |
-|-------------|----------|-------|
-| Step | 2nd (1-2 semitones) | Primary motion, always available |
-| Small leap | 3rd (3-4 semitones) | Common, adds melodic interest |
-| Medium leap | 4th-5th (5-7 semitones) | Used for structural points |
-| Large leap | 6th+ (8+ semitones) | Rare, must be resolved |
-
-### Leap Resolution
-
-When a voice does leap, the following rules apply:
-
-- **After a large leap (6th or more)**: the voice must move by step in the opposite direction
-- **After two consecutive leaps**: the voice should change direction
-- **Leaps should outline consonant intervals**: 3rds, 4ths, 5ths, 6ths, octaves
-
-### Contrary Motion
-
-When possible, voices should move in opposite directions (*contrary motion*). This is the most effective way to maintain voice independence:
-
-| Motion Type | Description | Independence |
-|-------------|-------------|-------------|
-| Contrary | Voices move in opposite directions | Strongest |
-| Oblique | One voice moves, the other holds | Strong |
-| Similar | Same direction, different intervals | Moderate |
-| Parallel | Same direction, same interval | Weakest (restricted) |
-
-### Voice Crossing Avoidance
-
-Voices should generally stay in their assigned registers. When the alto line goes above the soprano, or the tenor goes below the bass, it creates confusion about which voice is which. The engine prevents unnecessary voice crossing while allowing it where musically justified (e.g., in dense stretto passages).
-
-## Cadential Formulas
-
-Cadences are the "punctuation marks" of music — they define phrase endings and structural boundaries.
-
-::: info Cadences as Musical Punctuation
-Just as sentences need periods and commas, musical phrases need cadences. A half cadence is like a comma (pause but continuing), while an authentic cadence is like a period (full stop). The engine places cadences according to the formal structure determined in the generation pipeline.
-:::
-
-### Cadence Types
-
-| Cadence | Harmonic Motion | Musical Effect | Typical Placement |
-|---------|----------------|----------------|-------------------|
-| Authentic (Perfect) | V → I | Full closure, finality | End of sections, final cadence |
-| Half | → V | Open, expectant | Mid-phrase, transition points |
-| Deceptive | V → vi | Surprise, continuation | Extension of phrases |
-| Plagal | IV → I | "Amen" cadence, gentle closure | Supplementary endings |
-
-## Fugal Counterpoint
-
-Fugues have additional counterpoint rules beyond the general principles.
-
-### Subject and Answer
-
-When the subject enters in a second voice, it is transposed to the dominant key (a 5th higher or 4th lower). This transposition — the *answer* — may be:
-
-- **Real answer**: Exact transposition to the dominant
-- **Tonal answer**: Modified to preserve the tonic-dominant relationship at key structural points
-
-```mermaid
-graph TD
-    A["Subject in Voice 1<br>(Tonic key)"] --> B["Answer in Voice 2<br>(Dominant key)"]
-    B --> C["Subject in Voice 3<br>(Tonic key)"]
-```
-
-### Countersubject
-
-A countersubject is a secondary theme that accompanies the subject whenever it appears. It is designed to be invertible — it works both above and below the subject.
-
-### Stretto
-
-In stretto, voices enter with the subject before the previous voice has finished stating it. This creates overlapping entries that build intensity:
-
-```mermaid
-graph LR
-    A["Voice 1: Subject————————"] --> B["Voice 2:    Subject————————"]
-    B --> C["Voice 3:        Subject————"]
-```
-
-The closer the entries, the more intense the stretto. Bach often saved the closest stretto for the climactic moments near the end of a fugue.
-
-## Ostinato-Based Forms
-
-In the Passacaglia and Chaconne, the ground bass repeats throughout the piece (in 3/4). Additional counterpoint constraints apply:
-
-- The ground bass is immutable and must remain recognizable across all variations
-- The upper voice gains increasing independence and complexity
-- Variations near the climax (~80% of the span) feature the densest writing
-- The form's fixed voice count holds across every variation
-
-## Cantus Firmus Treatment
-
-In the Chorale Prelude, a pre-existing melody (the cantus firmus) appears in long notes in one voice. The counterpoint rules for the accompanying voices include:
-
-- Voices must not obscure the cantus firmus melody
-- Accompanying voices should be rhythmically active to contrast with the long cantus firmus notes
-- Harmonic intervals with the cantus firmus must follow standard consonance/dissonance rules
-- Each phrase of the cantus firmus is typically preceded by a brief anticipatory passage in the accompanying voices
+Continue with [Chapter 1 — Intervals & Consonance](/docs/counterpoint/intervals).

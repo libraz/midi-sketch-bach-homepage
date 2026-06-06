@@ -10,16 +10,17 @@
     "subtitle": "アルゴリズムによるバッハ作曲エンジン",
     "notice": "",
     "play": "再生",
+    "pause": "一時停止",
     "stop": "停止",
     "loading": "読み込み中...",
     "initializing": "初期化中...",
     "generating": "生成中...",
     "regenerate": "再生成",
-    "download": "MIDIダウンロード",
+    "download": "MIDIをダウンロード",
     "settings": "設定",
     "showSettings": "設定を表示",
     "hideSettings": "設定を非表示",
-    "feedbackCta": "音楽的な問題を発見しましたか？ GitHub Issuesで報告する"
+    "feedbackCta": "音楽的な問題を発見しましたか？ GitHub Issues で報告する"
   },
   "form": {
     "title": "楽曲形式",

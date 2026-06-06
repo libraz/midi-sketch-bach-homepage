@@ -5,9 +5,21 @@ description: Feature overview of MIDI Sketch Bach - algorithmic Bach-style MIDI 
 
 # Features
 
+::: info New to music terms?
+If terms such as **voice**, **bar**, **chord**, **fifth**, **cadence**, or **fugue subject** are unfamiliar, read the [Music Primer for Engineers](/docs/music-primer) first. This page still gives short explanations where the terms first matter.
+:::
+
 ## 10 Musical Forms
 
 MIDI Sketch Bach generates compositions in ten distinct Baroque instrumental forms, organized into three systems. Each form fixes its own voice count, meter, and natural length — there is no voice-count option.
+
+::: info Form, voice, meter, natural length
+A **form** is a composition plan such as fugue or passacaglia. A **voice** is one independent melodic line. **Meter** is the beat pattern, such as `4/4` or `3/4`. **Natural length** is the form's default bar count before `scale` or `targetBars` changes it.
+:::
+
+::: tip Quick chooser
+Choose `fugue` to hear strict line-against-line writing, `prelude_and_fugue` for a balanced default, `chorale_prelude` for slower hymn-based material, `passacaglia` or `chaconne` for variation over a repeating bass, and `cello_prelude` for a single flowing solo line.
+:::
 
 ### Organ System (Forms 0--6)
 
@@ -47,8 +59,12 @@ See [Forms](/docs/forms) for detailed descriptions and Baroque historical contex
 - Subject-answer relationships in fugal forms
 - Forbidden parallel fifths and octaves avoidance
 
+::: info Counterpoint and polyphony
+**Polyphony** means several independent lines sounding at once. **Counterpoint** is the rule system for making those lines fit together: each line should make melodic sense, and the vertical intervals between lines should stay controlled.
+:::
+
 ::: info
-See [Counterpoint & Voice Leading](/docs/counterpoint) for the full set of rules governing voice interaction.
+See [Counterpoint Course](/docs/counterpoint) for the full set of rules governing voice interaction.
 :::
 
 ## Multiple Instruments
@@ -69,6 +85,10 @@ Each instrument maps to a General MIDI program number and a playable range, and 
 ## Subject Characters
 
 Four character types influence the melodic character of fugue subjects and thematic material:
+
+::: info Subject
+A **subject** is the main theme of a fugue. The `character` option changes the contour and rhythmic profile of that theme and related material; it does not select an instrument or output style.
+:::
 
 | Character | Style |
 |-----------|-------|
@@ -145,4 +165,4 @@ See [Option Relationships](/docs/option-relationships) for how `targetBars` inte
 - **Tempo control** from 40 to 200 BPM
 - **Cross-platform**: runs in Node.js and all modern browsers via WebAssembly
 - **Standard MIDI output**: compatible with every DAW and MIDI tool
-- **Apache-2.0 license**: free for commercial and personal use
+- **Dual-licensed**: AGPL-3.0 — free to use, modify, and redistribute, including commercially, under its copyleft terms; a separate commercial license is available for closed-source products and proprietary SaaS. Generated MIDI is yours to use freely, including commercially

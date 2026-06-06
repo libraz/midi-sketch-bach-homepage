@@ -4,11 +4,9 @@ import { useI18n } from '@/composables/useI18n'
 import { useData } from 'vitepress'
 import { computed, ref } from 'vue'
 import wasmMeta from '@/wasm/meta.json'
-import { useBachStore } from '@/stores/useBachStore'
 
 const { lang } = useData()
 const { t } = useI18n()
-const store = useBachStore()
 
 const wasmHash = computed(() => wasmMeta.md5.slice(0, 7))
 
@@ -123,7 +121,7 @@ const otherLocales = computed(() =>
       </div>
       <div class="demo-page__footer-version">
         <span class="demo-page__version" :title="`WASM Build: ${wasmMeta.md5}`">
-          midi-sketch-bach {{ store.libVersion.value || '...' }} ({{ wasmHash }})
+          midi-sketch-bach {{ wasmMeta.engineVersion }} ({{ wasmHash }})
         </span>
       </div>
     </footer>

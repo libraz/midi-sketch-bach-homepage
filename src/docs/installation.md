@@ -5,21 +5,33 @@ description: Installation methods for MIDI Sketch Bach - npm, CLI, and browser u
 
 # Installation
 
+::: warning Alpha — not yet published to npm
+This package is in alpha and has **not been published to the npm registry yet**. The commands on this page will not work until the first public release. Until then, try it in the [live demo](/) on this site.
+:::
+
 ## npm Package
 
 Install MIDI Sketch Bach as a dependency in your Node.js project:
 
-```bash
+::: code-group
+
+```bash [npm]
 npm install @libraz/midi-sketch-bach
 ```
 
-```bash
+```bash [yarn]
 yarn add @libraz/midi-sketch-bach
 ```
 
-```bash
+```bash [pnpm]
 pnpm add @libraz/midi-sketch-bach
 ```
+
+```bash [bun]
+bun add @libraz/midi-sketch-bach
+```
+
+:::
 
 Then import and use it in your code:
 
@@ -52,7 +64,7 @@ MIDI Sketch Bach runs in the browser via WebAssembly. When using in a browser en
 import { init, BachGenerator } from '@libraz/midi-sketch-bach'
 
 // Specify the WASM file location for browser environments
-await init({ wasmPath: '/wasm/midisketch.wasm' })
+await init({ wasmPath: '/wasm/bach.wasm' })
 
 const generator = new BachGenerator()
 generator.generate({ form: 'fugue', key: 0 })
@@ -61,6 +73,7 @@ const midi = generator.getMidi()
 // Create a download link
 const blob = new Blob([midi], { type: 'audio/midi' })
 const url = URL.createObjectURL(blob)
+// See the JavaScript API page for the full download flow
 ```
 
 ::: tip WASM Path

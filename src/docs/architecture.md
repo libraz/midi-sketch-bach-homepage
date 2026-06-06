@@ -5,6 +5,10 @@ description: Technical architecture of MIDI Sketch Bach - the composer engine, i
 
 # Architecture
 
+::: info Reading the musical terms
+This page uses music terms as data-model terms: **voice** means a melodic stream, **harmony** means the chord plan over time, and **form** means the composition template. See the [Music Primer for Engineers](/docs/music-primer) for the short definitions.
+:::
+
 ## Overview
 
 ::: info What is MIDI Sketch Bach?
@@ -36,6 +40,10 @@ graph TD
 
 A single composer subsystem handles every form. Rather than separate generators per genre, the engine expresses each form as a **layout of voice intents** over a harmonic plan, then fills, validates, and renders that layout. The form decides the texture (voice count, meter, natural length); there is no voice-count option.
 
+::: info Voice intent and harmonic plan
+A **voice intent** is the role assigned to one melodic stream over a span of bars: subject, answer, ground bass, figuration, and so on. A **harmonic plan** is the chord roadmap the candidate search must fit into.
+:::
+
 The pipeline is:
 
 1. **Compose Request** — resolve and validate the config; resolve the seed; fix voice count / meter / length from the form.
@@ -43,7 +51,7 @@ The pipeline is:
 3. **Candidate Search** — per-beat, chord-tone-anchored note selection against the harmonic plan.
 4. **Rule Validator** — counterpoint and structure checks, fail-fast.
 5. **Renderer** — voices to tracks.
-6. **Ornament & Expression** — opt-in deterministic post-passes.
+6. **Ornament & Expression** — deterministic post-passes, kept outside `Composer::run()` and invoked by the public generation path.
 7. **MIDI Writer** — key transposition and Standard MIDI File output.
 
 See the [Generation Pipeline](/docs/generation-pipeline) for a step-by-step breakdown.
@@ -51,6 +59,10 @@ See the [Generation Pipeline](/docs/generation-pipeline) for a step-by-step brea
 ## Design-Value Arc
 
 Structure follows a fixed design arc — **establish → develop → climax (at ~80% of the span) → resolve** — that controls density, register, and velocity tiers. The arc is a property of the form, not something searched per seed, which keeps output musically shaped and reproducible.
+
+::: info Density, register, velocity
+**Density** is how many notes happen in a span. **Register** is pitch height, such as low bass or high treble. **Velocity** is MIDI note intensity. The arc raises and lowers these values so the output has phrase shape instead of a flat stream of notes.
+:::
 
 ## Form Families
 
@@ -64,6 +76,10 @@ The form director handles several layout families:
 ## Determinism
 
 The engine is fully deterministic: the same config and seed produce byte-identical output. Composition runs internally in C; the requested key is applied only by the MIDI writer, so the events JSON always reports pitches in C while the `.mid` file is transposed.
+
+::: info Why events stay in C
+Keeping internal event data in C makes validator behavior easier to compare across keys: the same form and seed can be inspected before the final output transposition. The MIDI file is still written in the requested key.
+:::
 
 ## WASM Integration
 

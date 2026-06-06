@@ -1,24 +1,28 @@
 ---
 title: JavaScript API
-description: MIDI Sketch BachのJavaScript APIリファレンス。
+description: MIDI Sketch Bach のJavaScript API 参照。
 ---
 
-# JavaScript APIリファレンス
+# JavaScript API 参照
+
+::: info config 内の音楽用語
+`form`、`key`、`isMinor`、`character`、`scale`、`targetBars` は、API 値を音楽上の判断に対応させるフィールドです。プログラミング以外の用語は[エンジニアのための音楽用語入門](/ja/docs/music-primer)と[オプション関係](/ja/docs/option-relationships)を参照してください。
+:::
 
 ## 初期化
 
 ### `init(options?)`
 
-WASMモジュールをロードし初期化します。`BachGenerator` インスタンスを作成する前に必ず呼び出してください。
+WASM モジュールをロードし初期化します。`BachGenerator` インスタンスを作成する前に必ず呼び出してください。
 
 ```js
 import { init } from '@libraz/midi-sketch-bach'
 
-// Node.js（WASMパスは自動解決）
+// Node.js（WASM パスは自動解決）
 await init()
 
-// ブラウザ（WASMパスを指定）
-await init({ wasmPath: '/wasm/midisketch.wasm' })
+// ブラウザ（WASM パスを指定）
+await init({ wasmPath: '/wasm/bach.wasm' })
 ```
 
 **パラメータ**:
@@ -33,7 +37,7 @@ await init({ wasmPath: '/wasm/midisketch.wasm' })
 
 ## BachGenerator
 
-バッハスタイルの楽曲を生成するメインクラス。
+バッハ風の楽曲を生成するメインクラス。
 
 ### コンストラクタ
 
@@ -63,12 +67,12 @@ generator.generate({
 **戻り値**: `void`
 
 ::: warning 厳格な検証
-無効な `form`、`character`、`instrument`、`scale` 文字列、および範囲外の `bpm`（0 または 40--200 以外）は、デフォルトへ暗黙的にフォールバックせず**エラーをスロー**するようになりました。禁止されたキャラクター/形式の組み合わせ（[オプション関係](/ja/docs/option-relationships#キャラクターと形式)を参照）もスローします。
+無効な `form`、`character`、`instrument`、`scale` 文字列、および範囲外の `bpm`（0 または 40--200 以外）は、既定へ暗黙的に代替せず**エラーを投げる**ようになりました。禁止された性格と形式の組み合わせ（[オプション関係](/ja/docs/option-relationships#性格と形式)を参照）も例外を投げます。
 :::
 
 ### `getMidi()`
 
-生成された楽曲を標準MIDIファイルデータとして返します。
+生成された楽曲を標準 MIDI ファイルデータとして返します。
 
 ```js
 const midi = generator.getMidi()
@@ -84,14 +88,14 @@ const midi = generator.getMidi()
 ```js
 const events = generator.getEvents()
 console.log(events.form)        // "fugue"
-console.log(events.key)         // 使用されたピッチクラス（0 = C）
+console.log(events.key)         // "D minor"
 console.log(events.bpm)         // 80
 console.log(events.total_bars)  // 42
 console.log(events.tracks)      // TrackDataの配列
 ```
 
-::: info ピッチはCで生成される
-エンジンは内部的にCで作曲し、指定された `key` はMIDIファイル書き出し時に適用されます。そのためイベントJSONのピッチはCのまま報告され、`getMidi()` が返す `.mid` ファイルは選択した調に移調されます。
+::: info ピッチは C で生成される
+エンジンは内部的に C で作曲し、指定された `key` はMIDI ファイル書き出し時に適用されます。そのためイベント JSON のピッチは C のまま報告され、`getMidi()` が返す `.mid` ファイルは選択した調に移調されます。
 :::
 
 **戻り値**: [EventData](#eventdata)
@@ -114,7 +118,7 @@ console.log(info.trackCount)  // トラック数
 
 ### `destroy()`
 
-このジェネレータが確保したWASMメモリを解放します。使用後は必ず呼び出してください。
+このジェネレータが確保したWASM メモリを解放します。使用後は必ず呼び出してください。
 
 ```js
 generator.destroy()
@@ -130,17 +134,17 @@ generator.destroy()
 
 `generate()` に渡す設定オブジェクト。すべてのフィールドはオプションです。
 
-| フィールド | 型 | デフォルト | 説明 |
+| フィールド | 型 | 既定 | 説明 |
 |-----------|------|----------|------|
-| `form` | `number \| string` | `"fugue"` | 楽曲形式（0--9または名前）。[楽曲形式](/ja/docs/forms)と[プリセットリファレンス](/ja/docs/presets)を参照。 |
+| `form` | `number \| string` | `"fugue"` | 楽曲形式（0--9または名前）。[楽曲形式](/ja/docs/forms)と[プリセット一覧](/ja/docs/presets)を参照。 |
 | `key` | `number` | `0` | 調（0--11のピッチクラス: 0=C, 1=C#, 2=D, ... 11=B） |
 | `isMinor` | `boolean` | `false` | `true` で短調、`false` で長調 |
-| `bpm` | `number` | `100` | テンポ（BPM）。`0` はデフォルトの100を使用。それ以外は 40--200 の範囲が必須（範囲外はスロー）。 |
+| `bpm` | `number` | `100` | テンポ（BPM）。`0` は既定の100を使用。それ以外は 40--200 の範囲が必須（範囲外では例外）。 |
 | `seed` | `number` | `0` | ランダムシード。`0` は非ゼロのランダムシードを選び、`getInfo().seedUsed` で報告。 |
-| `character` | `string \| number` | `"severe"` | 主題キャラクター（`"severe"`、`"playful"`、`"noble"`、`"restless"`）。無効値はスロー。 |
-| `instrument` | `string \| number` | 形式のデフォルト | 楽器（`"organ"`、`"harpsichord"`、`"piano"`、`"violin"`、`"cello"`、`"guitar"`）。無効値はスロー。 |
-| `scale` | `string \| number` | `"short"` | 形式の自然長に対する倍率: `"short"`（約1倍）、`"medium"`（約2倍）、`"long"`（約3倍）、`"full"`（約4倍）。無効値はスロー。 |
-| `targetBars` | `number` | -- | 明示的な小節数。`> 0` のとき `scale` を上書きし、形式の刻みにスナップして `[最小, 128]` にクランプ。 |
+| `character` | `string \| number` | `"severe"` | 主題の性格（`"severe"`、`"playful"`、`"noble"`、`"restless"`）。無効値では例外。 |
+| `instrument` | `string \| number` | 形式の既定 | 楽器（`"organ"`、`"harpsichord"`、`"piano"`、`"violin"`、`"cello"`、`"guitar"`）。無効値では例外。 |
+| `scale` | `string \| number` | `"short"` | 形式の基準長に対する倍率: `"short"`（約1倍）、`"medium"`（約2倍）、`"long"`（約3倍）、`"full"`（約4倍）。無効値では例外。 |
+| `targetBars` | `number` | -- | 明示的な小節数。`> 0` のとき `scale` を上書きし、形式の刻みにスナップして `[最小, 128]` に丸め込み。 |
 
 ::: warning `numVoices` は廃止されました
 声部数は `form` によって決定されます（[楽曲形式](/ja/docs/forms)の表を参照）。後方互換のため `num_voices`/`numVoices` の指定は受理されますが無視されます。エラーにはならず、効果もありません。
@@ -174,25 +178,25 @@ generator.destroy()
 | `4` | `"cello"` |
 | `5` | `"guitar"` |
 
-### キャラクターの値
+### 性格の値
 
 | 番号 | 文字列 | 説明 |
 |------|--------|------|
-| `0` | `"severe"` | 厳格で知的に緻密（デフォルト） |
+| `0` | `"severe"` | 厳格で知的に緻密（既定） |
 | `1` | `"playful"` | 軽快で機敏、リズミカル |
 | `2` | `"noble"` | 荘重で広やか、威厳のある |
 | `3` | `"restless"` | 推進力があり半音階的で劇的 |
 
 ### スケールの値
 
-`scale` は形式の自然長を倍率で伸ばします（[楽曲形式](/ja/docs/forms)を参照）。`targetBars` がこれを上書きします。
+`scale` は形式の基準長を倍率で伸ばします（[楽曲形式](/ja/docs/forms)を参照）。`targetBars` がこれを上書きします。
 
 | 番号 | 文字列 | おおよその長さ |
 |------|--------|------|
-| `0` | `"short"` | 自然長の約1倍（デフォルト） |
-| `1` | `"medium"` | 自然長の約2倍 |
-| `2` | `"long"` | 自然長の約3倍 |
-| `3` | `"full"` | 自然長の約4倍 |
+| `0` | `"short"` | 基準長の約1倍（既定） |
+| `1` | `"medium"` | 基準長の約2倍 |
+| `2` | `"long"` | 基準長の約3倍 |
+| `3` | `"full"` | 基準長の約4倍 |
 
 ---
 
@@ -203,7 +207,7 @@ generator.destroy()
 ```ts
 interface EventData {
   form: string          // 形式名（例: "fugue"）
-  key: number           // ピッチクラス（イベントJSONはCのまま）
+  key: string           // 指定された調名（例: "D minor"）
   bpm: number           // テンポ
   seed: number          // 生成に使用された解決済みシード
   total_ticks: number   // MIDIティック単位の総時間
@@ -218,8 +222,8 @@ interface EventData {
 ```ts
 interface TrackData {
   name: string          // トラック名（例: "Soprano", "Bass"）
-  channel: number       // MIDIチャンネル（0-15）
-  program: number       // General MIDIプログラム番号
+  channel: number       // MIDI チャンネル（0-15）
+  program: number       // General MIDI プログラム番号
   note_count: number    // このトラックのノート数
   notes: NoteEvent[]    // ノートイベントの配列
 }
@@ -229,7 +233,7 @@ interface TrackData {
 
 ```ts
 interface NoteEvent {
-  pitch: number         // MIDIノート番号（0-127）、Cで生成
+  pitch: number         // MIDI ノート番号（0-127）、C で生成
   velocity: number      // ノートベロシティ（0-127）
   start_tick: number    // MIDIティック単位の開始時間
   duration: number      // MIDIティック単位の長さ
@@ -242,7 +246,7 @@ interface NoteEvent {
 すべてのノートは生成方法を記録する `source` タグを持ちます。
 - `"material"` — 形式が割り当てた固定素材（主題、グラウンドバス、定旋律）。
 - `"compose"` — 和声プランに対して候補探索が選択したノート。
-- `"ornament"` — 装飾パス（トリル、モルデント、ナッハシュラーク）が追加したノート。
+- `"ornament"` — 装飾処理（トリル、モルデント、ナッハシュラーク）が追加したノート。
 :::
 
 ---
@@ -257,7 +261,7 @@ interface NoteEvent {
 import { getForms } from '@libraz/midi-sketch-bach'
 
 const forms = getForms()
-// [{ index: 0, name: "Fugue", ... }, ...]
+// [{ id: 0, name: "fugue", display: "Fugue" }, ...]
 ```
 
 ### `getInstruments()`
@@ -266,7 +270,7 @@ const forms = getForms()
 import { getInstruments } from '@libraz/midi-sketch-bach'
 
 const instruments = getInstruments()
-// [{ index: 0, name: "Organ", ... }, ...]
+// [{ id: 0, name: "organ" }, ...]
 ```
 
 ### `getCharacters()`
@@ -283,7 +287,7 @@ const characters = getCharacters()
 import { getKeys } from '@libraz/midi-sketch-bach'
 
 const keys = getKeys()
-// [{ index: 0, name: "C", ... }, { index: 1, name: "C#", ... }, ...]
+// [{ id: 0, name: "C" }, { id: 1, name: "C#" }, ...]
 ```
 
 ### `getScales()`
@@ -292,7 +296,7 @@ const keys = getKeys()
 import { getScales } from '@libraz/midi-sketch-bach'
 
 const scales = getScales()
-// [{ index: 0, name: "Short", ... }, ...]
+// [{ id: 0, name: "short" }, ...]
 ```
 
 ### `getVersion()`
@@ -301,7 +305,7 @@ const scales = getScales()
 import { getVersion } from '@libraz/midi-sketch-bach'
 
 const version = getVersion()
-// "1.0.0"
+// 例: "0.1.0"
 ```
 
 ---
@@ -352,13 +356,14 @@ const generator = new BachGenerator()
 
 for (const form of forms) {
   generator.generate({
-    form: form.index,
+    form: form.name,
     key: 2,
     isMinor: true,
     seed: 42
   })
 
-  const filename = `bach-${form.name.toLowerCase().replace(/\s+/g, '-')}.mid`
+  // form.name は最初から snake_case（例: "prelude_and_fugue"）。表示用の名前には form.display を使う
+  const filename = `bach-${form.name}.mid`
   writeFileSync(filename, generator.getMidi())
   console.log(`保存: ${filename}`)
 }
@@ -371,7 +376,7 @@ generator.destroy()
 ```js
 import { init, BachGenerator } from '@libraz/midi-sketch-bach'
 
-await init({ wasmPath: '/wasm/midisketch.wasm' })
+await init({ wasmPath: '/wasm/bach.wasm' })
 
 const generator = new BachGenerator()
 generator.generate({

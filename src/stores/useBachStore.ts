@@ -31,7 +31,6 @@ const DEFAULT_CONFIG: BachStoreConfig = {
 
 const config = reactive<BachStoreConfig>({ ...DEFAULT_CONFIG })
 const isGenerated = ref(false)
-const libVersion = ref<string | null>(null)
 const eventData = ref<EventData | null>(null)
 const description = ref('')
 
@@ -109,7 +108,6 @@ export function useBachStore() {
   return {
     config,
     isGenerated,
-    libVersion,
     eventData,
     description,
     lastGenConfig,

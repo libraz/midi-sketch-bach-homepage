@@ -7,6 +7,10 @@ description: Command-line interface reference for MIDI Sketch Bach.
 
 MIDI Sketch Bach includes a command-line tool for generating Bach-style MIDI files directly from the terminal.
 
+::: info Reading musical options
+CLI options such as `--form`, `--key`, `--character`, `--scale`, and `--bars` are music-structure choices. If the terminology is unfamiliar, start with the [Music Primer for Engineers](/docs/music-primer).
+:::
+
 ## Installation
 
 ```bash
@@ -28,171 +32,175 @@ npm install -g @libraz/midi-sketch-bach
 
 | Option | Alias | Type | Default | Description |
 |--------|-------|------|---------|-------------|
-| `--form <value>` | `-f` | string/number | `fugue` | Musical form (name or 0--9) |
-| `--key <value>` | `-k` | number | `0` | Key as pitch class (0=C, 1=C#, ... 11=B) |
-| `--minor` | `-m` | boolean | `false` | Use minor key |
-| `--character <value>` | `-c` | string/number | `severe` | Subject character (severe/playful/noble/restless) |
-| `--instrument <value>` | `-i` | string/number | Form default | Instrument (name or 0--5) |
-| `--bpm <value>` | `-b` | number | `100` | Tempo in BPM (0 = default 100, otherwise 40--200) |
-| `--seed <value>` | `-s` | number | `0` | Random seed (0 = random; resolved seed is reported) |
-| `--scale <value>` | | string/number | `short` | Length multiplier (short/medium/long/full or 0--3) |
+| `--form <value>` | | string | `prelude_and_fugue` | Musical form name |
+| `--key <value>` | | string | `c_major` | Key name such as `c_major`, `g_minor`, `F_major` |
+| `--character <value>` | | string | `severe` | Subject character (`severe`, `playful`, `noble`, `restless`) |
+| `--instrument <value>` | | string | Form default | Instrument (`organ`, `harpsichord`, `piano`, `violin`, `cello`, `guitar`) |
+| `--bpm <value>` | | number | `72` | Tempo in BPM (40--200). CLI default is 72; the JS API defaults to 100 when omitted |
+| `--seed <value>` | | number | `0` | Random seed (0 = random; resolved seed is reported) |
+| `--scale <value>` | | string | `short` | Length multiplier (`short`, `medium`, `long`, `full`). CLI convenience: fugue falls back to `medium` when `--scale` is omitted; the JS API default is always `short` |
 | `--bars <value>` | | number | -- | Target bar count (overrides `--scale`) |
 | `-o <path>` | | string | `output.mid` | Output file path |
-| `--json` | | boolean | `false` | Output event data as JSON to stdout |
+| `--json` | | boolean | `false` | Write event data beside the MIDI file as `.json` |
+| `--generated-json` | | boolean | `false` | Emit `generated.v1` + `provenance.v1` JSON for scoring (developer) |
+| `--composer-phase <value>` | | string | -- | Developer harness mode for pinned composer phases |
+| `--help` | `-h` | boolean | -- | Show usage |
 
 ::: warning Removed flags
-`--voices`, `--analyze`, `--strict`, and `--toccata-style` no longer exist. The voice count is decided by the form; invalid `--form`/`--character`/`--instrument`/`--scale` values and out-of-range `--bpm` now exit with an error instead of falling back to a default.
+`--voices`, `--minor`, `--analyze`, `--strict`, and `--toccata-style` no longer exist. The voice count is decided by the form, and mode is encoded in `--key` (`c_major`, `d_minor`, etc.). Invalid `--form`/`--key`/`--character`/`--instrument`/`--scale` values and out-of-range `--bpm` now exit with an error instead of falling back to a default.
 :::
 
 ## Form Names
 
 Use these names with the `--form` option:
 
-| Name | Number |
-|------|--------|
-| `fugue` | 0 |
-| `prelude_and_fugue` | 1 |
-| `trio_sonata` | 2 |
-| `chorale_prelude` | 3 |
-| `toccata_and_fugue` | 4 |
-| `passacaglia` | 5 |
-| `fantasia_and_fugue` | 6 |
-| `cello_prelude` | 7 |
-| `chaconne` | 8 |
-| `goldberg_variations` | 9 |
+| Name |
+|------|
+| `fugue` |
+| `prelude_and_fugue` |
+| `trio_sonata` |
+| `chorale_prelude` |
+| `toccata_and_fugue` |
+| `passacaglia` |
+| `fantasia_and_fugue` |
+| `cello_prelude` |
+| `chaconne` |
+| `goldberg_variations` |
 
 ## Character Names
 
-| Name | Number |
-|------|--------|
-| `severe` | 0 |
-| `playful` | 1 |
-| `noble` | 2 |
-| `restless` | 3 |
+| Name |
+|------|
+| `severe` |
+| `playful` |
+| `noble` |
+| `restless` |
 
 ## Instrument Names
 
-| Name | Number |
-|------|--------|
-| `organ` | 0 |
-| `harpsichord` | 1 |
-| `piano` | 2 |
-| `violin` | 3 |
-| `cello` | 4 |
-| `guitar` | 5 |
+| Name |
+|------|
+| `organ` |
+| `harpsichord` |
+| `piano` |
+| `violin` |
+| `cello` |
+| `guitar` |
 
 ## Examples
 
 ### Basic Generation
 
-Generate a default piece (Fugue in C major):
+Generate the default piece (Prelude and Fugue in C major):
 
 ```bash
-@libraz/midi-sketch-bach -o fugue.mid
+@libraz/midi-sketch-bach -o prelude-fugue.mid
 ```
 
 ### Fugue in D Minor
 
 ```bash
-@libraz/midi-sketch-bach --form fugue --key 2 --minor --character severe --bpm 76 -o fugue-dm.mid
+@libraz/midi-sketch-bach --form fugue --key d_minor --character severe --bpm 76 -o fugue-dm.mid
 ```
 
 ### Prelude and Fugue in C Major
 
 ```bash
-@libraz/midi-sketch-bach --form prelude_and_fugue --key 0 -o prelude-fugue.mid
+@libraz/midi-sketch-bach --form prelude_and_fugue --key c_major -o prelude-fugue.mid
 ```
 
 ### Trio Sonata in F Major
 
 ```bash
-@libraz/midi-sketch-bach --form trio_sonata --key 5 --bpm 90 -o trio-sonata.mid
+@libraz/midi-sketch-bach --form trio_sonata --key f_major --bpm 90 -o trio-sonata.mid
 ```
 
 ### Chorale Prelude in A Major
 
 ```bash
-@libraz/midi-sketch-bach --form chorale_prelude --key 9 --character noble --bpm 66 -o chorale.mid
+@libraz/midi-sketch-bach --form chorale_prelude --key a_major --character noble --bpm 66 -o chorale.mid
 ```
 
 ### Toccata and Fugue in D Minor
 
 ```bash
-@libraz/midi-sketch-bach --form toccata_and_fugue --key 2 --minor --character restless -o toccata-fugue.mid
+@libraz/midi-sketch-bach --form toccata_and_fugue --key d_minor --character restless -o toccata-fugue.mid
 ```
 
 ### Passacaglia in C Minor
 
 ```bash
-@libraz/midi-sketch-bach --form passacaglia --key 0 --minor --scale long -o passacaglia.mid
+@libraz/midi-sketch-bach --form passacaglia --key c_minor --scale long -o passacaglia.mid
 ```
 
 ### Fantasia and Fugue in G Minor
 
 ```bash
-@libraz/midi-sketch-bach --form fantasia_and_fugue --key 7 --minor -o fantasia-fugue.mid
+@libraz/midi-sketch-bach --form fantasia_and_fugue --key g_minor -o fantasia-fugue.mid
 ```
 
 ### Cello Prelude in G Major
 
 ```bash
-@libraz/midi-sketch-bach --form cello_prelude --key 7 --instrument cello -o cello-prelude.mid
+@libraz/midi-sketch-bach --form cello_prelude --key g_major --instrument cello -o cello-prelude.mid
 ```
 
 ### Chaconne in D Minor
 
 ```bash
-@libraz/midi-sketch-bach --form chaconne --key 2 --minor --instrument violin -o chaconne.mid
+@libraz/midi-sketch-bach --form chaconne --key d_minor --instrument violin -o chaconne.mid
 ```
 
 ### Goldberg Variations in G Major
 
 ```bash
-@libraz/midi-sketch-bach --form goldberg_variations --key 7 --instrument harpsichord -o goldberg.mid
+@libraz/midi-sketch-bach --form goldberg_variations --key g_major --instrument harpsichord -o goldberg.mid
 ```
 
 ### Deterministic Output with Seed
 
 ```bash
-@libraz/midi-sketch-bach --form fugue --key 7 --minor --seed 42 -o fugue-seed42.mid
+@libraz/midi-sketch-bach --form fugue --key g_minor --seed 42 -o fugue-seed42.mid
 ```
 
 ### Full-Scale Passacaglia
 
 ```bash
-@libraz/midi-sketch-bach --form passacaglia --key 2 --minor --scale full -o passacaglia-full.mid
+@libraz/midi-sketch-bach --form passacaglia --key d_minor --scale full -o passacaglia-full.mid
 ```
 
 ### Target a Specific Bar Count
 
 ```bash
-@libraz/midi-sketch-bach --form fugue --key 0 --bars 24 -o fugue-24bars.mid
+@libraz/midi-sketch-bach --form fugue --key c_major --bars 24 -o fugue-24bars.mid
 ```
 
 ### Output JSON Event Data
 
 ```bash
-@libraz/midi-sketch-bach --form fugue --key 2 --minor --json > fugue-events.json
+@libraz/midi-sketch-bach --form fugue --key d_minor --json -o fugue.mid
 ```
+
+This writes `fugue.mid` and `fugue.json`.
 
 ### Generate with npx
 
 No installation required:
 
 ```bash
-npx @libraz/midi-sketch-bach --form fugue --key 2 --minor -o fugue.mid
+npx @libraz/midi-sketch-bach --form fugue --key d_minor -o fugue.mid
 ```
 
 ## JSON Output Format
 
-When using `--json`, the output follows the [EventData](/docs/api-js#eventdata) structure:
+When using `--json`, the sidecar JSON follows the [EventData](/docs/api-js#eventdata) structure:
 
 The events JSON reports pitches in C (the requested key is applied only in the `.mid` file), and every note carries a `source` provenance tag (`"material"`, `"compose"`, or `"ornament"`).
 
 ```json
 {
   "form": "fugue",
-  "key": 2,
+  "key": "D minor",
   "bpm": 80,
   "seed": 12345,
   "total_ticks": 80640,

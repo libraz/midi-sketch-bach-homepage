@@ -7,6 +7,10 @@ description: Detailed descriptions of all 10 musical forms available in MIDI Ske
 
 MIDI Sketch Bach generates compositions in ten Baroque instrumental forms. Each form follows specific compositional rules and produces distinct musical structures.
 
+::: info If the form names are unfamiliar
+Read a form name as a **composition template**, not just a style label. The form decides the number of voices, the meter, the default length, and which musical materials are fixed or generated. For vocabulary such as subject, ground bass, and cantus firmus, see the [Music Primer for Engineers](/docs/music-primer).
+:::
+
 ::: info The form decides the voice count
 Each form fixes its own number of voices, meter, and natural length. There is no `numVoices` option — choose the form to choose the texture. The `scale` and `targetBars` options stretch the length; the maximum for every form is 128 bars. See [Option Relationships](/docs/option-relationships) for details.
 :::
@@ -33,6 +37,10 @@ Seven forms covering the major genres of Bach's organ repertoire.
 A pure contrapuntal fugue -- the cornerstone of Baroque polyphony.
 
 **Structure**: Opens with a single-voice subject statement, followed by the answer (typically at the fifth). Additional voices enter with the subject in turn (exposition). The middle section alternates episodes (free counterpoint) with subject entries in new keys. Culminates in stretto (overlapping entries) and a final statement in the home key.
+
+::: tip Reading the fugue description
+The **subject** is the main theme. The **answer** is the same idea entering in another voice, usually shifted by a fifth. An **episode** is a freer connector between subject entries. **Stretto** means entries overlap before the previous one finishes.
+:::
 
 - **Default instrument**: Organ
 - **Voices**: 3
@@ -113,6 +121,10 @@ generator.generate({
 A setting of a hymn melody (chorale) with contrapuntal accompaniment.
 
 **Structure**: A cantus firmus (the chorale melody) appears in one voice, typically the soprano, in long notes. The other voices weave around it with independent contrapuntal lines that embellish and harmonize the chorale. The result is a meditative, richly textured piece.
+
+::: info Cantus firmus
+A **cantus firmus** is a fixed melody in long notes. The engine treats it as source material: supporting voices can be generated around it, but the fixed line itself is not freely rewritten.
+:::
 
 - **Default instrument**: Organ
 - **Voices**: 2

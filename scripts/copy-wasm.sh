@@ -5,17 +5,20 @@ BACH_DIR="../midi-sketch-bach"
 DIST_DIR="$BACH_DIR/dist"
 DEST_DIR="src/wasm"
 
+# Required files from dist/
 WASM_FILES=("bach.wasm" "bach.js")
 JS_FILES=("index.mjs" "index.d.ts")
 
 echo "📦 Copying WASM files from midi-sketch-bach..."
 
+# Check if midi-sketch-bach directory exists
 if [ ! -d "$BACH_DIR" ]; then
   echo "❌ Error: midi-sketch-bach directory not found at $BACH_DIR"
   echo "   Please clone midi-sketch-bach in the parent directory."
   exit 1
 fi
 
+# Check if dist directory exists
 if [ ! -d "$DIST_DIR" ]; then
   echo "❌ Error: dist directory not found at $DIST_DIR"
   echo "   Run 'yarn build' in midi-sketch-bach first."
@@ -59,7 +62,6 @@ if [ ${#missing_js[@]} -gt 0 ]; then
   exit 1
 fi
 
-# Ensure destination directory exists
 mkdir -p "$DEST_DIR"
 
 # Copy files
@@ -75,32 +77,28 @@ for file in "${JS_FILES[@]}"; do
   echo "   ✓ $file"
 done
 
-# Rename index.mjs to index.js
+# Rename index.mjs to index.js (used as index.js in imports)
 if [ -f "$DEST_DIR/index.mjs" ]; then
   mv "$DEST_DIR/index.mjs" "$DEST_DIR/index.js"
   echo "   ✓ Renamed index.mjs → index.js"
 fi
 
-# Remove sourceMappingURL from index.js
-if [ -f "$DEST_DIR/index.js" ]; then
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -i '' '/^\/\/# sourceMappingURL=/d' "$DEST_DIR/index.js"
-  else
-    sed -i '/^\/\/# sourceMappingURL=/d' "$DEST_DIR/index.js"
+# Remove sourceMappingURL comments (source maps are not shipped)
+for file in "$DEST_DIR/index.js" "$DEST_DIR/index.d.ts"; do
+  if [ -f "$file" ]; then
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      # macOS (BSD sed requires '' after -i)
+      sed -i '' '/^\/\/# sourceMappingURL=/d' "$file"
+    else
+      # Linux (GNU sed)
+      sed -i '/^\/\/# sourceMappingURL=/d' "$file"
+    fi
   fi
-fi
+done
 
-# Generate meta.json with WASM file info
-WASM_SIZE=$(wc -c < "$DEST_DIR/bach.wasm" | tr -d ' ')
-WASM_MD5=$(md5 -q "$DEST_DIR/bach.wasm" 2>/dev/null || md5sum "$DEST_DIR/bach.wasm" | cut -d' ' -f1)
-cat > "$DEST_DIR/meta.json" << EOF
-{
-  "wasmSize": $WASM_SIZE,
-  "md5": "$WASM_MD5",
-  "updatedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-}
-EOF
-echo "   ✓ Generated meta.json"
+# Update meta.json
+echo ""
+./scripts/update-wasm-meta.sh
 
 echo ""
 echo "✅ WASM files copied successfully!"

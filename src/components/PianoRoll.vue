@@ -474,7 +474,7 @@ function renderIdleWaves(time: number) {
   const vanishY = height + 20 // slightly below bottom edge
   for (let i = 0; i < ribCount; i++) {
     const angle = (-0.55 + (i / (ribCount - 1)) * 1.1) // spread range in radians
-    const breath = 0.02 + Math.sin(t * 0.2 + i * 0.9) * 0.015
+    const breath = 0.035 + Math.sin(t * 0.2 + i * 0.9) * 0.022
     ctx.strokeStyle = `rgba(140, 155, 190, ${breath})`
     ctx.lineWidth = 0.7
     ctx.beginPath()
@@ -496,7 +496,7 @@ function renderIdleWaves(time: number) {
     const baseArchH = height * 0.42
     const breathAmp = Math.sin(t * 0.3 + i * 1.6) * 0.06
     const archH = baseArchH * (1 + breathAmp)
-    const alpha = 0.06 + Math.sin(t * 0.35 + i * 1.3) * 0.03
+    const alpha = 0.1 + Math.sin(t * 0.35 + i * 1.3) * 0.045
 
     // Main arch stroke
     ctx.strokeStyle = `rgba(${v.r}, ${v.g}, ${v.b}, ${alpha})`
@@ -522,7 +522,7 @@ function renderIdleWaves(time: number) {
   const segments = 12
 
   // Outer ring
-  const ringBreath = 0.03 + Math.sin(t * 0.2) * 0.01
+  const ringBreath = 0.05 + Math.sin(t * 0.2) * 0.018
   ctx.strokeStyle = `rgba(140, 155, 190, ${ringBreath})`
   ctx.lineWidth = 0.8
   ctx.beginPath()
@@ -535,7 +535,7 @@ function renderIdleWaves(time: number) {
     const nextAngle = (Math.PI * 2 * (i + 1)) / segments - Math.PI / 2
 
     // Tracery spoke
-    const spokeBreath = 0.025 + Math.sin(t * 0.25 + i * 0.5) * 0.012
+    const spokeBreath = 0.045 + Math.sin(t * 0.25 + i * 0.5) * 0.02
     ctx.strokeStyle = `rgba(140, 155, 190, ${spokeBreath})`
     ctx.lineWidth = 0.6
     ctx.beginPath()
@@ -545,7 +545,7 @@ function renderIdleWaves(time: number) {
 
     // Stained-glass wedge fill — cycling through voice colors
     const v = GOTHIC_VOICES[i % 4]
-    const fillBreath = 0.015 + Math.sin(t * 0.2 + i * 0.7) * 0.008
+    const fillBreath = 0.028 + Math.sin(t * 0.2 + i * 0.7) * 0.013
     ctx.fillStyle = `rgba(${v.r}, ${v.g}, ${v.b}, ${fillBreath})`
     ctx.beginPath()
     ctx.moveTo(roseCx, roseCy)
@@ -563,8 +563,8 @@ function renderIdleWaves(time: number) {
 
   // Center glow — multi-colored (sapphire + amber blend)
   const glow = ctx.createRadialGradient(roseCx, roseCy, 0, roseCx, roseCy, roseR * 1.5)
-  glow.addColorStop(0, `rgba(58, 91, 160, ${0.02 + Math.sin(t * 0.2) * 0.008})`)
-  glow.addColorStop(0.5, `rgba(195, 155, 55, ${0.008 + Math.sin(t * 0.25 + 1) * 0.004})`)
+  glow.addColorStop(0, `rgba(58, 91, 160, ${0.035 + Math.sin(t * 0.2) * 0.012})`)
+  glow.addColorStop(0.5, `rgba(195, 155, 55, ${0.014 + Math.sin(t * 0.25 + 1) * 0.006})`)
   glow.addColorStop(1, 'transparent')
   ctx.fillStyle = glow
   ctx.fillRect(0, 0, width, height)

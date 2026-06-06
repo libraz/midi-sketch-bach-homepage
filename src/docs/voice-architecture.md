@@ -11,6 +11,10 @@ Each voice in a MIDI Sketch Bach composition is an independent melodic line. The
 In Baroque music, a "voice" is an independent melodic line — whether sung or played. A three-voice fugue has three simultaneous lines, each with its own rhythm, contour, and identity. In MIDI Sketch Bach, each voice becomes a separate MIDI track.
 :::
 
+::: tip Track is the export container; voice is the musical role
+The MIDI file uses tracks because DAWs understand tracks. The composition engine uses voices because counterpoint rules care about independent musical lines. Usually one voice maps to one track.
+:::
+
 ## The Form Decides the Voice Count
 
 Voice count is fixed per form. Picking the form picks the texture:
@@ -25,18 +29,23 @@ Passing `numVoices`/`num_voices` is accepted and ignored for backward compatibil
 
 ## Voice Intents
 
-The form director assigns each voice a **voice intent** over the bar spans of the piece — the role that voice plays at each point:
+The form director assigns each voice a **voice intent** over the bar spans of the piece — the role that voice plays at each point. The engine defines 30 named intents (`voice_intent.h`); they group into a handful of families:
 
-| Intent | Role |
-|--------|------|
-| Subject / Answer | Fugue theme entries (tonic) and their transposed answers (dominant) |
-| Ground bass | The immutable repeating bass of a passacaglia, chaconne, or Goldberg cycle |
-| Cantus firmus | A fixed chorale melody in long notes (chorale prelude) |
-| Figuration | Continuous idiomatic figuration (cello prelude, preludes) |
-| Variation | Reinvented upper material over a fixed bass |
-| Free counterpoint | Episode and accompaniment lines selected by the candidate search |
+| Family | Representative intents | Role |
+|--------|------------------------|------|
+| Fugal entries | `SubjectCarrier`, `AnswerCarrier`, `CountersubjectCarrier` | Fugue theme entries (tonic), their answers (dominant), and the recurring companion line |
+| Development | `MiddleEntryCarrier`, `StrettoCarrier`, `PedalCarrier`, `CodaCarrier` | Related-key entries, overlapping entries, pedal points, closing material |
+| Episodes | `Episode`, `FortspinnungSpan` | Sequential travel material derived from subject motifs |
+| Fixed lines | `GroundCarrier`, `PassacagliaGround`, `CantusFirmusCarrier` | Immutable repeating basses and chorale melodies |
+| Figural | `FigurationCarrier`, `ArpeggioFlow`, `ToccataCarrier`, `FantasiaCarrier` | Continuous idiomatic figuration and sectional solo writing |
+| Variation | `VariationCarrier` and role-specific variants | Reinvented upper material over a fixed bass |
+| Texture | `RhythmCarrier`, `NctCarrier`, free counterpoint | Anacrusis/hemiola rhythm shapes, declared non-chord-tone figures, and accompaniment selected by the candidate search |
 
 Material-bearing intents (subjects, grounds, cantus firmus) are fixed; the remaining lines are filled in by the [candidate search](/docs/generation-pipeline#step-3-candidate-search).
+
+::: info Subject, answer, ground, cantus firmus
+A **subject** is the main fugue theme. An **answer** is that theme restated in another voice, usually shifted toward the dominant. A **ground bass** is a repeating low pattern. A **cantus firmus** is a fixed long-note melody.
+:::
 
 ## Voice Independence
 
@@ -53,6 +62,10 @@ Each voice has its own intervallic profile and directional tendencies, and devel
 ### Register Differentiation
 
 Voices keep to distinct registers. Voice crossing is minimized; when voices approach each other, they tend to move apart. The candidate search anchors each beat to chord tones, keeping the harmony clear while voices stay independent.
+
+::: info Register and voice crossing
+**Register** means pitch range: bass is low, soprano-like writing is high. **Voice crossing** happens when a lower voice moves above a higher voice, or a higher voice moves below a lower one. That makes the streams harder to follow.
+:::
 
 ## Voice-to-Track Mapping
 

@@ -7,6 +7,10 @@ description: How the composer engine turns a config into a Bach-style compositio
 
 When you call `generator.generate(config)`, the composer engine runs a fixed pipeline that turns the request into a complete, deterministic composition.
 
+::: info Musical vocabulary in this pipeline
+The pipeline treats music as structured data: forms allocate voices, harmony supplies chord targets, candidate search chooses notes, and validation rejects illegal voice interactions. The compact glossary is in [Music Primer for Engineers](/docs/music-primer).
+:::
+
 ```mermaid
 graph TD
     A["BachConfig"] --> B["1. Compose Request<br>(resolve & validate)"]
@@ -14,7 +18,7 @@ graph TD
     C --> D["3. Candidate Search<br>(chord-tone selection)"]
     D --> E["4. Rule Validator<br>(fail-fast)"]
     E --> F["5. Renderer<br>(tracks)"]
-    F --> G["6. Ornament & Expression<br>(opt-in passes)"]
+    F --> G["6. Ornament & Expression<br>(post-passes)"]
     G --> H["7. MIDI Writer<br>(key transposition)"]
     H --> I["Standard MIDI File<br>+ Event Data"]
 ```
@@ -31,6 +35,10 @@ Validation is strict: unknown `form`/`character`/`instrument`/`scale` values and
 
 The form director lays out the piece. For the chosen form it assigns **voice intents** to bar spans — subjects and answers, ground basses, cantus firmus, figuration, variation material — across the resolved length.
 
+::: info Bar span and material
+A **bar span** is a range of measures. **Material** is predeclared musical content, such as a fugue subject or repeating ground bass, that the candidate search should respect instead of freely replacing.
+:::
+
 ```mermaid
 graph TD
     A["Form Type"] --> B{{"Layout"}}
@@ -46,22 +54,38 @@ The layout follows a **design-value arc** — establish, develop, climax at roug
 
 Against a harmonic plan (chords, modulation, cadences), the candidate search selects notes for each non-fixed voice. Selection is **per-beat and chord-tone anchored**: at each beat the search prefers pitches that are consonant with the harmony and with the other voices, falling back through ranked alternatives when the first choice violates a constraint. Material assigned by the form director (subjects, grounds, cantus firmus) is fixed and is not re-selected here.
 
+::: info Chords, modulation, cadences
+**Chords** are the vertical targets at each point in time. **Modulation** means moving the tonal center to another key. A **cadence** is a phrase ending, usually a dominant-to-tonic arrival such as V to I.
+:::
+
 ## Step 4: Rule Validator
 
-The validator checks the assembled voices against counterpoint and structure rules and fails fast on a violation. It reports failures with rule identifiers so the responsible span can be located. See [Counterpoint & Voice Leading](/docs/counterpoint) for the rule set.
+The validator checks the assembled voices against counterpoint and structure rules and fails fast on a violation. It reports failures with rule identifiers so the responsible span can be located. Learn the musical ideas in [Counterpoint Course](/docs/counterpoint), then use the [Validator Rule Reference](/docs/validator-rules) when you need to look up a specific rule ID.
+
+::: info What fail-fast means here
+The engine does not keep a list of every possible musical problem in a bad candidate. It stops at the first violated rule for that pass, reports the rule identifier, and lets the search or caller handle the failed candidate.
+:::
 
 ## Step 5: Renderer
 
 The validated voices are rendered into tracks — one track per voice — with channels, the instrument's General MIDI program, and note timings.
 
-## Step 6: Ornament & Expression (opt-in)
+::: info Source tags survive rendering
+Rendered notes keep their provenance: `"material"` for fixed source material, `"compose"` for notes selected by candidate search, and `"ornament"` for notes added later. This is useful when debugging why a rule could or could not rewrite a note.
+:::
 
-Deterministic post-passes decorate the rendered tracks:
+## Step 6: Ornament & Expression (post-pass)
+
+Deterministic post-passes decorate the rendered tracks. At the C++ library level the ornament pass is a separate function (`applyOrnamentPass`) deliberately kept out of `Composer::run()`; the public generation path `bach_generate_from_json` — used by the JS API, CLI, and this demo — always invokes it after validation.
 
 - **Ornaments** — trills, mordents, and Nachschlag, with density depending on character and instrument. Ground-bass and cantus-firmus lines are never ornamented.
 - **Expression** — organ registration as a CC#7/#11 curve following the form's energy arc, and closing ritardando tempo events.
 
 Notes added by these passes carry the `source: "ornament"` provenance tag (versus `"material"` and `"compose"`).
+
+::: info Ornament
+An **ornament** is a small decorative figure added around a structural note. It is not the source melody itself, so event data marks it separately with `source: "ornament"`.
+:::
 
 ## Step 7: MIDI Writer
 

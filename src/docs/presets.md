@@ -7,6 +7,10 @@ description: Complete reference tables for all forms, instruments, characters, s
 
 Complete reference for all configurable presets in MIDI Sketch Bach.
 
+::: info Reading these tables
+`ID` and `String` are API values. **Voices**, **meter**, **natural bars**, **key**, and **character** are musical structure choices. If those terms are new, keep the [Music Primer for Engineers](/docs/music-primer) open while reading this page.
+:::
+
 ## Forms Reference
 
 ### All 10 Forms
@@ -28,6 +32,10 @@ Complete reference for all configurable presets in MIDI Sketch Bach.
 "Natural Bars" is the length when `scale: "short"`. The `scale` option multiplies it (~1x/2x/3x/4x), and `targetBars` overrides it. Every form caps at 128 bars.
 :::
 
+::: tip Natural bars are not seconds
+A bar count is musical length, not wall-clock duration. Playback time also depends on `bpm` and meter. A 42-bar fugue at 80 BPM lasts longer than the same 42 bars at 140 BPM.
+:::
+
 ### Form Selection Flowchart
 
 ```mermaid
@@ -47,7 +55,7 @@ graph TD
 ```
 
 ::: info Organ System (Forms 0--6)
-The seven organ forms cover the major genres of Bach's organ repertoire. All default to organ registration and typically use 3--4 voices. These forms feature the most sophisticated counterpoint, as the organ's sustained tones make every voice-leading detail audible.
+The seven organ forms cover the major genres of Bach's organ repertoire. All default to organ registration and typically use 2--3 voices. These forms feature the most sophisticated counterpoint, as the organ's sustained tones make every voice-leading detail audible.
 :::
 
 ::: info Solo Instrument System (Forms 7--8)
@@ -83,6 +91,10 @@ The Goldberg Variations form is a theme-and-variations cycle over an immutable b
 | 3 | Violin | `"violin"` | 40 | Violin | Chaconne (8) |
 | 4 | Cello | `"cello"` | 42 | Cello | Cello Prelude (7) |
 | 5 | Guitar | `"guitar"` | 24 | Nylon Guitar | Solo forms (7--8) |
+
+::: info Instrument does not decide the composition
+The `instrument` selects MIDI sound, playable range, and ornament density. It does not change voice count, meter, form layout, or validator rules; those come from `form`.
+:::
 
 ::: tip
 While each form has a default instrument, you can override it with any instrument. For example, a fugue played on harpsichord has a distinctly different character than on organ — the harpsichord's crisp attack makes counterpoint lines more distinct.
@@ -133,6 +145,10 @@ The actual output length depends on each form's natural length (see the Forms Re
 | 10 | A# / Bb | Bb | Nobility, warmth |
 | 11 | B | B | Hard brilliance (B major); somber weight (B minor) |
 
+::: info Pitch class and mode
+`key` chooses the pitch class, such as C or D. `isMinor` chooses major or minor. For example, `key: 2, isMinor: false` is D major; `key: 2, isMinor: true` is D minor.
+:::
+
 ::: info Key Associations in Baroque Music
 Baroque composers associated specific keys with emotional qualities (*Affektenlehre*). D minor was the key of passion and drama (BWV 565 Toccata and Fugue), while C major represented purity (BWV 846 Prelude). These associations are subjective and vary by era, but they influenced Bach's choice of key for his compositions.
 :::
@@ -173,7 +189,7 @@ import {
 // List all forms
 const forms = getForms()
 for (const form of forms) {
-  console.log(`${form.index}: ${form.name}`)
+  console.log(`${form.id}: ${form.display ?? form.name}`)
 }
 // 0: Fugue
 // 1: Prelude and Fugue
@@ -188,11 +204,11 @@ for (const form of forms) {
 
 // List all instruments
 const instruments = getInstruments()
-// [{ index: 0, name: "Organ" }, ...]
+// [{ id: 0, name: "organ" }, ...]
 
 // List all keys
 const keys = getKeys()
-// [{ index: 0, name: "C" }, { index: 1, name: "C#" }, ...]
+// [{ id: 0, name: "C" }, { id: 1, name: "C#" }, ...]
 ```
 
 ::: tip

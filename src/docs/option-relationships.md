@@ -7,6 +7,10 @@ description: How MIDI Sketch Bach configuration options interact - dependencies,
 
 MIDI Sketch Bach's configuration options interact with each other in specific ways. Understanding these relationships helps you craft configurations that produce the results you want.
 
+::: info Two layers of options
+Some options choose musical structure (`form`, `key`, `isMinor`, `character`), while others choose rendering or reproducibility (`instrument`, `bpm`, `seed`). The [Music Primer for Engineers](/docs/music-primer) explains the musical terms used here.
+:::
+
 ## Dependency Overview
 
 ```mermaid
@@ -101,6 +105,10 @@ The `instrument` choice affects the General MIDI program, the playable range use
 
 The scale multipliers are approximately `short` ≈ 1x, `medium` ≈ 2x, `long` ≈ 3x, `full` ≈ 4x of the form's natural length.
 
+::: warning CLI difference
+The CLI falls back to `--scale medium` for fugue when `--scale` is omitted — a CLI-only convenience. The JS API default is always `scale: "short"` regardless of form. See the [CLI reference](/docs/cli).
+:::
+
 ::: tip
 `targetBars` is snapped to the form's granularity (e.g. the ground-bass period) and clamped to `[form minimum, 128]`. Every form caps at 128 bars. Use `scale` for a general size category; use `targetBars` for a specific length.
 :::
@@ -152,6 +160,10 @@ generator.generate({ form: 'fugue', key: 0, isMinor: true, seed: 42 })
 
 The `key` and `isMinor` parameters work together to define the tonal center:
 
+::: info Tonal center
+The **tonal center** is the pitch that feels like home. `key` chooses the pitch class, and `isMinor` chooses whether the surrounding mode is major or minor.
+:::
+
 ```js
 // D major
 generator.generate({ key: 2, isMinor: false })
@@ -173,6 +185,10 @@ The key affects:
 ## Character and Form
 
 The `character` parameter (`severe`, `playful`, `noble`, `restless`) shapes the primary thematic material. Its impact varies by form, and some combinations are forbidden:
+
+::: info Character is not genre
+`character` changes the melodic profile of the subject or primary material: interval size, rhythmic energy, chromatic tendency, and contour. It does not switch the form. A `restless` fugue is still a fugue.
+:::
 
 | Form Type | Character Impact |
 |-----------|-----------------|
@@ -196,6 +212,10 @@ Requesting a forbidden pair throws instead of silently substituting a character.
 ## Validation Rules
 
 Complete validation constraints for all configuration fields. Note that several fields now **throw** on invalid input rather than clamping:
+
+::: info Config validation vs musical validation
+This table covers API/config validation: whether option values are accepted. Counterpoint and form-structure failures are separate musical validator rules; see [Validator Rule Reference](/docs/validator-rules).
+:::
 
 | Field | Type | Range | Default | Validation |
 |-------|------|-------|---------|------------|

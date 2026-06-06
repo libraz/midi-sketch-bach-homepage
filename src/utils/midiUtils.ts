@@ -37,6 +37,24 @@ export function midiToFreq(midi: number): number {
 }
 
 /**
+ * Convert a VexFlow staff key (e.g. "c/5") plus optional accidental
+ * ("#", "b", "n") to a MIDI note number. Returns null for invalid input.
+ */
+export function staffKeyToMidi(key: string, accidental?: string): number | null {
+  const match = /^([a-g])([#b]?)\/(-?\d+)$/.exec(key.trim().toLowerCase())
+  if (!match) return null
+  const stepSemis: Record<string, number> = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 }
+  let semis = stepSemis[match[1]]
+  const inlineAccidental = match[2]
+  const applied = accidental ?? inlineAccidental
+  if (applied === '#') semis += 1
+  else if (applied === 'b') semis -= 1
+  const octave = Number(match[3])
+  const midi = (octave + 1) * 12 + semis
+  return midi >= 0 && midi <= 127 ? midi : null
+}
+
+/**
  * Check if a MIDI note is a black key
  */
 export function isBlackKey(midi: number): boolean {

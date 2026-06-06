@@ -130,18 +130,6 @@ export function useBachGeneration() {
   }
 
   /**
-   * Get library version string.
-   */
-  function getVersion(): string | null {
-    if (!_module) return null
-    try {
-      return _module.getVersion()
-    } catch {
-      return null
-    }
-  }
-
-  /**
    * Get available presets from WASM.
    */
   function getForms() {
@@ -173,7 +161,6 @@ export function useBachGeneration() {
     getMidi,
     getEvents,
     downloadMidi,
-    getVersion,
     getForms,
     getInstruments,
     getCharacters,

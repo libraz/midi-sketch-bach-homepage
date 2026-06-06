@@ -5,6 +5,10 @@ description: Complete JavaScript API reference for MIDI Sketch Bach.
 
 # JavaScript API Reference
 
+::: info Music terms in config
+`form`, `key`, `isMinor`, `character`, `scale`, and `targetBars` map API values to musical decisions. For the non-programming vocabulary behind those fields, see the [Music Primer for Engineers](/docs/music-primer) and [Option Relationships](/docs/option-relationships).
+:::
+
 ## Initialization
 
 ### `init(options?)`
@@ -18,7 +22,7 @@ import { init } from '@libraz/midi-sketch-bach'
 await init()
 
 // Browser (specify WASM path)
-await init({ wasmPath: '/wasm/midisketch.wasm' })
+await init({ wasmPath: '/wasm/bach.wasm' })
 ```
 
 **Parameters**:
@@ -84,7 +88,7 @@ Returns structured event data with metadata and individual note events.
 ```js
 const events = generator.getEvents()
 console.log(events.form)        // "fugue"
-console.log(events.key)         // pitch class used (0 = C)
+console.log(events.key)         // "D minor"
 console.log(events.bpm)         // 80
 console.log(events.total_bars)  // 42
 console.log(events.tracks)      // Array of TrackData
@@ -203,7 +207,7 @@ Forms can be specified by number or name string:
 ```ts
 interface EventData {
   form: string          // Form name (e.g., "fugue")
-  key: number           // Pitch class (events JSON stays in C)
+  key: string           // Requested key name (e.g., "D minor")
   bpm: number           // Tempo
   seed: number          // Resolved seed used for generation
   total_ticks: number   // Total duration in MIDI ticks
@@ -257,7 +261,7 @@ These functions return arrays of `PresetInfo` objects describing available optio
 import { getForms } from '@libraz/midi-sketch-bach'
 
 const forms = getForms()
-// [{ index: 0, name: "Fugue", ... }, ...]
+// [{ id: 0, name: "fugue", display: "Fugue" }, ...]
 ```
 
 ### `getInstruments()`
@@ -266,7 +270,7 @@ const forms = getForms()
 import { getInstruments } from '@libraz/midi-sketch-bach'
 
 const instruments = getInstruments()
-// [{ index: 0, name: "Organ", ... }, ...]
+// [{ id: 0, name: "organ" }, ...]
 ```
 
 ### `getCharacters()`
@@ -283,7 +287,7 @@ const characters = getCharacters()
 import { getKeys } from '@libraz/midi-sketch-bach'
 
 const keys = getKeys()
-// [{ index: 0, name: "C", ... }, { index: 1, name: "C#", ... }, ...]
+// [{ id: 0, name: "C" }, { id: 1, name: "C#" }, ...]
 ```
 
 ### `getScales()`
@@ -292,7 +296,7 @@ const keys = getKeys()
 import { getScales } from '@libraz/midi-sketch-bach'
 
 const scales = getScales()
-// [{ index: 0, name: "Short", ... }, ...]
+// [{ id: 0, name: "short" }, ...]
 ```
 
 ### `getVersion()`
@@ -301,7 +305,7 @@ const scales = getScales()
 import { getVersion } from '@libraz/midi-sketch-bach'
 
 const version = getVersion()
-// "1.0.0"
+// e.g. "0.1.0"
 ```
 
 ---
@@ -352,13 +356,14 @@ const generator = new BachGenerator()
 
 for (const form of forms) {
   generator.generate({
-    form: form.index,
+    form: form.name,
     key: 2,
     isMinor: true,
     seed: 42
   })
 
-  const filename = `bach-${form.name.toLowerCase().replace(/\s+/g, '-')}.mid`
+  // form.name is already snake_case (e.g. "prelude_and_fugue"); use form.display for a human-readable label
+  const filename = `bach-${form.name}.mid`
   writeFileSync(filename, generator.getMidi())
   console.log(`Saved: ${filename}`)
 }
@@ -371,7 +376,7 @@ generator.destroy()
 ```js
 import { init, BachGenerator } from '@libraz/midi-sketch-bach'
 
-await init({ wasmPath: '/wasm/midisketch.wasm' })
+await init({ wasmPath: '/wasm/bach.wasm' })
 
 const generator = new BachGenerator()
 generator.generate({

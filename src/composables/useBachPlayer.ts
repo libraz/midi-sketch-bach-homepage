@@ -55,6 +55,20 @@ export function useBachPlayer() {
   let cachedEventData: EventData | null = null
   let currentInstrumentName = 'church_organ'
 
+  // Stop functions returned by instrument.start() for every scheduled note.
+  // smplr queues notes beyond its lookahead window internally, and
+  // instrument.stop() only silences already-sounding voices — it does NOT
+  // clear that queue. Calling these cancels queued notes as well.
+  let noteStops: Array<(time?: number) => void> = []
+
+  /** Cancel all scheduled-but-not-yet-played notes and stop sounding ones. */
+  function cancelScheduledNotes() {
+    for (const stopNote of noteStops) {
+      try { stopNote() } catch { /* ignore */ }
+    }
+    noteStops = []
+  }
+
   // Generation counter to prevent stale animation loops from interfering
   // when play() is called while a previous play's updatePosition is running.
   let playGeneration = 0
@@ -144,6 +158,7 @@ export function useBachPlayer() {
     }
 
     // Stop any lingering notes from the previous cycle
+    cancelScheduledNotes()
     for (const [, instrument] of instrumentCache) {
       try { instrument.stop() } catch { /* ignore */ }
     }
@@ -210,12 +225,12 @@ export function useBachPlayer() {
           : durationSeconds
 
         if (adjustedDuration > 0 && instrument) {
-          instrument.start({
+          noteStops.push(instrument.start({
             note: note.pitch,
             velocity: note.velocity,
             time: audioContext.currentTime + adjustedStartSeconds,
             duration: adjustedDuration,
-          })
+          }))
         }
       }
     }
@@ -268,7 +283,8 @@ export function useBachPlayer() {
       stopTimeout = null
     }
 
-    // Stop all instruments
+    // Cancel queued notes and stop all instruments
+    cancelScheduledNotes()
     for (const [, instrument] of instrumentCache) {
       instrument.stop()
     }
@@ -310,6 +326,7 @@ export function useBachPlayer() {
       stopTimeout = null
     }
 
+    cancelScheduledNotes()
     for (const [, instrument] of instrumentCache) {
       try {
         instrument.stop()

@@ -19,6 +19,10 @@ Choosing an `instrument` affects three things:
 
 The voice count, meter, and structure come from the `form`, not from the instrument. Each form has a default instrument, but any instrument may be substituted.
 
+::: info Instrument vs voice
+An **instrument** is the playback sound and range profile. A **voice** is the musical line being generated. A single instrument, such as organ, can carry several voices.
+:::
+
 ## General MIDI Programs
 
 | Instrument | String | GM Program | Sound |
@@ -44,6 +48,10 @@ An unknown instrument string is rejected (it throws) rather than silently fallin
 ## Ornament Density
 
 The deterministic ornament pass adds trills, mordents, and Nachschlag. How densely it decorates depends on both the `character` and the `instrument`, and some lines are never ornamented:
+
+::: info Trill, mordent, Nachschlag
+These are short Baroque decorative figures around a structural note. They are added after the main composition is validated, so they are tagged as `source: "ornament"` rather than `"material"` or `"compose"`.
+:::
 
 - Ground-bass lines (passacaglia, chaconne, Goldberg bass) are never ornamented.
 - Cantus-firmus lines (chorale prelude) are never ornamented.

@@ -10,6 +10,7 @@
     "subtitle": "Algorithmic Bach Composition Engine",
     "notice": "",
     "play": "PLAY",
+    "pause": "PAUSE",
     "stop": "STOP",
     "loading": "Loading...",
     "initializing": "Initializing...",
