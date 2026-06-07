@@ -22,6 +22,10 @@ Between any two consecutive sonorities, a voice pair moves in one of four ways:
 
 <CounterpointStaff example="parallelSixths" locale="en" />
 
+Bach promoted contrary motion from a recommendation to a structural law — twice. Variations 12 and 15 of the Goldberg Variations are canons by inversion, where the second voice is the first voice upside down:
+
+<CounterpointStaff example="bachMirror" locale="en" />
+
 ## Forbidden perfect parallels
 
 Parallel fifths and octaves make two voices sound like a single doubled line — the classic loss of voice independence. Play the two examples below and listen for it: the octave case in particular collapses into one thick voice.
@@ -75,6 +79,10 @@ Vertical writing must remain readable as separate voices even before any interva
 
 <CounterpointStaff example="voiceCrossing" locale="en" />
 
+Bach himself crosses voices on purpose when a stricter contract demands it. The third Goldberg variation is a canon at the unison — the follower repeats the leader at the very same pitch, so both voices share one register and tangle the moment the second enters. The engine has no page of slurs and stems to keep tangled lines readable, so it simply refuses the trade:
+
+<CounterpointStaff example="bachVoiceCrossing" locale="en" />
+
 <CounterpointStaff example="spacingWide" locale="en" />
 
 In a real three-voice texture the rule splits cleanly in two — tight above, free below:
@@ -91,6 +99,10 @@ In a real three-voice texture the rule splits cleanly in two — tight above, fr
 Fugues reuse two-voice combinations with the voices swapped: what was on top moves below. For that to work, every interval must survive being replaced by its octave complement — 5ths become 4ths, octaves become unisons.
 
 <CounterpointStaff example="octaveInversion" locale="en" />
+
+Bach cashes in on this property constantly. In the C minor fugue of WTC I, the subject and its countersubject are written so that either can be on top — here is the pair from bars 7–8, with the countersubject *above* the subject; chapter 6 shows the same pair in its original position:
+
+<CounterpointStaff example="bachInvertible" locale="en" />
 
 Two scoped rules keep upper-voice pairs invertible:
 

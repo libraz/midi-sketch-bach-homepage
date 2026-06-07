@@ -99,3 +99,40 @@ const events = generator.getEvents()   // Event data (pitches stay in C)
 ::: tip
 The events JSON from `getEvents()` reports pitches in C and tags every note with its `source`. See the [JavaScript API](/docs/api-js#eventdata) for the full type definitions.
 :::
+
+## Beyond the pipeline: how quality is measured
+
+The seven steps above are everything that happens at runtime. The pipeline never searches for a "more Bach-like" candidate while generating — the layout is fixed by design values, and the validator only rejects illegal results. So how do we know those design values actually produce Bach-like output?
+
+The answer is **development-side quality gates**. Whenever a form or figuration in the engine changes, the generated output is run through two families of automated checks. Both ship as public Python tooling in the engine repository (the `texture-gate` and `closure` commands of `bach_tools.py`).
+
+### The corpus statistics model
+
+Five distributions are extracted from a generated piece's event data and scored by their distance (negative log-likelihood) from reference distributions estimated over a corpus of real works. A distance beyond a calibrated threshold fails the gate.
+
+| Feature | What it captures |
+|---------|------------------|
+| Pitch class | How often each note name is used |
+| Melodic interval | The distribution of distances between adjacent notes within a voice |
+| Duration | The distribution of note lengths |
+| Beat position | Where in the bar notes are attacked |
+| Vertical interval class | The distribution of intervals between simultaneously sounding notes |
+
+The most heavily weighted of these is the **melodic interval**. In Bach's actual writing the dominant melodic interval is overwhelmingly the **step** (a move of one or two semitones to a neighboring scale tone — see the [primer](/docs/music-primer#steps-and-leaps)), so a leap-heavy line widens this distance immediately.
+
+### The tension between horizontal steps and vertical consonance
+
+This is where the core tension of figuration design lives.
+
+- **Horizontally**: a line matches the corpus better the more stepwise it is — scalar runs, wave figures.
+- **Vertically**: beat onsets sound consonant against a sustained bass the more they are anchored to the bar's chord tones (see also [Leaps need recovery](/docs/counterpoint/melody)).
+
+Implemented naively, the two collide: a freely running scale line steps onto non-chord tones at beat onsets, while jumping every beat to the nearest chord tone produces a leap-riddled line. The engine's figures (scalar wave, sawtooth, broken chord) are written to keep both — landing on chord tones that lie *ahead in the running direction*, and choosing oscillation partners from bass-consonant neighbor tones before resorting to a leap.
+
+### Texture gates
+
+Alongside the statistics model, a seed × form sweep checks structural metrics directly — per-voice activity, silence ratios, repeated-note run lengths, parallel perfect intervals, and the model score threshold above. If a single case fails, the change does not merge.
+
+::: info These are not part of generate()
+Neither the corpus model nor the texture gates run at runtime. Generation is always a deterministic single shot; quality is guaranteed on the side that produces it — in the design values, at development time.
+:::

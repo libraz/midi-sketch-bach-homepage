@@ -109,7 +109,7 @@ export const dissonanceExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'A neighbor tone decorates one pitch by stepping away and back. Like the passing tone, it is legible because both the approach and the departure are steps — the validator accepts it on a weak beat.',
-      ja: '刺繍音は、一つの音から順次進行で離れてすぐ戻る装飾です。経過音と同じく、出入りがどちらも順次進行なので意味が聞き取れます。弱拍であれば validator も許容します。',
+      ja: '刺繍音は、一つの音から順次進行で離れてすぐ戻る装飾です。経過音と同じく、出入りがどちらも順次進行なので意味が聞き取れます。弱拍であれば 検証器も許容します。',
     },
     time: '3/4',
     width: 520,
@@ -310,7 +310,7 @@ export const dissonanceExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'The one suspension figure in the engine that resolves upward. The suspended voice is the lower one: it holds while the other voice moves onto it, then rises one step to restore consonance. The validator enforces the direction per figure: 4-3, 7-6, and 9-8 fall; 2-3 rises.',
-      ja: 'エンジンが扱う掛留のうち、唯一上行解決する型です。保持されるのは下の声部で、相手声部が動いて2度の衝突が生まれたあと、一音上がって協和を取り戻します。validator は型ごとに解決方向を区別し、4-3・7-6・9-8 は下行、2-3 は上行を要求します。',
+      ja: 'エンジンが扱う掛留のうち、唯一上行解決する型です。保持されるのは下の声部で、相手声部が動いて2度の衝突が生まれたあと、一音上がって協和を取り戻します。検証器は型ごとに解決方向を区別し、4-3・7-6・9-8 は下行、2-3 は上行を要求します。',
     },
     time: '3/4',
     width: 520,

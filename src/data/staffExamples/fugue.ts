@@ -17,7 +17,7 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'A real answer transposes the whole subject up a fifth. A tonal answer adjusts the opening so that tonic maps to dominant and dominant maps back to tonic, keeping the music anchored in the home key during the exposition. The validator checks exactly this head mapping when the material declares a tonal answer.',
-      ja: '応唱が主唱を5度上へそのまま移調したものなら「実応」、冒頭だけ主音↔属音を入れ替えて調の重心を保つのが「変応」です。提示部で音楽が主調から離れすぎないための調整で、validator は素材が変応を宣言しているとき、まさにこの冒頭の写像を検査します。',
+      ja: '応唱が主唱を5度上へそのまま移調したものなら「実応」、冒頭だけ主音↔属音を入れ替えて調の重心を保つのが「変応」です。提示部で音楽が主調から離れすぎないための調整で、検証器は素材が変応を宣言しているとき、まさにこの冒頭の写像を検査します。',
     },
     time: '4/4',
     width: 620,
@@ -54,7 +54,7 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'The countersubject is the recurring companion line that accompanies each later entry of the subject. To do its job it must actually be there: the validator samples every quarter-beat of the answer window and fails the rule if the countersubject voice falls silent.',
-      ja: '対主題は、主題が再登場するたびに寄り添う決まった相方の旋律です。その役割を果たすには実際に鳴っていなければなりません。validator は応唱の区間を4分音符単位でサンプリングし、対主題声部が途切れていればこのルールで弾きます。',
+      ja: '対主題は、主題が再登場するたびに寄り添う決まった相方の旋律です。その役割を果たすには実際に鳴っていなければなりません。検証器は応唱の区間を4分音符単位でサンプリングし、対主題声部が途切れていればこのルールで弾きます。',
     },
     time: '4/4',
     width: 620,
@@ -93,7 +93,7 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'Sequences are how Baroque episodes travel between keys: a short seed is restated on successively lower (or higher) steps. The validator checks that each step is a verbatim transposition of the seed by the declared offset — paraphrases fail the rule.',
-      ja: 'ゼクエンツは、嬉遊部が調から調へ移動するための乗り物です。短い種となる音型を、順に一段ずつ下（または上）に置き直していきます。validator は各段が宣言されたオフセットどおりの「正確な移調」であることを確認し、言い換えはこのルールで落とします。',
+      ja: 'ゼクエンツは、嬉遊部が調から調へ移動するための乗り物です。短い種となる音型を、順に一段ずつ下（または上）に置き直していきます。検証器は各段が宣言されたオフセットどおりの「正確な移調」であることを確認し、言い換えはこのルールで落とします。',
     },
     time: '3/4',
     bars: 2,
@@ -132,7 +132,7 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'Episode material must be the declared transform of a declared subject slice — and inversion is the most striking transform: up a step becomes down a step, up a third becomes down a third. Play the two lines one after the other; the second is recognizably the first, upside down. The validator recomputes the expected notes from the transform and compares pitch, duration, and tick.',
-      ja: '嬉遊部の素材は、宣言された主題の断片に宣言された変形を適用したものでなければなりません。反行はその中で最も鮮烈な変形です。1度上がる動きは1度下がる動きに、3度上は3度下になります。二つの線を順に再生してみてください。二つ目は紛れもなく一つ目の逆さまです。validator は変形から期待される音列を再計算し、音高・音価・ティックを突き合わせます。',
+      ja: '嬉遊部の素材は、宣言された主題の断片に宣言された変形を適用したものでなければなりません。反行はその中で最も鮮烈な変形です。1度上がる動きは1度下がる動きに、3度上は3度下になります。二つの線を順に再生してみてください。二つ目は紛れもなく一つ目の逆さまです。検証器は変形から期待される音列を再計算し、音高・音価・ティックを突き合わせます。',
     },
     time: '4/4',
     width: 620,
@@ -169,7 +169,7 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'After the exposition the subject travels: here the C major subject returns in A minor, the relative key. The validator restricts the declared entry key to the related family — dominant, relative, subdominant, supertonic — and then checks that every note of the entry is diatonic in that key. Play them in sequence: the same theme, a new emotional light.',
-      ja: '提示部のあと、主題は旅に出ます。譜例ではハ長調の主題が平行調のイ短調で戻ってきます。validator は宣言されたエントリの調を近親調の一族——属調・平行調・下属調・上主調——に制限したうえで、エントリのすべての音がその調で全音階的であることを確認します。順に再生してみてください。同じ主題が、新しい感情の光の中で響きます。',
+      ja: '提示部のあと、主題は旅に出ます。譜例ではハ長調の主題が平行調のイ短調で戻ってきます。検証器は宣言されたエントリの調を近親調の一族——属調・平行調・下属調・上主調——に制限したうえで、エントリのすべての音がその調で全音階的であることを確認します。順に再生してみてください。同じ主題が、新しい感情の光の中で響きます。',
     },
     time: '4/4',
     width: 620,
@@ -205,7 +205,7 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'Imitation declares a contract: the follower must enter exactly at the declared time distance and exactly at the declared interval. The validator verifies both the entry tick and the pitch offset against the leader fragment.',
-      ja: '模倣は契約です。後続声部は宣言された時間差と音程差のとおりに入らなければなりません。validator はエントリの時刻と音程オフセットの両方を、先行声部の断片と突き合わせて検証します。',
+      ja: '模倣は契約です。後続声部は宣言された時間差と音程差のとおりに入らなければなりません。検証器はエントリの時刻と音程オフセットの両方を、先行声部の断片と突き合わせて検証します。',
     },
     time: '2/4',
     bars: 2,
@@ -240,7 +240,7 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'In a stretto the subject chases itself: the second entry begins inside the first one\'s window. It is the classic intensification device near a fugue\'s climax. The validator requires a genuine overlap and an exact transposition of the subject.',
-      ja: 'ストレッタでは主題が主題を追いかけます。第2のエントリが第1のエントリの途中で始まる、フーガの頂点付近を熱くする常套手段です。validator は本当に重なっていること、そして主題が正確に移調されていることを要求します。',
+      ja: 'ストレッタでは主題が主題を追いかけます。第2のエントリが第1のエントリの途中で始まる、フーガの頂点付近を熱くする常套手段です。検証器は本当に重なっていること、そして主題が正確に移調されていることを要求します。',
     },
     time: '2/4',
     bars: 2,
@@ -276,7 +276,7 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'A pedal point suspends the harmonic clock: the held bass legitimizes passing clashes above it. The validator does not police those clashes — it checks that the pedal pitch itself is the tonic or the dominant, the only degrees that can bear this weight.',
-      ja: '保続音は和声の時計を一時停止させます。保持されたバスの上では、経過的な衝突も正当化されます。validator がここで検査するのは衝突の方ではなく、保続される音そのものが主音か属音か——この重みに耐えられる二つの音度か——という点です。',
+      ja: '保続音は和声の時計を一時停止させます。保持されたバスの上では、経過的な衝突も正当化されます。検証器がここで検査するのは衝突の方ではなく、保続される音そのものが主音か属音か——この重みに耐えられる二つの音度か——という点です。',
     },
     time: '4/4',
     width: 620,

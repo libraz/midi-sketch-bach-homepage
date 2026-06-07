@@ -22,6 +22,10 @@ description: 4種類の相対運動、並行・隠伏完全音程が禁じられ
 
 <CounterpointStaff example="parallelSixths" locale="ja" />
 
+バッハは反行を「推奨」から「構造の掟」に格上げしてみせました——それも2回。ゴルトベルク変奏曲の第12変奏と第15変奏は反行カノンで、第2の声部が第1の声部の上下逆さまです。
+
+<CounterpointStaff example="bachMirror" locale="ja" />
+
 ## 並行完全音程の禁止
 
 並行5度・並行8度は、二つの声部を一本の重複した旋律のように聞こえさせます。声部の独立が失われる典型です。下の二つの譜例を再生して聴き比べてください。特にオクターヴの例は、本当に一つの太い声部に潰れて聞こえます。
@@ -75,6 +79,10 @@ description: 4種類の相対運動、並行・隠伏完全音程が禁じられ
 
 <CounterpointStaff example="voiceCrossing" locale="ja" />
 
+バッハ自身は、より厳しい契約がそれを要求するとき、意図的に声部を交差させます。ゴルトベルク変奏曲の第3変奏は同度のカノン——フォロワーがリーダーをまったく同じ高さで反復するため、二つの声部は一つの音域を分け合い、2声目が入った瞬間にもつれます。エンジンには、もつれた線を読み分けさせるスラーも符尾もありません。だからこの取引を端から拒否します。
+
+<CounterpointStaff example="bachVoiceCrossing" locale="ja" />
+
 <CounterpointStaff example="spacingWide" locale="ja" />
 
 実際の三声テクスチュアでは、このルールは「上は密に、下は自由に」と、きれいに二つへ分かれます。
@@ -92,6 +100,10 @@ description: 4種類の相対運動、並行・隠伏完全音程が禁じられ
 
 <CounterpointStaff example="octaveInversion" locale="ja" />
 
+バッハはこの性質を絶えず活用します。平均律 I 巻のハ短調フーガでは、主唱と対主題がどちらが上に来ても成立するように書かれています。下の譜例は第7〜8小節、対主題が主唱の*上*に回った形です。元の配置は第6章で見られます。
+
+<CounterpointStaff example="bachInvertible" locale="ja" />
+
 上声部ペアの転回可能性を守るのが、次の二つの適用範囲付きルールです。
 
 <CounterpointStaff example="fourthWeakBeat" locale="ja" />
@@ -101,7 +113,7 @@ description: 4種類の相対運動、並行・隠伏完全音程が禁じられ
 | `invertible_at_octave` | 上声部ペアの強拍での並行8度。転回すると並行*ユニゾン*——最も極端な声部の融合——になってしまう。斜行と弱拍は免除。 |
 | `fourth_only_on_weak_beat` | 上声部ペアの強拍に置かれた完全4度。転回すると強拍の5度になる。弱拍の4度は経過的な響きとして通る。 |
 
-##検証器はこの章をどう見るか
+## 検証器はこの章をどう見るか
 
 | ルール | FailKind | 主な免除 |
 |--------|----------|----------|

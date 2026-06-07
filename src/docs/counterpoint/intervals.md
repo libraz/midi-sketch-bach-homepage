@@ -36,6 +36,14 @@ Perfect intervals are acoustically the purest — their frequency ratios are sim
 
 Thirds, sixths, and their compounds (tenths, thirteenths) are full but mobile. Most of the vertical sonorities in a generated two-voice texture are imperfect consonances, and chains of parallel thirds or sixths are idiomatic — the engine never penalizes them.
 
+Bach exploits that license at full tilt. In the E♭ major prelude from WTC I, two sixteenth-note lines run an entire bar in strict parallel tenths:
+
+<CounterpointStaff example="bachParallelTenths" locale="en" />
+
+And one bar of the C minor prelude shows the two families dividing the labor — perfect consonances standing as pillars on the strong positions, sixths carrying all the motion between them:
+
+<CounterpointStaff example="bachPillars" locale="en" />
+
 ### Dissonances: tension with an obligation
 
 <CounterpointStaff example="dissonantIntervals" locale="en" />

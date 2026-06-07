@@ -38,7 +38,13 @@ Between downbeats, a dissonant non-chord tone is acceptable when the line makes 
 
 <CounterpointStaff example="neighborTone" locale="en" />
 
-A **passing tone** fills the gap between two chord tones a third apart; a **neighbor tone** steps off a chord tone and returns. Both read as ornamentation of a stable frame. The same dissonance without that frame fails:
+A **passing tone** fills the gap between two chord tones a third apart; a **neighbor tone** steps off a chord tone and returns. Both read as ornamentation of a stable frame.
+
+Bach runs the pattern at sixteenth-note speed. In bar 2 of the C major fugue (WTC I), the running line clashes twice with the answer above it — a fourth, then a seventh — and both clashes pass the contract:
+
+<CounterpointStaff example="bachPassingTones" locale="en" />
+
+The same dissonance without that frame fails:
 
 <CounterpointStaff example="unpreparedDissonance" locale="en" />
 
@@ -71,6 +77,10 @@ The engine supports the four classical figures. Each is named by the dissonant i
 Chained, the suspension stops being an event and becomes a texture — each resolution doubles as the next preparation:
 
 <CounterpointStaff example="suspensionChain" locale="en" />
+
+Bach opens the B minor prelude that closes WTC I with exactly this texture — except the suspensions are handed back and forth between two voices over a walking bass:
+
+<CounterpointStaff example="bachSuspensionChain" locale="en" />
 
 | Figure | Dissonance → resolution | Direction | Typical home |
 |--------|-------------------------|-----------|--------------|

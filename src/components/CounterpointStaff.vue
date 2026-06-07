@@ -1,27 +1,52 @@
 <template>
-  <figure class="counterpoint-staff" :data-status="status" :data-verdict="verdict">
+  <figure
+    class="counterpoint-staff"
+    :data-status="status"
+    :data-verdict="verdict"
+    :data-playing="isPlayingThis"
+  >
     <div class="counterpoint-staff__header">
       <span class="counterpoint-staff__badge" :data-verdict="verdict">
         <span v-if="verdictIcon" class="counterpoint-staff__badge-icon" aria-hidden="true">{{ verdictIcon }}</span>
         {{ view.badge }}
       </span>
-      <strong>{{ view.title }}</strong>
+      <strong class="counterpoint-staff__title">{{ view.title }}</strong>
       <span v-if="view.sequentialHint" class="counterpoint-staff__seq">{{ view.sequentialHint }}</span>
       <button
         class="counterpoint-staff__play"
         type="button"
-        :aria-label="playingId === example ? view.stopLabel : view.playLabel"
-        :title="playingId === example ? view.stopLabel : view.playLabel"
-        :data-playing="playingId === example"
+        :aria-label="isPlayingThis ? view.stopLabel : view.playLabel"
+        :title="isPlayingThis ? view.stopLabel : view.playLabel"
+        :data-playing="isPlayingThis"
         :disabled="isLoading"
         @click="togglePlay"
       >
-        <svg v-if="playingId !== example" viewBox="0 0 16 16" aria-hidden="true">
-          <path d="M4 2.5v11l9-5.5z" />
+        <span v-if="pending && !isPlayingThis" class="counterpoint-staff__play-loader" aria-hidden="true" />
+        <svg v-else-if="!isPlayingThis" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M4.6 3.1a.66.66 0 0 1 1-.57l8 4.9a.66.66 0 0 1 0 1.14l-8 4.9a.66.66 0 0 1-1-.57z" />
         </svg>
         <svg v-else viewBox="0 0 16 16" aria-hidden="true">
-          <rect x="3.5" y="3.5" width="9" height="9" rx="1" />
+          <rect x="3.8" y="3.8" width="8.4" height="8.4" rx="1.6" />
         </svg>
+      </button>
+    </div>
+    <div
+      v-if="view.variants.length"
+      class="counterpoint-staff__variants"
+      role="group"
+      :aria-label="view.variantsLabel"
+    >
+      <span v-if="view.variantsHint" class="counterpoint-staff__variants-hint">{{ view.variantsHint }}</span>
+      <button
+        v-for="variant in view.variants"
+        :key="variant.id"
+        class="counterpoint-staff__variant"
+        type="button"
+        :data-active="variant.id === selectedVariantId"
+        :aria-pressed="variant.id === selectedVariantId"
+        @click="selectVariant(variant.id)"
+      >
+        {{ variant.label }}
       </button>
     </div>
     <div class="counterpoint-staff__score" role="img" :aria-label="view.title">
@@ -35,8 +60,12 @@
         class="counterpoint-staff__renderer"
         :aria-hidden="status !== 'ready'"
       />
+      <div class="counterpoint-staff__progress" aria-hidden="true">
+        <div ref="progressFill" class="counterpoint-staff__progress-fill" />
+      </div>
     </div>
-    <figcaption>{{ view.caption }}</figcaption>
+    <!-- eslint-disable-next-line vue/no-v-html -- escaped + minimal inline markdown from the trusted local registry -->
+    <figcaption v-html="view.caption" />
     <div class="counterpoint-staff__diagnosis">
       <span
         v-for="ruleId in view.ruleIds"
@@ -45,19 +74,24 @@
       >
         {{ ruleId }}
       </span>
-      <span>{{ view.diagnosis }}</span>
+      <!-- eslint-disable-next-line vue/no-v-html -->
+      <span v-html="view.diagnosis" />
     </div>
   </figure>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import type { IssueMark, StaffExampleDef, StaffLocale, StaffNote } from '@/data/staffExamples'
-import { beatsPerBar, durationBeats, exampleVerdict, getStaffExample, verdictColor } from '@/data/staffExamples'
+import { computed, onMounted, ref, watch } from 'vue'
+import type { StaffExampleDef, StaffLocale } from '@/data/staffExamples'
+import { exampleVerdict, getStaffExample, resolveStaffVariant, verdictColor } from '@/data/staffExamples'
 import { useStaffPlayer, type VoicePart } from '@/composables/useStaffPlayer'
+import type { PartDef } from './counterpoint-staff/layout'
+import { renderInline } from './counterpoint-staff/inlineMarkdown'
+import { buildStaticScoreSvg } from './counterpoint-staff/staticScore'
+import { renderVexFlow } from './counterpoint-staff/vexflowRenderer'
+import { useStaffHighlight } from './counterpoint-staff/useStaffHighlight'
 
 type Status = 'loading' | 'ready' | 'error'
-type Clef = 'treble' | 'bass'
 
 const props = withDefaults(defineProps<{
   example: string
@@ -67,15 +101,20 @@ const props = withDefaults(defineProps<{
 })
 
 const target = ref<HTMLDivElement | null>(null)
+const progressFill = ref<HTMLDivElement | null>(null)
 const status = ref<Status>('loading')
-const { play, isLoading, playingId, playbackState, audioNow } = useStaffPlayer()
+/** True between the play click and the instrument being ready (spinner). */
+const pending = ref(false)
+const { play, stop, isLoading, playingId, playbackState, audioNow } = useStaffPlayer()
 
-const uiCopy: Record<StaffLocale, { upper: string; middle: string; lower: string; play: string; stop: string; sequential: string }> = {
-  en: { upper: 'upper', middle: 'middle', lower: 'lower', play: 'Play this example', stop: 'Stop playback', sequential: 'voices play in turn' },
-  ja: { upper: '上声', middle: '中声', lower: '下声', play: 'この譜例を再生', stop: '再生を停止', sequential: '声部を順に再生' },
+const isPlayingThis = computed(() => playingId.value === props.example)
+
+const uiCopy: Record<StaffLocale, { upper: string; middle: string; lower: string; play: string; stop: string; sequential: string; variants: string }> = {
+  en: { upper: 'upper', middle: 'middle', lower: 'lower', play: 'Play this example', stop: 'Stop playback', sequential: 'voices play in turn', variants: 'Choose the excerpt' },
+  ja: { upper: '上声', middle: '中声', lower: '下声', play: 'この譜例を再生', stop: '再生を停止', sequential: '声部を順に再生', variants: '抜粋を選択' },
 }
 
-const def = computed<StaffExampleDef>(() => {
+const baseDef = computed<StaffExampleDef>(() => {
   const found = getStaffExample(props.example)
   if (found) return found
   // Unknown id: fall back to the canonical first example so the page
@@ -84,12 +123,19 @@ const def = computed<StaffExampleDef>(() => {
   return getStaffExample('parallelFifths')!
 })
 
-/** Ordered list of the staves this example renders. */
-interface PartDef {
-  part: VoicePart
-  notes: StaffNote[]
-  clef: Clef
-  label: string
+/** Selected variant id (first variant by default; empty for variant-less examples). */
+const selectedVariantId = ref(baseDef.value.variants?.[0]?.id ?? '')
+watch(baseDef, (d) => {
+  selectedVariantId.value = d.variants?.[0]?.id ?? ''
+})
+
+const def = computed<StaffExampleDef>(() => resolveStaffVariant(baseDef.value, selectedVariantId.value))
+
+function selectVariant(id: string) {
+  if (id === selectedVariantId.value) return
+  // The score is about to change; never leave stale audio running under it.
+  if (isPlayingThis.value) stop()
+  selectedVariantId.value = id
 }
 
 const view = computed(() => {
@@ -106,13 +152,16 @@ const view = computed(() => {
   return {
     badge: d.badge[locale],
     title: d.title[locale],
-    caption: d.caption[locale],
-    diagnosis: d.diagnosis[locale],
+    caption: renderInline(d.caption[locale]),
+    diagnosis: renderInline(d.diagnosis[locale]),
     ruleIds: d.ruleIds,
     parts,
     playLabel: ui.play,
     stopLabel: ui.stop,
     sequentialHint: d.playback === 'sequential' ? ui.sequential : '',
+    variants: (d.variants ?? []).map((variant) => ({ id: variant.id, label: variant.label[locale] })),
+    variantsLabel: ui.variants,
+    variantsHint: d.variantsHint?.[locale] ?? '',
   }
 })
 
@@ -128,453 +177,37 @@ const verdictIcon = computed(() => {
   }
 })
 
-const staveCount = computed(() => view.value.parts.length)
-const height = computed(() => staveCount.value === 3 ? 335 : 235)
-
 async function togglePlay() {
+  pending.value = true
   try {
     await play(props.example, def.value)
   } catch (error) {
     console.error('[CounterpointStaff] playback failed', error)
+  } finally {
+    pending.value = false
   }
 }
 
-/** Cumulative start beat for every note of a voice. */
-function startBeats(notes: StaffNote[]): number[] {
-  const out: number[] = []
-  let beat = 0
-  for (const note of notes) {
-    out.push(beat)
-    beat += durationBeats(note.duration)
-  }
-  return out
-}
+/** Static SVG fallback, shown until VexFlow hydrates the score. */
+const staticScoreSvg = computed(() => buildStaticScoreSvg(def.value, view.value.parts, markColor.value))
 
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (char) => {
-    const entities: Record<string, string> = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;',
-    }
-    return entities[char] ?? char
-  })
-}
-
-/** Per-part position accessors used by the shared overlay builder. */
-interface PartPositions {
-  x: (index: number) => number
-  y: (index: number) => number
-}
-type Positions = Partial<Record<VoicePart, PartPositions>>
-
-function arrowSvg(x1: number, y1: number, x2: number, y2: number, color: string): string {
-  const angle = Math.atan2(y2 - y1, x2 - x1)
-  const size = 7
-  const leftX = x2 - size * Math.cos(angle - Math.PI / 6)
-  const leftY = y2 - size * Math.sin(angle - Math.PI / 6)
-  const rightX = x2 - size * Math.cos(angle + Math.PI / 6)
-  const rightY = y2 - size * Math.sin(angle + Math.PI / 6)
-  return `
-    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="2" />
-    <path d="M${x2} ${y2} L${leftX} ${leftY} M${x2} ${y2} L${rightX} ${rightY}" stroke="${color}" stroke-width="2" fill="none" />
-  `
-}
-
-/** The (part, index) pairs a vertical/note mark points at. */
-function markPoints(issue: IssueMark, pos: Positions): Array<{ x: number; y: number }> {
-  const points: Array<{ x: number; y: number }> = []
-  if (issue.upperIndex != null && pos.upper) points.push({ x: pos.upper.x(issue.upperIndex), y: pos.upper.y(issue.upperIndex) })
-  if (issue.middleIndex != null && pos.middle) points.push({ x: pos.middle.x(issue.middleIndex), y: pos.middle.y(issue.middleIndex) })
-  if (issue.lowerIndex != null && pos.lower) points.push({ x: pos.lower.x(issue.lowerIndex), y: pos.lower.y(issue.lowerIndex) })
-  return points
-}
-
-/**
- * Render the issue overlay (boxes, arrows, rings, brackets, labels) as an
- * SVG fragment. All content comes from the trusted local example registry
- * and every label passes through escapeHtml. Works for both the static
- * fallback and the VexFlow render because all coordinates come from the
- * position accessors.
- */
-function overlaySvg(issues: IssueMark[], pos: Positions, svgHeight: number, defaultColor: string): string {
-  let labelSlot = 0
-  const motionSegments: Array<[VoicePart, number | undefined, number | undefined, number]> = []
-  return issues.map((issue) => {
-    const color = issue.color ?? defaultColor
-    const anchor =
-      issue.upperIndex != null || issue.toUpper != null
-        ? pos.upper?.x(issue.upperIndex ?? issue.toUpper ?? 0)
-        : issue.middleIndex != null || issue.toMiddle != null
-          ? pos.middle?.x(issue.middleIndex ?? issue.toMiddle ?? 0)
-          : pos.lower?.x(issue.lowerIndex ?? issue.toLower ?? 0)
-    const anchorX = anchor ?? 0
-    const labelY = 12 + (labelSlot++ % 3) * 13
-    const makeLabel = (x: number) =>
-      `<text x="${x}" y="${labelY}" text-anchor="middle" class="counterpoint-staff__svg-issue-label" style="fill: ${color}">${escapeHtml(issue.label)}</text>`
-    const label = makeLabel(anchorX)
-
-    if (issue.kind === 'vertical') {
-      const points = markPoints(issue, pos)
-      if (points.length >= 2) {
-        const x = points[0].x
-        const ys = points.map((p) => p.y)
-        const top = Math.min(...ys) - 22
-        const heightBox = Math.max(...ys) - Math.min(...ys) + 44
-        const rings = points
-          .map((p) => `<circle cx="${p.x}" cy="${p.y}" r="14" class="counterpoint-staff__svg-issue-ring" style="stroke: ${color}" />`)
-          .join('')
-        return `
-          ${label}
-          <rect x="${x - 24}" y="${top}" width="48" height="${heightBox}" rx="8" class="counterpoint-staff__svg-issue-box" style="stroke: ${color}" />
-          ${rings}
-        `
-      }
-    }
-    if (issue.kind === 'motion') {
-      motionSegments.length = 0
-      motionSegments.push(
-        ['upper', issue.fromUpper, issue.toUpper, -8],
-        ['middle', issue.fromMiddle, issue.toMiddle, -8],
-        ['lower', issue.fromLower, issue.toLower, 16],
-      )
-      const arrows = motionSegments
-        .map(([part, from, to, dy]) => {
-          const p = pos[part]
-          if (from == null || to == null || !p) return ''
-          return arrowSvg(p.x(from) + 18, p.y(from) + dy, p.x(to) - 18, p.y(to) + dy, color)
-        })
-        .join('')
-      return `${label}${arrows}`
-    }
-    if (issue.kind === 'note') {
-      const points = markPoints(issue, pos)
-      if (points.length > 0) {
-        const rings = points
-          .map((p) => `<circle cx="${p.x}" cy="${p.y}" r="18" class="counterpoint-staff__svg-issue-ring" style="stroke: ${color}" />`)
-          .join('')
-        return `${label}${rings}`
-      }
-    }
-    if (issue.kind === 'bracket') {
-      const part: VoicePart = issue.fromUpper != null ? 'upper' : issue.fromMiddle != null ? 'middle' : 'lower'
-      const p = pos[part]
-      if (!p) return label
-      const from = issue.fromUpper ?? issue.fromMiddle ?? issue.fromLower ?? 0
-      const to = issue.toUpper ?? issue.toMiddle ?? issue.toLower ?? from
-      const x1 = p.x(from)
-      const x2 = p.x(to)
-      let maxY = 0
-      for (let i = from; i <= to; i++) {
-        maxY = Math.max(maxY, p.y(i))
-      }
-      const y = Math.min(maxY + 26, svgHeight - 16)
-      // Anchor the bracket label at the midpoint so it never clips at the edges.
-      return `${makeLabel((x1 + x2) / 2)}<path d="M${x1} ${y} C${x1 + 30} ${y + 10}, ${x2 - 30} ${y + 10}, ${x2} ${y}" class="counterpoint-staff__svg-bracket" style="stroke: ${color}" />`
-    }
-    return label
-  }).join('')
-}
-
-// --- Static SVG fallback (shown until VexFlow hydrates) -------------------
-
-const STATIC_LEFT = 78
-/** Static-fallback stave tops: 46/146 for two staves, 46/146/246 for three. */
-function staticTops(count: number): number[] {
-  return count === 3 ? [46, 146, 246] : [46, 146]
-}
-
-function pitchY(key: string, clef: Clef, staffTop: number): number {
-  const [name, octaveText] = key.split('/')
-  const octave = Number(octaveText)
-  const stepMap: Record<string, number> = { c: 0, d: 1, e: 2, f: 3, g: 4, a: 5, b: 6 }
-  const step = (stepMap[name?.[0]?.toLowerCase()] ?? 0) + octave * 7
-  const baseStep = clef === 'bass' ? stepMap.g + 2 * 7 : stepMap.e + 4 * 7
-  return staffTop + 40 - (step - baseStep) * 5
-}
-
-function staticNoteSvg(note: StaffNote, x: number, y: number, ringColor: string): string {
-  const color = note.color ?? '#111827'
-  const label = note.annotation
-    ? `<text x="${x}" y="${Math.max(14, y - 22)}" text-anchor="middle" class="counterpoint-staff__svg-label" fill="${color}">${escapeHtml(note.annotation)}</text>`
-    : ''
-  if (note.rest) {
-    return `${label}<rect x="${x - 7}" y="${y - 3}" width="14" height="6" rx="1" fill="${color}" opacity="0.7" />`
-  }
-  const issueRing = note.issue
-    ? `<circle cx="${x}" cy="${y}" r="15" fill="none" stroke="${note.color ?? ringColor}" stroke-width="2" stroke-dasharray="3 3" />`
-    : ''
-  const beats = durationBeats(note.duration)
-  const accidental = note.accidental
-    ? `<text x="${x - 16}" y="${y + 5}" text-anchor="middle" class="counterpoint-staff__svg-label" fill="${color}">${note.accidental === '#' ? '♯' : note.accidental === 'b' ? '♭' : '♮'}</text>`
-    : ''
-  const head = beats >= 2
-    ? `<ellipse cx="${x}" cy="${y}" rx="8.8" ry="6.2" transform="rotate(-18 ${x} ${y})" fill="none" stroke="${color}" stroke-width="2.4" />`
-    : `<ellipse cx="${x}" cy="${y}" rx="8.8" ry="6.2" transform="rotate(-18 ${x} ${y})" fill="${color}" />`
-  return `${label}${issueRing}${accidental}${head}`
-}
-
-const staticScoreSvg = computed(() => {
-  const d = def.value
-  const parts = view.value.parts
-  const tops = staticTops(parts.length)
-  const svgHeight = height.value
-  const width = d.width
-  const right = width - 40
-  const bars = d.bars ?? 1
-  const totalBeatCount = beatsPerBar(d.time) * bars
-  const startX = 170
-  const beatWidth = (right - startX - 20) / totalBeatCount
-  const beatX = (beat: number, beats: number) => startX + (beat + Math.min(beats, 1) / 2) * beatWidth
-
-  const partStarts = parts.map((p) => startBeats(p.notes))
-  const positions: Positions = {}
-  parts.forEach((p, pi) => {
-    positions[p.part] = {
-      x: (i) => beatX(partStarts[pi][i] ?? 0, durationBeats(p.notes[i]?.duration)),
-      y: (i) => pitchY(p.notes[i]?.key ?? 'c/4', p.clef, tops[pi]),
-    }
-  })
-
-  const staffLines = (top: number) => [0, 1, 2, 3, 4]
-    .map((line) => `<line x1="${STATIC_LEFT}" y1="${top + line * 10}" x2="${right}" y2="${top + line * 10}" />`)
-    .join('')
-
-  const barlineX: number[] = [STATIC_LEFT, right]
-  for (let bar = 1; bar < bars; bar++) {
-    barlineX.push(startX + bar * beatsPerBar(d.time) * beatWidth - beatWidth * 0.25)
-  }
-  const barlines = barlineX.map((x) => tops
-    .map((top) => `<line x1="${x}" y1="${top}" x2="${x}" y2="${top + 40}" />`)
-    .join('')).join('')
-
-  const noteGroup = (p: PartDef, pi: number) => p.notes
-    .map((note, index) => staticNoteSvg(note, beatX(partStarts[pi][index], durationBeats(note.duration)), pitchY(note.key, p.clef, tops[pi]), markColor.value))
-    .join('')
-
-  // Tie arcs between a tied note and its successor.
-  const tieGroup = (p: PartDef, pi: number) => p.notes
-    .map((note, index) => {
-      if (!note.tie || !p.notes[index + 1]) return ''
-      const acc = positions[p.part]!
-      const x1 = acc.x(index)
-      const x2 = acc.x(index + 1)
-      const y = acc.y(index)
-      return `<path d="M${x1 + 10} ${y + 9} Q${(x1 + x2) / 2} ${y + 17} ${x2 - 10} ${y + 9}" fill="none" stroke="${note.color ?? '#111827'}" stroke-width="1.6" />`
-    })
-    .join('')
-
-  const partLabels = parts
-    .map((p, pi) => `<text x="20" y="${tops[pi] + 25}" class="counterpoint-staff__svg-clef">${escapeHtml(p.label)}</text>`)
-    .join('')
-  const timeLabels = tops
-    .map((top) => `<text x="104" y="${top + 25}" class="counterpoint-staff__svg-time">${escapeHtml(d.time)}</text>`)
-    .join('')
-  const bottomTop = tops[tops.length - 1]
-
-  return `
-    <svg
-      data-source="static-staff"
-      viewBox="0 0 ${width} ${svgHeight}"
-      width="${width}"
-      height="${svgHeight}"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <rect x="0" y="0" width="${width}" height="${svgHeight}" fill="#fff" />
-      <g class="counterpoint-staff__svg-staff" stroke="#111827" stroke-width="1">
-        ${tops.map(staffLines).join('')}
-        ${barlines}
-        <path d="M61 ${tops[0] - 2} C43 ${tops[0] + 22}, 43 ${bottomTop + 18}, 61 ${bottomTop + 42}" fill="none" stroke-width="2.2" />
-      </g>
-      ${partLabels}
-      ${timeLabels}
-      ${parts.map((p, pi) => `<g>${noteGroup(p, pi)}${tieGroup(p, pi)}</g>`).join('')}
-      <g>${overlaySvg(d.issues ?? [], positions, svgHeight, markColor.value)}</g>
-    </svg>
-  `
-})
-
-// --- VexFlow render --------------------------------------------------------
+// --- VexFlow render & playback highlight -----------------------------------
 
 /** Rendered note centers per part, for the playback highlight. */
 let renderedPositions: Partial<Record<VoicePart, Array<{ x: number; y: number }>>> = {}
-let highlightCircles: Partial<Record<VoicePart, SVGCircleElement>> = {}
-let rafId = 0
+let highlightMarks: Partial<Record<VoicePart, SVGGElement>> = {}
 
 async function render() {
   if (!target.value) return
   status.value = 'loading'
-  target.value.innerHTML = ''
-  renderedPositions = {}
-  highlightCircles = {}
-
   try {
-    const VF = await import('vexflow')
-    // VexFlow 5 draws glyphs as <text> in the Bravura font and measures
-    // their widths through canvas. Importing the module only *starts*
-    // loading its fonts; rendering before they finish measures notehead
-    // widths with the fallback font, which pushes up-stems off the
-    // noteheads. Wait for the faces the score uses before any layout.
-    if (typeof document !== 'undefined' && 'fonts' in document) {
-      await Promise.all([
-        document.fonts.load('30pt Bravura'),
-        document.fonts.load('30pt Academico'),
-      ]).catch(() => undefined)
-    }
-    const d = def.value
-    const parts = view.value.parts
-    const bars = d.bars ?? 1
-    const perBar = beatsPerBar(d.time)
-    const totalBeatCount = perBar * bars
-    const svgHeight = height.value
-
-    const renderer = new VF.Renderer(target.value, VF.Renderer.Backends.SVG)
-    renderer.resize(d.width, svgHeight)
-    const context = renderer.getContext()
-    context.setFont('Arial', 10)
-
-    const staveWidth = d.width - 120
-    const staves = parts.map((p, pi) => {
-      const stave = new VF.Stave(STATIC_LEFT, 24 + pi * 100, staveWidth)
-      stave.addClef(p.clef)
-      if (d.keySignature) stave.addKeySignature(d.keySignature)
-      stave.addTimeSignature(d.time)
-      stave.setContext(context).draw()
-      return stave
+    const result = await renderVexFlow(target.value, {
+      def: def.value,
+      parts: view.value.parts,
+      markColor: markColor.value,
     })
-
-    const connector = new VF.StaveConnector(staves[0], staves[staves.length - 1])
-    connector.setType(VF.StaveConnector.type.BRACE)
-    connector.setContext(context).draw()
-
-    const makeNote = (item: StaffNote, clef: Clef) => {
-      const duration = (item.duration ?? 'q') + (item.rest ? 'r' : '')
-      const staveNote = new VF.StaveNote({ clef, keys: [item.key], duration })
-      if (!item.rest && item.accidental) {
-        staveNote.addModifier(new VF.Accidental(item.accidental))
-      }
-      if (item.color) {
-        staveNote.setStyle({ fillStyle: item.color, strokeStyle: item.color })
-      }
-      if (item.annotation) {
-        const annotation = new VF.Annotation(item.annotation)
-          .setFont('Arial', 11)
-          .setVerticalJustification(VF.Annotation.VerticalJustify.TOP)
-        staveNote.addModifier(annotation)
-      }
-      return staveNote
-    }
-
-    /** Build tickables with barlines inserted at bar boundaries. */
-    const buildTickables = (notes: StaffNote[], clef: Clef) => {
-      const staveNotes: InstanceType<typeof VF.StaveNote>[] = []
-      const tickables: InstanceType<typeof VF.Note>[] = []
-      let beat = 0
-      for (const item of notes) {
-        if (beat > 0 && beat % perBar === 0) {
-          tickables.push(new VF.BarNote())
-        }
-        const note = makeNote(item, clef)
-        staveNotes.push(note)
-        tickables.push(note)
-        beat += durationBeats(item.duration)
-      }
-      return { staveNotes, tickables }
-    }
-
-    const built = parts.map((p) => buildTickables(p.notes, p.clef))
-    const voices = built.map((b) => {
-      const voice = new VF.Voice({ numBeats: totalBeatCount, beatValue: 4 })
-      voice.setMode(VF.VoiceMode.SOFT).addTickables(b.tickables)
-      return voice
-    })
-
-    const formatter = new VF.Formatter()
-    voices.forEach((voice) => formatter.joinVoices([voice]))
-    formatter.format(voices, staveWidth - 80)
-
-    const beams = built.map((b) => VF.Beam.generateBeams(b.staveNotes.filter((n) => !n.isRest())))
-
-    voices.forEach((voice, pi) => voice.draw(context, staves[pi]))
-    beams.forEach((set) => set.forEach((beam) => beam.setContext(context).draw()))
-
-    // Ties between a tied note and its successor on the same stave.
-    parts.forEach((p, pi) => {
-      p.notes.forEach((item, i) => {
-        const first = built[pi].staveNotes[i]
-        const last = built[pi].staveNotes[i + 1]
-        if (!item.tie || !first || !last || item.rest) return
-        const tie = new VF.StaveTie({ firstNote: first, lastNote: last, firstIndexes: [0], lastIndexes: [0] })
-        tie.setContext(context).draw()
-      })
-    })
-
-    // Overlay the stave labels and issue marks using the real rendered
-    // note positions. The markup is generated from the trusted local
-    // example registry and escaped.
-    const svg = target.value.querySelector('svg')
-    if (svg) {
-      // VexFlow sets fixed pixel width/height only. Add a viewBox (and drop
-      // any inline size) so CSS can scale the score down to the container
-      // width instead of clipping it.
-      svg.setAttribute('viewBox', `0 0 ${d.width} ${svgHeight}`)
-      svg.style.width = ''
-      svg.style.height = ''
-      const noteX = (notes: InstanceType<typeof VF.StaveNote>[], i: number) => {
-        const note = notes[Math.min(i, notes.length - 1)]
-        return note ? note.getAbsoluteX() + 5 : 0
-      }
-      const noteY = (notes: InstanceType<typeof VF.StaveNote>[], i: number) => {
-        const note = notes[Math.min(i, notes.length - 1)]
-        return note ? note.getYs()[0] : 0
-      }
-      const positions: Positions = {}
-      parts.forEach((p, pi) => {
-        positions[p.part] = {
-          x: (i) => noteX(built[pi].staveNotes, i),
-          y: (i) => noteY(built[pi].staveNotes, i),
-        }
-        renderedPositions[p.part] = p.notes.map((_, i) => ({
-          x: noteX(built[pi].staveNotes, i),
-          y: noteY(built[pi].staveNotes, i),
-        }))
-      })
-      const staveLabels = parts
-        .map((p, pi) => `<text x="6" y="${staves[pi].getYForLine(2) + 4}" class="counterpoint-staff__svg-clef">${escapeHtml(p.label)}</text>`)
-        .join('')
-      // Dashed ring around every note flagged `issue` — the static
-      // fallback draws the same ring, so the problem note stays marked
-      // after VexFlow hydrates.
-      const issueRings = parts
-        .map((p, pi) => p.notes
-          .map((note, i) => note.issue && !note.rest
-            ? `<circle cx="${noteX(built[pi].staveNotes, i)}" cy="${noteY(built[pi].staveNotes, i)}" r="15" class="counterpoint-staff__svg-issue-ring" style="stroke: ${note.color ?? markColor.value}" />`
-            : '')
-          .join(''))
-        .join('')
-      const group = document.createElementNS('http://www.w3.org/2000/svg', 'g')
-      group.setAttribute('class', 'counterpoint-staff__overlay')
-      group.innerHTML = staveLabels + issueRings + overlaySvg(d.issues ?? [], positions, svgHeight, markColor.value)
-      svg.appendChild(group)
-
-      // One hidden highlight circle per part; the playback loop moves it
-      // to whichever note is sounding.
-      const playheads = document.createElementNS('http://www.w3.org/2000/svg', 'g')
-      playheads.setAttribute('class', 'counterpoint-staff__playheads')
-      parts.forEach((p) => {
-        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
-        circle.setAttribute('r', '15')
-        circle.setAttribute('class', 'counterpoint-staff__playhead')
-        circle.style.visibility = 'hidden'
-        playheads.appendChild(circle)
-        highlightCircles[p.part] = circle
-      })
-      svg.appendChild(playheads)
-    }
-
+    renderedPositions = result.renderedPositions
+    highlightMarks = result.highlightMarks
     status.value = 'ready'
   } catch (error) {
     console.error(error)
@@ -582,57 +215,537 @@ async function render() {
   }
 }
 
-// --- Playback highlight ----------------------------------------------------
-
-function hideHighlights() {
-  for (const circle of Object.values(highlightCircles)) {
-    if (circle) circle.style.visibility = 'hidden'
-  }
-}
-
-function highlightTick() {
-  const state = playbackState.value
-  if (!state || state.id !== props.example) {
-    hideHighlights()
-    rafId = 0
-    return
-  }
-  const t = audioNow() - state.startTime
-  for (const part of ['upper', 'middle', 'lower'] as const) {
-    const circle = highlightCircles[part]
-    if (!circle) continue
-    const windows = state.windows
-    let active: { x: number; y: number } | null = null
-    for (const w of windows) {
-      if (w.part === part && w.start <= t && t < w.end) {
-        active = renderedPositions[part]?.[w.index] ?? null
-        break
-      }
-    }
-    if (active) {
-      circle.setAttribute('cx', String(active.x))
-      circle.setAttribute('cy', String(active.y))
-      circle.style.visibility = 'visible'
-    } else {
-      circle.style.visibility = 'hidden'
-    }
-  }
-  rafId = requestAnimationFrame(highlightTick)
-}
-
-watch(playbackState, (state) => {
-  if (state && state.id === props.example) {
-    if (!rafId) rafId = requestAnimationFrame(highlightTick)
-  } else {
-    hideHighlights()
-  }
-})
-
-onUnmounted(() => {
-  if (rafId) cancelAnimationFrame(rafId)
-  rafId = 0
+useStaffHighlight({
+  exampleId: () => props.example,
+  playbackState,
+  audioNow,
+  progressFill,
+  getMarks: () => highlightMarks,
+  getPositions: () => renderedPositions,
 })
 
 onMounted(render)
-watch(() => [props.example, props.locale], render)
+watch(() => [props.example, props.locale, selectedVariantId.value], render)
 </script>
+
+<style scoped>
+/*
+ * Engraved score plate: the card chrome follows the docs theme, the score
+ * itself sits on warm paper, and playback borrows the demo's candlelight
+ * language — cold steel idle chrome that turns warm gold while sounding.
+ */
+.counterpoint-staff {
+  /* Candlelight golds (RGB triplets for rgba() composition). */
+  --staff-gold: 184, 146, 46;
+  --staff-gold-light: 212, 166, 62;
+  /* Cold steel idle chrome. */
+  --staff-steel: 90, 107, 140;
+  /* Verdict accent (slate until a verdict applies). */
+  --staff-verdict: 100, 116, 139;
+  --staff-verdict-text: #64748b;
+
+  position: relative;
+  margin: 1.75rem 0;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: var(--vp-c-bg-soft);
+  overflow: hidden;
+  transition: border-color 0.5s ease, box-shadow 0.5s ease;
+}
+
+.dark .counterpoint-staff {
+  --staff-steel: 144, 160, 192;
+}
+
+.counterpoint-staff[data-verdict="bad"] {
+  --staff-verdict: 185, 28, 28;
+  --staff-verdict-text: #b91c1c;
+}
+
+.counterpoint-staff[data-verdict="good"] {
+  --staff-verdict: 4, 120, 87;
+  --staff-verdict-text: #047857;
+}
+
+.counterpoint-staff[data-verdict="caution"] {
+  --staff-verdict: 180, 83, 9;
+  --staff-verdict-text: #b45309;
+}
+
+.dark .counterpoint-staff[data-verdict="bad"] { --staff-verdict-text: #e06c6c; }
+.dark .counterpoint-staff[data-verdict="good"] { --staff-verdict-text: #34c39a; }
+.dark .counterpoint-staff[data-verdict="caution"] { --staff-verdict-text: #d9924a; }
+
+/* Verdict edge: a thin accent that fades out toward the caption. */
+.counterpoint-staff::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(var(--staff-verdict), 0.95) 0%,
+    rgba(var(--staff-verdict), 0.55) 60%,
+    rgba(var(--staff-verdict), 0) 100%
+  );
+  pointer-events: none;
+}
+
+.counterpoint-staff[data-verdict="neutral"]::before {
+  display: none;
+}
+
+/* While sounding, the whole plate catches candlelight. */
+.counterpoint-staff[data-playing="true"] {
+  border-color: rgba(var(--staff-gold-light), 0.45);
+  box-shadow:
+    0 0 0 1px rgba(var(--staff-gold-light), 0.1),
+    0 6px 24px rgba(var(--staff-gold), 0.1),
+    0 0 48px rgba(var(--staff-gold), 0.06);
+}
+
+/* --- Header ---------------------------------------------------------- */
+
+.counterpoint-staff__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.65rem;
+  padding: 0.8rem 0.9rem 0.7rem 1.1rem;
+  color: var(--vp-c-text-1);
+}
+
+.counterpoint-staff__title {
+  min-width: 0;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.counterpoint-staff__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  min-height: 1.4rem;
+  padding: 0 0.6rem;
+  border: 1px solid rgba(var(--staff-verdict), 0.3);
+  border-radius: 999px;
+  background: rgba(var(--staff-verdict), 0.09);
+  color: var(--staff-verdict-text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.counterpoint-staff__badge-icon {
+  font-size: 0.68rem;
+  line-height: 1;
+}
+
+.counterpoint-staff__seq {
+  color: var(--vp-c-text-3);
+  font-size: 0.76rem;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+/* --- Play control: cold stone that catches candlelight ----------------- */
+
+.counterpoint-staff__play {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1.5px solid rgba(var(--staff-steel), 0.45);
+  border-radius: 50%;
+  background: var(--vp-c-bg);
+  color: rgb(var(--staff-steel));
+  cursor: pointer;
+  transition:
+    border-color 0.3s ease,
+    color 0.3s ease,
+    background 0.3s ease,
+    box-shadow 0.45s ease,
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.counterpoint-staff__play svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  fill: currentColor;
+}
+
+.counterpoint-staff__play:hover:not(:disabled) {
+  border-color: rgba(var(--staff-gold-light), 0.65);
+  color: rgb(var(--staff-gold));
+  transform: scale(1.07);
+  box-shadow:
+    0 0 14px rgba(var(--staff-gold-light), 0.22),
+    0 0 34px rgba(var(--staff-gold-light), 0.09);
+}
+
+.dark .counterpoint-staff__play:hover:not(:disabled) {
+  color: #d4b86a;
+}
+
+.counterpoint-staff__play:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.counterpoint-staff__play[data-playing="true"] {
+  border-color: rgba(var(--staff-gold-light), 0.7);
+  background: rgba(var(--staff-gold-light), 0.1);
+  color: rgb(var(--staff-gold));
+  animation: staff-play-pulse 2.2s ease-out infinite;
+}
+
+.dark .counterpoint-staff__play[data-playing="true"] {
+  color: #d4b86a;
+}
+
+@keyframes staff-play-pulse {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(var(--staff-gold-light), 0.3),
+      0 0 18px rgba(var(--staff-gold-light), 0.16);
+  }
+  70% {
+    box-shadow:
+      0 0 0 10px rgba(var(--staff-gold-light), 0),
+      0 0 18px rgba(var(--staff-gold-light), 0.16);
+  }
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(var(--staff-gold-light), 0),
+      0 0 18px rgba(var(--staff-gold-light), 0.16);
+  }
+}
+
+.counterpoint-staff__play:disabled {
+  cursor: wait;
+}
+
+.counterpoint-staff__play-loader {
+  width: 0.85rem;
+  height: 0.85rem;
+  border: 2px solid rgba(var(--staff-steel), 0.25);
+  border-top-color: rgb(var(--staff-steel));
+  border-radius: 50%;
+  animation: staff-spin 0.9s linear infinite;
+}
+
+@keyframes staff-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* --- Variant switcher: engraved plate labels with a gilded stud --------- */
+
+.counterpoint-staff__variants {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.05rem 1.1rem 0.7rem;
+}
+
+/* Italic lead-in that reads into the pills: "over the same ground — Aria…". */
+.counterpoint-staff__variants-hint {
+  margin-right: 0.2rem;
+  color: var(--vp-c-text-3);
+  font-size: 0.78rem;
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+
+.counterpoint-staff__variant {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  min-height: 1.6rem;
+  padding: 0 0.8rem 0 0.66rem;
+  border: 1px solid rgba(var(--staff-steel), 0.38);
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(var(--staff-steel), 0.95);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-variant-caps: small-caps;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 0.3s ease,
+    color 0.3s ease,
+    background 0.3s ease,
+    box-shadow 0.45s ease;
+}
+
+/* The stud: a small mount that takes the candlelight when selected. */
+.counterpoint-staff__variant::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(var(--staff-steel), 0.4);
+  transition: background 0.3s ease, box-shadow 0.45s ease;
+}
+
+.counterpoint-staff__variant:hover:not([data-active="true"]) {
+  border-color: rgba(var(--staff-gold-light), 0.55);
+  color: rgb(var(--staff-gold));
+}
+
+.counterpoint-staff__variant:hover:not([data-active="true"])::before {
+  background: rgba(var(--staff-gold-light), 0.7);
+}
+
+.dark .counterpoint-staff__variant:hover:not([data-active="true"]) {
+  color: #d4b86a;
+}
+
+.counterpoint-staff__variant[data-active="true"] {
+  border-color: rgba(var(--staff-gold-light), 0.68);
+  background: linear-gradient(
+    180deg,
+    rgba(var(--staff-gold-light), 0.16),
+    rgba(var(--staff-gold), 0.06)
+  );
+  color: rgb(var(--staff-gold));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 0 12px rgba(var(--staff-gold-light), 0.16),
+    0 0 30px rgba(var(--staff-gold-light), 0.06);
+  cursor: default;
+}
+
+.counterpoint-staff__variant[data-active="true"]::before {
+  background: rgb(var(--staff-gold-light));
+  box-shadow: 0 0 6px rgba(var(--staff-gold-light), 0.85);
+}
+
+.dark .counterpoint-staff__variant[data-active="true"] {
+  color: #d4b86a;
+}
+
+/* --- Score: warm paper plate ------------------------------------------ */
+
+.counterpoint-staff__score {
+  position: relative;
+  padding: 0.4rem 0.9rem 0.55rem;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(184, 146, 46, 0.05), transparent 65%),
+    linear-gradient(180deg, #fffefb 0%, #faf6ee 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(120, 95, 40, 0.08),
+    inset 0 -1px 0 rgba(120, 95, 40, 0.08);
+}
+
+.dark .counterpoint-staff__score {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(184, 146, 46, 0.06), transparent 65%),
+    linear-gradient(180deg, #f7f3ea 0%, #efe9dc 100%);
+}
+
+/* A warm vignette breathes in while the example sounds. */
+.counterpoint-staff__score::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 45%, rgba(212, 166, 62, 0.08), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.counterpoint-staff[data-playing="true"] .counterpoint-staff__score::after {
+  opacity: 1;
+}
+
+/* Scores carry a viewBox, so they scale down to the container width
+   instead of clipping; height: auto preserves the aspect ratio. */
+.counterpoint-staff__score :deep(svg) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Each freshly engraved score settles onto the paper. */
+.counterpoint-staff__renderer :deep(svg) {
+  animation: staff-engrave-in 0.4s ease both;
+}
+
+@keyframes staff-engrave-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.counterpoint-staff__renderer[aria-hidden="true"] {
+  display: none;
+}
+
+/* --- Progress hairline -------------------------------------------------- */
+
+.counterpoint-staff__progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgba(var(--staff-gold), 0.14);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.counterpoint-staff[data-playing="true"] .counterpoint-staff__progress {
+  opacity: 1;
+}
+
+.counterpoint-staff__progress-fill {
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: linear-gradient(90deg, rgba(var(--staff-gold), 0.55), rgb(var(--staff-gold-light)));
+  box-shadow: 0 0 8px rgba(var(--staff-gold-light), 0.55);
+}
+
+/* --- SVG annotations (static fallback + VexFlow overlay) ---------------- */
+
+.counterpoint-staff__score :deep(.counterpoint-staff__svg-label) {
+  font-family: var(--vp-font-family-base);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.counterpoint-staff__score :deep(.counterpoint-staff__svg-issue-label) {
+  fill: #b91c1c;
+  font-family: var(--vp-font-family-base);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.counterpoint-staff__score :deep(.counterpoint-staff__svg-issue-line),
+.counterpoint-staff__score :deep(.counterpoint-staff__svg-bracket),
+.counterpoint-staff__score :deep(.counterpoint-staff__svg-issue-box),
+.counterpoint-staff__score :deep(.counterpoint-staff__svg-issue-ring) {
+  fill: none;
+  stroke: #b91c1c;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.counterpoint-staff__score :deep(.counterpoint-staff__svg-issue-line) {
+  opacity: 0.75;
+  stroke-dasharray: 5 4;
+}
+
+.counterpoint-staff__score :deep(.counterpoint-staff__svg-issue-ring) {
+  stroke-dasharray: 3 3;
+}
+
+.counterpoint-staff__score :deep(.counterpoint-staff__svg-issue-box) {
+  opacity: 0.9;
+  stroke-dasharray: 6 4;
+}
+
+.counterpoint-staff__score :deep(.counterpoint-staff__svg-clef),
+.counterpoint-staff__score :deep(.counterpoint-staff__svg-time) {
+  fill: #111827;
+  font-family: var(--vp-font-family-base);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* --- Playback highlight: candlelight on the sounding note --------------- */
+
+.counterpoint-staff__score :deep(.counterpoint-staff__playhead) {
+  pointer-events: none;
+}
+
+.counterpoint-staff__score :deep(.counterpoint-staff__playhead-halo) {
+  fill: rgba(212, 166, 62, 0.32);
+  filter: blur(5px);
+}
+
+.counterpoint-staff__score :deep(.counterpoint-staff__playhead-ring) {
+  fill: rgba(212, 166, 62, 0.12);
+  stroke: #b8922e;
+  stroke-width: 1.8;
+}
+
+/* --- Caption & diagnosis ------------------------------------------------ */
+
+.counterpoint-staff figcaption {
+  margin: 0;
+  padding: 0.85rem 1.1rem 0.4rem;
+  color: var(--vp-c-text-2);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.counterpoint-staff__diagnosis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.5rem;
+  align-items: center;
+  padding: 0.15rem 1.1rem 1rem;
+  color: var(--vp-c-text-1);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+/* Rule chips follow the example's verdict instead of always reading red. */
+.counterpoint-staff__rule {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.35rem;
+  padding: 0 0.5rem;
+  border: 1px solid rgba(var(--staff-verdict), 0.28);
+  border-radius: 5px;
+  background: rgba(var(--staff-verdict), 0.08);
+  color: var(--staff-verdict-text);
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* --- Motion preferences ------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .counterpoint-staff,
+  .counterpoint-staff__play,
+  .counterpoint-staff__variant {
+    transition: none;
+  }
+
+  .counterpoint-staff__renderer :deep(svg) {
+    animation: none;
+  }
+
+  .counterpoint-staff__play[data-playing="true"] {
+    animation: none;
+    box-shadow: 0 0 18px rgba(var(--staff-gold-light), 0.16);
+  }
+
+  .counterpoint-staff__play:hover:not(:disabled) {
+    transform: none;
+  }
+}
+</style>

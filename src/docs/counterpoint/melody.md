@@ -29,6 +29,10 @@ The augmented second deserves its own example because it arises so naturally in 
 A minor key has one chord vocabulary but three melodic spellings of its scale: **natural** minor (no raised notes), **harmonic** minor (7th degree raised a semitone — this manufactures the leading tone that cadences need), and **melodic** minor (6th *and* 7th raised on the way up, natural on the way down). The raised 7th of harmonic minor is what opens the augmented-second trap between degrees 6 and 7; the melodic form exists precisely to walk around it.
 :::
 
+That walk-around is not a theory abstraction — it is the first bar of the Fifth Cello Suite:
+
+<CounterpointStaff example="bachMelodicMinor" locale="en" />
+
 ::: tip The applied-harmony exemption
 Inside a declared secondary-dominant region (chapter 5), chromatic motion is the *point* — so `augmented_melodic`, `diminished_melodic`, and `tritone_melodic` are all exempt there. The borrowed leading tone gets to behave like a leading tone.
 :::
@@ -36,6 +40,10 @@ Inside a declared secondary-dominant region (chapter 5), chromatic motion is the
 ::: info Where is the diminished seventh?
 In MIDI, a diminished seventh (9 semitones — G♯ up to F in A minor) is byte-identical to a major sixth, a perfectly legal consonant leap, so `diminished_melodic` cannot and does not flag it. (Conveniently, Bach *uses* the d7 leap as an expressive device anyway.) The rule covers the spans that are unambiguous in semitones: 6 (the tritone / diminished fifth) and 11 (major seventh or diminished octave — unsingable under either name). The one case where spelling truly changes the verdict — the forbidden augmented second versus the harmless minor third, both 3 semitones — is resolved from the key: the leap is flagged when its two notes sit on *adjacent scale degrees*, which is how a "second" is recognized without letter names. (A 3-semitone leap touching a note foreign to the scale is flagged conservatively as well — though in practice such chromatic notes usually sit inside the secondary-dominant exemption.)
 :::
+
+Bach shows what that scope leaves open. The C♯ minor fugue's subject leaps a *written* diminished fourth — four semitones, the sound of a major third — and handles it with the care the rule is really about:
+
+<CounterpointStaff example="bachLeapResolution" locale="en" />
 
 ## Leaps need recovery
 
@@ -50,6 +58,10 @@ Even consonant leaps are rationed. A **step** moves to the adjacent scale note; 
 <CounterpointStaff example="melodicArch" locale="en" />
 
 No single rule enforces the arch — it emerges from the candidate search scoring, which rewards stepwise motion and chord-tone arrivals. But it is worth knowing the target shape when you read generated voices: a line that rises to one clear high point and settles is the engine behaving well.
+
+Bach wrote the reference implementation. The subject of the "Little" G minor organ fugue spends its one leap immediately, touches its peak once, and walks the rest of the way home by step:
+
+<CounterpointStaff example="bachArch" locale="en" />
 
 ## The leading tone's obligation
 

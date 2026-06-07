@@ -17,7 +17,7 @@ export const tonalityExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'The validator checks the declared cadence type, not just chord labels.',
-      ja: 'validator は和音名だけでなく、宣言された終止型に合う外声進行を確認します。',
+      ja: '検証器は和音名だけでなく、宣言された終止型に合う外声進行を確認します。',
     },
     time: '2/4',
     width: 440,
@@ -47,7 +47,7 @@ export const tonalityExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'The "Amen" cadence. There is no leading tone, so the sense of closure comes entirely from the bass motion IV to I. The validator recognizes the plagal type from the declared cadence event and checks the bass accordingly.',
-      ja: 'いわゆる「アーメン終止」です。導音を含まないため、終止感はバスの IV→I の進行だけから生まれます。validator は宣言された終止イベントから変格終止と認識し、それに応じたバス進行を確認します。',
+      ja: 'いわゆる「アーメン終止」です。導音を含まないため、終止感はバスの IV→I の進行だけから生まれます。検証器は宣言された終止イベントから変格終止と認識し、それに応じたバス進行を確認します。',
     },
     time: '2/4',
     width: 440,
@@ -108,7 +108,7 @@ export const tonalityExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'Everything promises a final close — then the bass moves to vi instead of I. Bach uses the deception to extend a phrase that seemed finished. The validator accepts the declared deceptive type only when the bass really arrives on the sixth degree.',
-      ja: 'すべてが完全な終止を予感させたところで、バスが I ではなく vi へ進みます。終わったように見せたフレーズを引き延ばす、バッハ常用の手法です。validator は宣言が偽終止のとき、バスが本当に第6音へ到達したかを確認します。',
+      ja: 'すべてが完全な終止を予感させたところで、バスが I ではなく vi へ進みます。終わったように見せたフレーズを引き延ばす、バッハ常用の手法です。検証器は宣言が偽終止のとき、バスが本当に第6音へ到達したかを確認します。',
     },
     time: '2/4',
     width: 440,
@@ -167,7 +167,7 @@ export const tonalityExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'The final chord of a minor-mode work brightens to major. The raised third demands an accidental, and the validator checks the declared Picardy cadence for both the leading-tone resolution and the major third in the final sonority.',
-      ja: '短調作品の最後の和音だけが長和音に転じます。上げられた第3音には臨時記号が必要です。validator は宣言されたピカルディ終止に対し、導音の解決と最終和音の長3度の両方を確認します。',
+      ja: '短調作品の最後の和音だけが長和音に転じます。上げられた第3音には臨時記号が必要です。検証器は宣言されたピカルディ終止に対し、導音の解決と最終和音の長3度の両方を確認します。',
     },
     time: '2/4',
     width: 440,
@@ -314,7 +314,7 @@ export const tonalityExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'A pivot chord belongs to both the old key and the new one, so the ear can reinterpret it mid-phrase. Here Am (vi in C, ii in G) pivots into a D major chord that only makes sense in G, and the cadence confirms the new key. The validator requires the declared pivot chord to be diatonic in both keys.',
-      ja: 'ピボット和音は元の調と新しい調の両方に属するため、聴き手はフレーズの途中でその意味を読み替えられます。ここでは Am（ハ長調の vi ＝ト長調の ii）を軸に、ト長調でしか説明できない D の和音へ進み、終止が新しい調を確定します。validator は宣言されたピボット和音が両方の調で全音階的であることを要求します。',
+      ja: 'ピボット和音は元の調と新しい調の両方に属するため、聴き手はフレーズの途中でその意味を読み替えられます。ここでは Am（ハ長調の vi ＝ト長調の ii）を軸に、ト長調でしか説明できない D の和音へ進み、終止が新しい調を確定します。検証器は宣言されたピボット和音が両方の調で全音階的であることを要求します。',
     },
     time: '3/4',
     width: 520,

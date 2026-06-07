@@ -21,6 +21,10 @@ A cadence is more specific than "the harmony is V then I". Each declared cadence
 
 The **perfect authentic cadence** demands the strongest close: the upper voice resolves the leading tone up to the tonic while the bass falls from dominant to tonic. The **imperfect authentic** variant relaxes the soprano requirement — same harmony, softer punctuation.
 
+Bach signs the Goldberg Aria with exactly this close:
+
+<CounterpointStaff example="bachCadence" locale="en" />
+
 ### Plagal: the amen
 
 <CounterpointStaff example="plagalCadence" locale="en" />
@@ -33,13 +37,25 @@ The **perfect authentic cadence** demands the strongest close: the upper voice r
 
 <CounterpointStaff example="deceptiveCadence" locale="en" />
 
+Here is the feint in the wild — three voices of the F major fugue assemble a complete V7, the upper voices resolve exactly as promised, and only the bass slips upward to vi:
+
+<CounterpointStaff example="bachDeceptive" locale="en" />
+
 ### Phrygian: the archaic close
 
 <CounterpointStaff example="phrygianCadence" locale="en" />
 
+Bach ends an entire movement this way. The Largo of the fifth organ trio sonata closes on V — phrygian descent in the pedal, a pair of suspensions resolving above — and hands the open door to the finale:
+
+<CounterpointStaff example="bachPhrygian" locale="en" />
+
 ### Picardy: minor ends major
 
 <CounterpointStaff example="picardyThird" locale="en" />
+
+And here is the convention at work — the very last bar of the C minor fugue from WTC I, dominant tension over a tonic pedal melting into a major chord:
+
+<CounterpointStaff example="bachPicardy" locale="en" />
 
 | Cadence type | Validator checks |
 |--------------|------------------|

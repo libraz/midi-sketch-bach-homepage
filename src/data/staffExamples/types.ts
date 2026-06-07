@@ -15,7 +15,10 @@ export type LocalizedText = Record<StaffLocale, string>
 export interface StaffNote {
   /** VexFlow key, e.g. "c/5". Ignored for rests except for vertical placement. */
   key: string
-  /** VexFlow duration: "w", "h", "q", "8" (default "q"). */
+  /**
+   * Duration: "w", "h", "q", "8", "16", "32" (default "q").
+   * A trailing "d" makes it dotted ("8d" = dotted eighth).
+   */
   duration?: string
   /** Render as a rest instead of a note. */
   rest?: boolean
@@ -48,6 +51,28 @@ export interface IssueMark {
   color?: string
 }
 
+/** Fields a variant may replace on its base example. */
+export type StaffVariantOverride = Partial<Pick<StaffExampleDef,
+  'upper' | 'middle' | 'lower' |
+  'upperLabel' | 'middleLabel' | 'lowerLabel' |
+  'caption' | 'diagnosis' | 'issues' | 'width' |
+  'time' | 'keySignature' | 'bars' |
+  'upperClef' | 'middleClef' | 'lowerClef'
+>>
+
+/**
+ * One switchable alternative for an example — e.g. which variation sounds
+ * over an unchanging ground. The staff component renders a pill switcher
+ * when an example declares variants.
+ */
+export interface StaffVariantDef {
+  id: string
+  /** Short label shown on the switcher pill. */
+  label: LocalizedText
+  /** Fields replacing the base example's while this variant is selected. */
+  override: StaffVariantOverride
+}
+
 /** Complete definition of one staff example. */
 export interface StaffExampleDef {
   /** Validator rule IDs this example illustrates (shown as chips). */
@@ -58,10 +83,16 @@ export interface StaffExampleDef {
   diagnosis: LocalizedText
   /** Longer caption under the score. */
   caption: LocalizedText
-  /** Time signature: "2/4", "3/4", or "4/4". */
+  /** Time signature: "2/4", "3/4", "4/4", or "6/8". */
   time: string
   /** Number of bars (default 1). Bars are separated by barlines. */
   bars?: number
+  /**
+   * Bars per system row. Defaults to all bars on one system; set it on
+   * long excerpts so they wrap instead of scaling down to a thin strip.
+   * Overlay marks must not span a system break.
+   */
+  systemBars?: number
   /**
    * Key signature (VexFlow spec such as "Cm" or "F"). When set, note keys
    * must be spelled with their sounding accidental (e.g. "bb/2") and the
@@ -97,10 +128,23 @@ export interface StaffExampleDef {
    * Derived from the notehead colors when omitted — see exampleVerdict.
    */
   verdict?: StaffVerdict
+  /**
+   * Switchable alternatives for the example. The first entry is selected
+   * by default; its override is usually empty (the base content).
+   */
+  variants?: StaffVariantDef[]
+  /** Short italic lead-in shown before the variant pills (e.g. "over the same ground —"). */
+  variantsHint?: LocalizedText
 }
 
 /** Overall reading of one example, used for the badge and frame color. */
 export type StaffVerdict = 'bad' | 'good' | 'caution' | 'neutral'
+
+/** The example with one variant's overrides applied (the base def when it has no variants). */
+export function resolveStaffVariant(def: StaffExampleDef, variantId?: string): StaffExampleDef {
+  const variant = def.variants?.find((v) => v.id === variantId) ?? def.variants?.[0]
+  return variant ? { ...def, ...variant.override } : def
+}
 
 /** Issue highlight (forbidden / violation). */
 export const RED = '#b91c1c'
@@ -129,21 +173,29 @@ export function verdictColor(verdict: StaffVerdict): string {
   return verdict === 'good' ? GREEN : verdict === 'caution' ? AMBER : RED
 }
 
-/** Beats per bar from the example's time signature. */
+/** Quarter-note beats per bar from the example's time signature (6/8 → 3). */
 export function beatsPerBar(time: string): number {
-  const beats = Number(time.split('/')[0])
-  return Number.isFinite(beats) && beats > 0 ? beats : 4
+  const [numerator, denominator] = time.split('/').map(Number)
+  if (!Number.isFinite(numerator) || numerator <= 0) return 4
+  const unit = Number.isFinite(denominator) && denominator > 0 ? 4 / denominator : 1
+  return numerator * unit
 }
 
-/** Duration of one note in beats (quarter = 1). */
+/** Duration of one note in beats (quarter = 1). A trailing "d" means dotted (×1.5). */
 export function durationBeats(duration?: string): number {
-  switch (duration ?? 'q') {
-    case 'w': return 4
-    case 'h': return 2
-    case '8': return 0.5
-    case '16': return 0.25
-    default: return 1
-  }
+  const value = duration ?? 'q'
+  const dotted = value.endsWith('d')
+  const base = (() => {
+    switch (dotted ? value.slice(0, -1) : value) {
+      case 'w': return 4
+      case 'h': return 2
+      case '8': return 0.5
+      case '16': return 0.25
+      case '32': return 0.125
+      default: return 1
+    }
+  })()
+  return dotted ? base * 1.5 : base
 }
 
 /** Total beats covered by a sequence of notes. */

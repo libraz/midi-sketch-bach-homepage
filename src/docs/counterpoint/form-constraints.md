@@ -19,17 +19,29 @@ Passacaglia and chaconne are **ground-bass forms**: a short bass theme repeats u
 
 A related rule keeps the *variation layer* honest: `variation_role_ornament_constraint` prevents a variation span that plays the ground role from subdividing below quarter notes — the ground must stay recognizable as a slow line even when restated by another voice.
 
+The most famous ground in Bach is not in a passacaglia at all — it carries the Goldberg Variations. The Aria's bass walks a scheme that thirty variations then restate — switch the excerpt above the score to hear two of those variations walk the same skeleton:
+
+<CounterpointStaff example="bachGroundBass" locale="en" />
+
 ## Immutable material: the cantus firmus
 
 <CounterpointStaff example="cantusFirmus" locale="en" />
 
 The chorale prelude carries a hymn tune (**cantus firmus**) in long notes while another voice embroiders. `cantus_firmus_immutable` checks each bar's [downbeat](/docs/music-primer#strong-and-weak-beats) against the declared skeleton tone — embellishment between downbeats is free, the skeleton is not. Like the grounds, the cantus-firmus voice is excluded from the ornament pass entirely.
 
+That is precisely the Orgelbüchlein's plan. In "Ich ruf zu dir" the tune floats untouched above a sixteenth-note inner voice and a murmuring pedal:
+
+<CounterpointStaff example="bachCantusFirmus" locale="en" />
+
 ## Figuration harmony
 
 The free-prelude style (think BWV 543's opening) runs continuous figuration over a slow **harmonic rhythm** — the rate at which the underlying chords change, here typically one chord per bar. `figuration_harmonic_consistency` anchors it: the note that opens each bar must be a chord tone of that bar's chord. Off-downbeat notes are unconstrained — that freedom is what makes it figuration and not chorale writing. Pedal notes are exempt.
 
 <CounterpointStaff example="figurationHarmony" locale="en" />
+
+The purest illustration in the repertoire opens WTC I — two bars of the C major prelude, where a single line of sixteenths over two held notes spells out one chord per bar:
+
+<CounterpointStaff example="bachFiguration" locale="en" />
 
 ## Solo strings: counterpoint inside one line
 
@@ -38,6 +50,10 @@ A solo cello or violin cannot sound four voices at once, but Bach's solo writing
 The reconstruction is three concrete steps. The engine collects the arpeggio line's notes in onset order, partitions them into contiguous **cells** of the declared `group_size`, then takes each cell's *lowest* pitch as the implied bass stream and its *highest* as the implied top stream. Register decides, not slot position — in the BWV 1007 figuration the perceived melody note sits in the *middle* of the written cell, and the min/max extraction still finds it:
 
 <CounterpointStaff example="impliedStreams" locale="en" />
+
+And here is the original behind that figure — the opening of the first cello suite, with the extraction the engine computes written out underneath:
+
+<CounterpointStaff example="bachImpliedVoices" locale="en" />
 
 The extracted streams are then held to the same standards as real voices. The two reductions below show the streams alone — first failing, then passing:
 
@@ -58,6 +74,10 @@ Two rules keep generated music on the Baroque bar grid. An **anacrusis** (upbeat
 
 <CounterpointStaff example="anacrusisUpbeat" locale="en" />
 
+Bach's dance movements live on this gesture — the Courante of the first cello suite spends one eighth note getting airborne:
+
+<CounterpointStaff example="bachAnacrusis" locale="en" />
+
 | Rule | Contract |
 |------|----------|
 | `phrase_periodicity_4_or_8_bar` | Consecutive declared phrase starts are exactly 4 or 8 bars apart — the dance-derived regularity underneath most Baroque movements. |
@@ -68,6 +88,10 @@ Two rules keep generated music on the Baroque bar grid. An **anacrusis** (upbeat
 The trio sonata's independence contract is the one texture rule whose *target* can be drawn on staves. The violation itself is a property of whole sections, but this — three voices on three rhythmic grids — is the texture the engine scores toward:
 
 <CounterpointStaff example="trioIndependence" locale="en" />
+
+The organ trio sonatas are this rule pursued for six works straight. Three bars in, the first of them already shows the full texture:
+
+<CounterpointStaff example="bachTrio" locale="en" />
 
 | Rule | Form | Contract |
 |------|------|----------|

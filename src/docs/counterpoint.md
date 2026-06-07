@@ -29,7 +29,7 @@ For the flat, debugging-oriented index of every rule ID, see the [Validator Rule
 
 ## Reading the examples
 
-Every chapter teaches with staff examples rendered by the same component. They use two staves even when the real engine generates more voices: like a unit test, each example isolates one rule in the smallest musical situation that triggers (or legally avoids) it.
+Every chapter teaches with staff examples rendered by the same component. Most are synthetic: like a unit test, each isolates one rule in the smallest musical situation — two or three staves — that triggers (or legally avoids) it. Examples wearing the **From Bach** badge are different: they quote real passages from the literature (the Well-Tempered Clavier, the Goldberg Variations, the organ and solo-string works), and every quoted note is verified against the source before it appears here. The synthetic figures show a rule at its smallest; the quotes show what that rule protects in real music.
 
 <CounterpointStaff example="parallelFifths" locale="en" />
 
@@ -43,6 +43,7 @@ How to inspect an example:
 2. Press the **play button** in the header to hear it — the sounding notes light up on the staff as it plays, so the eye and the ear stay synchronized. Forbidden patterns are usually audible: parallel octaves really do sound like one voice.
 3. Find the colored overlay. Red marks a violation, amber marks a scoped or conditionally allowed sonority, green marks the correct resolution.
 4. For motion rules, compare the previous note pair with the current note pair. For dissonance rules, ask whether the marked note belongs to the chord and whether it resolves by step.
+5. Comparison examples are marked *voices play in turn* in the header: the staves sound one after the other instead of together (a subject and its inversion, a good and a bad version). Some figures also carry a row of pill buttons — alternative excerpts of the same figure, such as another Goldberg variation over the same ground — and switching pills redraws the score.
 
 ## How the engine applies these rules
 
@@ -72,6 +73,42 @@ Every reported failure carries a `FailKind` that tells you which layer broke:
 
 ::: tip Practical mental model
 The form director declares what kind of musical object is being built. Candidate search fills editable spans. Material carriers replay fixed spans. The validator rejects results that break the declared musical contract.
+:::
+
+## Reading a validation report
+
+In normal operation you never see the validator fail: a `FailedSpan` report sends the composer back to re-generate that span, and only when every retry and back-jump is exhausted does the run abort as `FailedSeed` — no fallback note is ever emitted. So a report reaches you in two shapes: the hard-failure message when a run aborts, and the per-note audit trail that ships with every successful piece.
+
+**1. The failure lines.** A hard failure prints one line per violation (native CLI, exit code 1):
+
+```
+Composer validation failed: 2 rule violations
+  - parallel_fifth (span 17)
+  - strong_beat_dissonance (span 17)
+```
+
+Each line is a rule ID — the tokens this course teaches, indexed in the [Validator Rule Reference](/docs/validator-rules) — plus the span where it fired.
+
+**2. What a span is.** A span is one voice's slice of one time region. Span boundaries follow the harmonic plan: cadence anchors, subject entries, and phrase joins all start a new span. So "span 17" is not an abstract counter — it names *this voice, these bars*.
+
+**3. From span to bars.** Generating with `--generated-json` writes two index-parallel files: `<name>.json` (`generated.v1` — tick, pitch, voice, velocity per note) and `<name>.provenance.json` (`provenance.v1` — span, source, scores per note). Two queries connect them:
+
+```bash
+# which note indexes belong to span 17?
+jq '[.notes[] | select(.span_id == 17) | .index]' piece.provenance.json
+
+# where does note 42 sit on the timeline?
+jq '.notes[42] | {start_tick, pitch, voice}' piece.json
+```
+
+With 480 ticks per quarter (the file's `ticks_per_beat` field) and four beats to the bar, `start_tick / 1920` is the zero-based bar number: a note at tick 26880 opens bar 15 — and `26880 % 1920 == 0` makes it a strong beat, exactly the scope where `strong_beat_dissonance` looks (chapter 3).
+
+**4. Read the chain backwards.** From here the course is the decoder. `parallel_fifth` (chapter 2): compare the flagged pair with the *previous* pair — both voices moved and both vertical intervals were perfect fifths — then check the exemptions (oblique motion? cadence cell? both notes Material?). `strong_beat_dissonance` (chapter 3): is the downbeat note a chord tone of the declared harmony? Every chapter ends with the same table — rule, FailKind, exemptions — for precisely this lookup.
+
+**5. The audit trail on success.** Even when nothing fails, every note's provenance row records how it was won: `source` (Material / Compose / Ornament), `candidate_score`, `rejected_alternatives` (how many candidates the search discarded before settling on this note), and `satisfied_rules`, a bitmask of the rules the chosen note satisfied. The chapter-2 exemption "skipped when both notes are Material" becomes visible here: two adjacent `"source": "Material"` rows are the explanation for a pair no parallel rule will ever flag.
+
+::: info The web demo and the full trail
+The demo on this site runs the same engine compiled to WASM, but its API surfaces only the event JSON (`getEvents`). The failure lines and `provenance.v1` come from the native CLI build of `../midi-sketch-bach`.
 :::
 
 Continue with [Chapter 1 — Intervals & Consonance](/docs/counterpoint/intervals).

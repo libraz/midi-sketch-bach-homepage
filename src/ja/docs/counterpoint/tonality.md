@@ -21,6 +21,10 @@ description: 7種類の終止、傾向音の重複禁止、対斜、副次ドミ
 
 **完全正格終止**は最も強い締めくくりを要求します。上声は導音を半音上行で主音へ解決し、バスは属音から主音へ落ちます。**不完全正格終止**は同じ和声の枠でソプラノの条件を緩めたもので、より柔らかい句読点になります。
 
+バッハはゴルトベルクのアリアに、まさにこの締めくくりで署名しています。
+
+<CounterpointStaff example="bachCadence" locale="ja" />
+
 ### 変格終止——アーメン
 
 <CounterpointStaff example="plagalCadence" locale="ja" />
@@ -33,13 +37,25 @@ description: 7種類の終止、傾向音の重複禁止、対斜、副次ドミ
 
 <CounterpointStaff example="deceptiveCadence" locale="ja" />
 
+実際の楽曲での肩透かしがこれです。ヘ長調フーガの三つの声部が完全な V7 を組み上げ、上声部は約束どおりに解決し、バスだけが vi へ滑り上がります。
+
+<CounterpointStaff example="bachDeceptive" locale="ja" />
+
 ### フリギア終止——古雅な締め
 
 <CounterpointStaff example="phrygianCadence" locale="ja" />
 
+バッハは楽章ひとつを丸ごとこの型で閉じます。オルガン・トリオソナタ第5番のラルゴは V の上で終わり——ペダルのフリギア下行、その上で解決する一対の掛留——開いた扉をフィナーレに手渡します。
+
+<CounterpointStaff example="bachPhrygian" locale="ja" />
+
 ### ピカルディ3度——短調が長調で終わる
 
 <CounterpointStaff example="picardyThird" locale="ja" />
+
+そして、これがその慣習の現場です——平均律 I 巻ハ短調フーガの最終小節。主音の保続の上に張られたドミナントの緊張が、長和音へ溶けていきます。
+
+<CounterpointStaff example="bachPicardy" locale="ja" />
 
 | 終止型 |検証器の検査 |
 |--------|------------------|
@@ -84,7 +100,7 @@ description: 7種類の終止、傾向音の重複禁止、対斜、副次ドミ
 
 説得力のある転調のために、バロックの実践は**ピボット和音**を経由します。元の調と新しい調の両方に属する和音で、聴き手はフレーズの途中でその意味を読み替えられます。ピボット型の転調では、`modulation_pivot_chord_required` が宣言されたピボットが本当に両方の調で全音階的であることを検証します。（エンジンは共通音転調・フレーズ転調もモデル化していますが、それらはピボットではなく各自の宣言された形を持ちます。）
 
-##検証器はこの章をどう見るか
+## 検証器はこの章をどう見るか
 
 | ルール | FailKind | 検査内容 |
 |--------|----------|----------|

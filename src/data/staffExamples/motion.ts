@@ -261,7 +261,7 @@ export const motionExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'This is the rule as it actually applies — to real three-voice texture. Upper adjacent pairs are kept within an octave so the chord sounds connected; the bottom pair is allowed to spread because a wide gap above the bass is exactly how Bach voices keyboard music. The validator checks the spacing at each chord start.',
-      ja: 'このルールが本来適用される、実際の三声テクスチュアでの形です。上の隣接ペアをオクターヴ以内に保つことで和音はひとつながりに響きます。一方、最下ペアは広がってよく、バスの上に広い空間を取るのはまさにバッハの鍵盤書法そのものです。validator は各和音の開始点で間隔を検査します。',
+      ja: 'このルールが本来適用される、実際の三声テクスチュアでの形です。上の隣接ペアをオクターヴ以内に保つことで和音はひとつながりに響きます。一方、最下ペアは広がってよく、バスの上に広い空間を取るのはまさにバッハの鍵盤書法そのものです。検証器は各和音の開始点で間隔を検査します。',
     },
     time: '3/4',
     width: 520,

@@ -129,6 +129,10 @@ Positions in the scale are numbered from the tonic — a 1-based index into the 
 
 Roman numerals (**I**, **IV**, **V**, **vi**...) name the *chords built on* these degrees: in C major, **V** is the chord G-B-D rooted on degree 5. Uppercase numerals are major chords, lowercase minor.
 
+Degree numbers turn real scores into readable data. The opening bar of the C major prelude from WTC I — the most famous arpeggio in keyboard music — reduces to three of them:
+
+<CounterpointStaff example="bachScaleDegrees" locale="en" />
+
 ## Chord and Harmony
 
 A **chord** is a group of notes understood as one vertical sonority. A C major triad contains C, E, and G — its **root**, **third**, and **fifth**. **Harmony** is the sequence of chords over time.
@@ -180,6 +184,10 @@ A melodic interval — one voice moving to its own next note — is either a **s
 <CounterpointStaff example="stepsAndLeaps" locale="en" />
 
 The distinction does real work in the rules: dissonant non-chord tones must be approached *and* left by step (chapter 3), and consecutive large leaps are rejected because the line stops sounding like a singable voice (chapter 4).
+
+The first bar of the First Cello Suite spends both kinds of motion exactly this way — leaps to outline the chord, steps to decorate it:
+
+<CounterpointStaff example="bachStepsLeaps" locale="en" />
 
 ## Consonance and Dissonance
 

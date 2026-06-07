@@ -96,7 +96,7 @@ export const formConstraintExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'The free-prelude texture runs continuous figuration over a slow harmonic rhythm — here one chord per bar, I then V. The validator constrains exactly one note per bar: the downbeat must belong to the bar\'s chord. The scalework between downbeats is unconstrained; that freedom is what makes it figuration rather than chorale writing.',
-      ja: '自由な前奏曲のテクスチュアは、ゆっくりした和声リズム——ここでは1小節1和音、I から V——の上で絶え間ないフィグレーションを走らせます。validator が拘束するのは1小節につきただ一音、小節頭がその小節の和音に属することだけです。小節頭のあいだの音階的な走句は無制約で、その自由こそがコラール書法ではなくフィグレーションである理由です。',
+      ja: '自由な前奏曲のテクスチュアは、ゆっくりした和声リズム——ここでは1小節1和音、I から V——の上で絶え間ないフィグレーションを走らせます。検証器が拘束するのは1小節につきただ一音、小節頭がその小節の和音に属することだけです。小節頭のあいだの音階的な走句は無制約で、その自由こそがコラール書法ではなくフィグレーションである理由です。',
     },
     time: '4/4',
     bars: 2,
@@ -228,7 +228,7 @@ export const formConstraintExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'Solo cello or violin writing can imply multiple voices. The validator reconstructs low and high streams and checks them like real counterpoint.',
-      ja: 'チェロやヴァイオリンの分散和音では、一声の中に複数の暗示声部が聞こえます。validator は低音線と上声線を復元して検査します。',
+      ja: 'チェロやヴァイオリンの分散和音では、一声の中に複数の暗示声部が聞こえます。検証器は低音線と上声線を復元して検査します。',
     },
     time: '3/4',
     width: 520,

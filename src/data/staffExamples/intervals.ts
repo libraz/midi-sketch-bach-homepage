@@ -75,7 +75,7 @@ export const intervalExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'Dissonance is not forbidden — counterpoint runs on the tension it creates. What the validator rejects is unmanaged dissonance: a clash that arrives without preparation or leaves without resolution. Chapter 3 covers the legal patterns.',
-      ja: '不協和音そのものは禁止ではありません。むしろ対位法は不協和音が生む緊張で駆動します。validator が退けるのは「管理されていない」不協和、つまり準備なく現れ解決なく去る衝突です。合法的な型は第3章で扱います。',
+      ja: '不協和音そのものは禁止ではありません。むしろ対位法は不協和音が生む緊張で駆動します。検証器が退けるのは「管理されていない」不協和、つまり準備なく現れ解決なく去る衝突です。合法的な型は第3章で扱います。',
     },
     time: '3/4',
     width: 520,

@@ -17,7 +17,7 @@ export const primerExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'Count along while playing: 1-2-3-4, 1-2-3. The first beat of every bar (the downbeat) feels like a checkpoint — listeners expect the harmony to be stable there. The validator uses exactly this binary model: a tick at the start of a bar is strong, every other position is weak. Tension is allowed to pass on weak beats; on the downbeat it sounds like a structural error.',
-      ja: '再生しながら「1、2、3、4。1、2、3」と数えてみてください。各小節の1拍目（小節頭）はチェックポイントのように響き、聴き手はそこで和声が安定していることを期待します。validator もまさにこの二値モデルで、小節の先頭に当たる tick だけを強拍、それ以外をすべて弱拍として扱います。弱拍の緊張は通過として許されますが、強拍の緊張は構造の誤りとして聞こえます。',
+      ja: '再生しながら「1、2、3、4。1、2、3」と数えてみてください。各小節の1拍目（小節頭）はチェックポイントのように響き、聴き手はそこで和声が安定していることを期待します。検証器もまさにこの二値モデルで、小節の先頭に当たる tick だけを強拍、それ以外をすべて弱拍として扱います。弱拍の緊張は通過として許されますが、強拍の緊張は構造の誤りとして聞こえます。',
     },
     time: '4/4',
     bars: 2,

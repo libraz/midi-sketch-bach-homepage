@@ -17,7 +17,7 @@ export const melodyExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'The validator checks each generated voice as a melody. Augmented, diminished, and tritone leaps are rejected unless an applied-harmony context exempts the motion.',
-      ja: 'validator は縦の響きだけでなく、各声部を旋律としても見ます。増音程・減音程・三全音の跳躍は、原則として退けられます。',
+      ja: '検証器は縦の響きだけでなく、各声部を旋律としても見ます。増音程・減音程・三全音の跳躍は、原則として退けられます。',
     },
     time: '2/4',
     width: 440,
@@ -46,7 +46,7 @@ export const melodyExamples: Record<string, StaffExampleDef> = {
     },
     caption: {
       en: 'In harmonic minor, moving directly from the natural sixth degree to the leading tone produces an augmented second — the interval that makes a line sound instrumental rather than vocal. Bach avoids it by using the melodic-minor scale forms; the validator simply rejects the interval. Secondary-dominant regions are exempt, because applied harmony legitimately introduces chromatic steps.',
-      ja: '和声的短音階で自然な第6音から導音へ直接進むと増2度が生まれます。声楽的な滑らかさを壊す音程で、バッハは旋律的短音階の使い分けでこれを避けます。validator はこの音程自体を退けますが、副次ドミナント圏では半音階的な動きが正当なものとして免除されます。',
+      ja: '和声的短音階で自然な第6音から導音へ直接進むと増2度が生まれます。声楽的な滑らかさを壊す音程で、バッハは旋律的短音階の使い分けでこれを避けます。検証器はこの音程自体を退けますが、副次ドミナント圏では半音階的な動きが正当なものとして免除されます。',
     },
     time: '2/4',
     width: 440,

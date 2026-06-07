@@ -212,7 +212,7 @@ export default withMermaid(defineConfig({
                 { text: '5. 調性の文法', link: '/ja/docs/counterpoint/tonality' },
                 { text: '6. フーガの技法', link: '/ja/docs/counterpoint/fugue' },
                 { text: '7. 形式固有の制約', link: '/ja/docs/counterpoint/form-constraints' },
-                { text: 'Validator ルールリファレンス', link: '/ja/docs/validator-rules' },
+                { text: '検証器ルール一覧', link: '/ja/docs/validator-rules' },
               ]
             },
             {

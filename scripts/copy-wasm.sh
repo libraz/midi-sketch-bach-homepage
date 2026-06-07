@@ -9,6 +9,24 @@ DEST_DIR="src/wasm"
 WASM_FILES=("bach.wasm" "bach.js")
 JS_FILES=("index.mjs" "index.d.ts")
 
+file_md5() {
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    md5 -q "$1"
+  else
+    md5sum "$1" | cut -d' ' -f1
+  fi
+}
+
+# MD5 of a JS/TS file with sourceMappingURL comments stripped
+# (matches what copy_js_api writes to DEST_DIR)
+stripped_md5() {
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed '/^\/\/# sourceMappingURL=/d' "$1" | md5 -q
+  else
+    sed '/^\/\/# sourceMappingURL=/d' "$1" | md5sum | cut -d' ' -f1
+  fi
+}
+
 echo "📦 Copying WASM files from midi-sketch-bach..."
 
 # Check if midi-sketch-bach directory exists
@@ -64,41 +82,46 @@ fi
 
 mkdir -p "$DEST_DIR"
 
-# Copy files
+copied=0
+
+# Copy binary/Emscripten files verbatim, skipping unchanged ones
 echo "   Copying WASM files..."
 for file in "${WASM_FILES[@]}"; do
-  cp "$DIST_DIR/$file" "$DEST_DIR/"
-  echo "   ✓ $file"
-done
-
-echo "   Copying JS API files..."
-for file in "${JS_FILES[@]}"; do
-  cp "$DIST_DIR/$file" "$DEST_DIR/"
-  echo "   ✓ $file"
-done
-
-# Rename index.mjs to index.js (used as index.js in imports)
-if [ -f "$DEST_DIR/index.mjs" ]; then
-  mv "$DEST_DIR/index.mjs" "$DEST_DIR/index.js"
-  echo "   ✓ Renamed index.mjs → index.js"
-fi
-
-# Remove sourceMappingURL comments (source maps are not shipped)
-for file in "$DEST_DIR/index.js" "$DEST_DIR/index.d.ts"; do
-  if [ -f "$file" ]; then
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-      # macOS (BSD sed requires '' after -i)
-      sed -i '' '/^\/\/# sourceMappingURL=/d' "$file"
-    else
-      # Linux (GNU sed)
-      sed -i '/^\/\/# sourceMappingURL=/d' "$file"
-    fi
+  if [ -f "$DEST_DIR/$file" ] && [ "$(file_md5 "$DIST_DIR/$file")" = "$(file_md5 "$DEST_DIR/$file")" ]; then
+    echo "   − $file (unchanged, skipped)"
+  else
+    cp "$DIST_DIR/$file" "$DEST_DIR/"
+    echo "   ✓ $file"
+    copied=$((copied + 1))
   fi
 done
+
+# Copy a JS API file, renaming and stripping sourceMappingURL comments
+# (source maps are not shipped); skips when the stripped content matches
+copy_js_api() {
+  local src="$1" dest="$2"
+  if [ -f "$DEST_DIR/$dest" ] && [ "$(stripped_md5 "$DIST_DIR/$src")" = "$(file_md5 "$DEST_DIR/$dest")" ]; then
+    echo "   − $dest (unchanged, skipped)"
+  else
+    sed '/^\/\/# sourceMappingURL=/d' "$DIST_DIR/$src" > "$DEST_DIR/$dest"
+    echo "   ✓ $src → $dest"
+    copied=$((copied + 1))
+  fi
+}
+
+echo "   Copying JS API files..."
+copy_js_api "index.mjs" "index.js"  # imported as index.js
+copy_js_api "index.d.ts" "index.d.ts"
+
+if [ "$copied" -eq 0 ]; then
+  echo ""
+  echo "✅ All WASM files are up to date — nothing copied."
+  exit 0
+fi
 
 # Update meta.json
 echo ""
 ./scripts/update-wasm-meta.sh
 
 echo ""
-echo "✅ WASM files copied successfully!"
+echo "✅ WASM files copied successfully! ($copied file(s) updated)"

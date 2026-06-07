@@ -47,7 +47,7 @@ export interface HighlightWindow {
   end: number
 }
 
-interface PlaybackState {
+export interface PlaybackState {
   id: string
   /** AudioContext time at which beat 0 sounds. */
   startTime: number
