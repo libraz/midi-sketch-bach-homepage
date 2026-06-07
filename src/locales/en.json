@@ -12,6 +12,7 @@
     "play": "PLAY",
     "pause": "PAUSE",
     "stop": "STOP",
+    "restart": "Back to start",
     "loading": "Loading...",
     "initializing": "Initializing...",
     "generating": "Generating...",

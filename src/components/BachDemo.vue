@@ -39,11 +39,13 @@ function randomizeSeed() {
         pause: t('demo.pause'),
         play: t('demo.play'),
         regenerate: t('demo.regenerate'),
+        restart: t('demo.restart'),
         stop: t('demo.stop'),
       }"
       @seek="demo.handleSeek"
       @play="demo.handlePlay"
       @stop="demo.handleStop"
+      @restart="demo.handleRestart"
       @regenerate="demo.handleRegenerate"
       @download="demo.handleDownload"
     />

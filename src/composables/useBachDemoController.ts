@@ -174,6 +174,12 @@ export function useBachDemoController(t: (key: string) => string) {
     }
   }
 
+  /** Return the playhead to the beginning and play from the top. */
+  async function handleRestart() {
+    if (!store.eventData.value) return
+    await handleSeek(0)
+  }
+
   async function handleSeek(targetTick: number) {
     if (!store.eventData.value) return
 
@@ -198,6 +204,7 @@ export function useBachDemoController(t: (key: string) => string) {
     handleDownload,
     handlePlay,
     handleRegenerate,
+    handleRestart,
     handleSeek,
     handleStop,
     isLoading,
