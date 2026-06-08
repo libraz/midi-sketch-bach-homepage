@@ -96,11 +96,15 @@ In a real three-voice texture the rule splits cleanly in two — tight above, fr
 
 ## Invertible counterpoint at the octave
 
-Fugues reuse two-voice combinations with the voices swapped: what was on top moves below. For that to work, every interval must survive being replaced by its octave complement — 5ths become 4ths, octaves become unisons.
+Fugues reuse two-voice combinations with the voices swapped: what was on top moves below. For that to work, every interval must survive being replaced by its octave complement — thirds become sixths, fifths become fourths, octaves become unisons. Toggle the example below: lift the lower line an octave and every third turns into a sixth, both versions equally consonant.
+
+<CounterpointStaff example="invertibleSwap" locale="en" />
+
+Not every interval survives so kindly. The perfect fifth — a stable consonance — inverts to a perfect fourth, which between two voices alone counts as a dissonance:
 
 <CounterpointStaff example="octaveInversion" locale="en" />
 
-Bach cashes in on this property constantly. In the C minor fugue of WTC I, the subject and its countersubject are written so that either can be on top — here is the pair from bars 7–8, with the countersubject *above* the subject; chapter 6 shows the same pair in its original position:
+Bach cashes in on the benign cases constantly. In the C minor fugue of WTC I, the subject and its countersubject are written so that either can sit on top. Toggle between bar 7 and bar 20 and follow the blue countersubject as it moves from above the subject to below it:
 
 <CounterpointStaff example="bachInvertible" locale="en" />
 

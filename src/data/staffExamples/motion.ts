@@ -1,6 +1,9 @@
 import type { StaffExampleDef } from './types'
 import { RED, AMBER, GREEN } from './types'
 
+/** Highlight color tracking one line through the invertible-swap toggle. */
+const SWAP_BLUE = '#2563eb'
+
 /**
  * Chapter 2 — Motion between voices and the forbidden parallels.
  * Parallel/hidden perfects, crossing, spacing, and the invertible
@@ -319,6 +322,55 @@ export const motionExamples: Record<string, StaffExampleDef> = {
     issues: [
       { kind: 'vertical', label: 'P5', upperIndex: 0, lowerIndex: 0, color: AMBER },
       { kind: 'vertical', label: 'inverts to P4', upperIndex: 1, lowerIndex: 1, color: AMBER },
+    ],
+  },
+
+  invertibleSwap: {
+    ruleIds: ['invertible_at_octave'],
+    badge: { en: 'Invertible counterpoint', ja: '転回対位法' },
+    title: { en: 'Lift one line an octave — and it still works', ja: '下の線を1オクターヴ上げても、成り立つ' },
+    diagnosis: {
+      en: 'Toggle the two: line A on top never moves; only line B (blue) rises an octave, and every third becomes a sixth.',
+      ja: 'トグルで切り替えても、上の線A は動かない。下の線B（青）だけが1オクターヴ上がり、すべての3度が6度になる。',
+    },
+    caption: {
+      en: 'Two short lines written to be invertible. Line A on top holds still in both views; only line B (blue) rises a whole octave when you switch to “inverted,” so the voices trade places and every interval maps to its octave complement — thirds become sixths — yet both versions stay consonant. That benign mapping is what `invertible_at_octave` relies on; the next example shows where it turns hostile.',
+      ja: '転回できるように書いた、短い2本の線。上の線A は両方の表示で動かず、「転回」に切り替えると下の線B（青）だけが丸ごと1オクターヴ上がる。二声の上下が入れ替わり、音程はオクターヴの補数へ写る——3度は6度に——それでもどちらも協和のままです。この穏やかな写像こそ `invertible_at_octave` が当てにしているもので、次の譜例は、それが牙をむく場面です。',
+    },
+    time: '4/4',
+    width: 460,
+    upperClef: 'treble',
+    lowerClef: 'treble',
+    upperLabel: { en: 'line A', ja: '線A' },
+    lowerLabel: { en: 'line B', ja: '線B' },
+    verdict: 'good',
+    variantsHint: { en: 'raise line B an octave —', ja: '線Bを1オクターヴ上げる —' },
+    upper: [
+      { key: 'g/4' },
+      { key: 'a/4' },
+      { key: 'b/4' },
+      { key: 'g/4' },
+    ],
+    lower: [
+      { key: 'e/4', color: SWAP_BLUE, annotation: '3' },
+      { key: 'c/4', color: SWAP_BLUE, annotation: '6' },
+      { key: 'd/4', color: SWAP_BLUE, annotation: '6' },
+      { key: 'e/4', color: SWAP_BLUE, annotation: '3' },
+    ],
+    variants: [
+      { id: 'original', label: { en: 'original', ja: '原型' }, override: {} },
+      {
+        id: 'inverted',
+        label: { en: 'inverted', ja: '転回' },
+        override: {
+          lower: [
+            { key: 'e/5', color: SWAP_BLUE, annotation: '6' },
+            { key: 'c/5', color: SWAP_BLUE, annotation: '3' },
+            { key: 'd/5', color: SWAP_BLUE, annotation: '3' },
+            { key: 'e/5', color: SWAP_BLUE, annotation: '6' },
+          ],
+        },
+      },
     ],
   },
 
