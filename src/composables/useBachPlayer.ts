@@ -1,5 +1,6 @@
 import { ref, onUnmounted } from 'vue'
 import { Soundfont } from 'smplr'
+import { createAudioContext } from '@/utils/webAudio'
 
 interface NoteEvent {
   pitch: number
@@ -83,7 +84,7 @@ export function useBachPlayer() {
 
   async function loadInstrument(name: string): Promise<Soundfont> {
     if (!audioContext) {
-      audioContext = new AudioContext()
+      audioContext = createAudioContext()
     }
 
     const sfName = INSTRUMENT_MAP[name] || name
@@ -112,7 +113,7 @@ export function useBachPlayer() {
     initPromise = (async () => {
       try {
         if (!audioContext) {
-          audioContext = new AudioContext()
+          audioContext = createAudioContext()
         }
         await loadInstrument(instrumentName)
         currentInstrumentName = instrumentName
@@ -133,11 +134,13 @@ export function useBachPlayer() {
    */
   async function ensureAudioContext() {
     if (!audioContext || audioContext.state === 'closed') {
-      audioContext = new AudioContext()
+      audioContext = createAudioContext()
       instrumentCache.clear()
       globalIsReady.value = false
     }
-    if (audioContext.state === 'suspended') {
+    // iOS Safari reports a non-standard 'interrupted' state after phone
+    // calls or app switches, so resume on anything that is not running.
+    if (audioContext.state !== 'running') {
       await audioContext.resume()
     }
   }
@@ -172,13 +175,13 @@ export function useBachPlayer() {
 
     // If AudioContext was closed, recreate it and reload instruments
     if (!audioContext || audioContext.state === 'closed') {
-      audioContext = new AudioContext()
+      audioContext = createAudioContext()
       instrumentCache.clear()
       globalIsReady.value = false
       await init(instrumentName || currentInstrumentName)
     }
 
-    if (audioContext.state === 'suspended') {
+    if (audioContext.state !== 'running') {
       await audioContext.resume()
     }
 
