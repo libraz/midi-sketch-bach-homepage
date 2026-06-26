@@ -2,9 +2,56 @@ import { defineConfig } from 'vitepress'
 import { withMermaid } from 'vitepress-plugin-mermaid'
 import markdownItCjkFriendly from 'markdown-it-cjk-friendly'
 import { fileURLToPath, URL } from 'node:url'
+import { generateLlmsTxt, type NavNode } from './llms'
 
 const siteUrl = 'https://bach.midi-sketch.libraz.net'
 const githubUrl = 'https://github.com/libraz/midi-sketch-bach'
+
+// English docs sidebar — shared between the `/docs/` sidebar and the llms.txt index.
+const enDocsSidebar: NavNode[] = [
+  {
+    text: 'Guide',
+    items: [
+      { text: 'Features', link: '/docs/features' },
+      { text: 'Getting Started', link: '/docs/getting-started' },
+      { text: 'Installation', link: '/docs/installation' },
+    ]
+  },
+  {
+    text: 'Counterpoint Course',
+    items: [
+      { text: 'Course Overview', link: '/docs/counterpoint' },
+      { text: '0. Music Primer for Engineers', link: '/docs/music-primer' },
+      { text: '1. Intervals & Consonance', link: '/docs/counterpoint/intervals' },
+      { text: '2. Motion & Forbidden Parallels', link: '/docs/counterpoint/motion' },
+      { text: '3. Dissonance Treatment', link: '/docs/counterpoint/dissonance' },
+      { text: '4. Melodic Writing', link: '/docs/counterpoint/melody' },
+      { text: '5. Tonal Grammar', link: '/docs/counterpoint/tonality' },
+      { text: '6. Fugal Devices', link: '/docs/counterpoint/fugue' },
+      { text: '7. Form-Specific Constraints', link: '/docs/counterpoint/form-constraints' },
+      { text: 'Validator Rule Reference', link: '/docs/validator-rules' },
+    ]
+  },
+  {
+    text: 'Technical',
+    items: [
+      { text: 'Architecture', link: '/docs/architecture' },
+      { text: 'Generation Pipeline', link: '/docs/generation-pipeline' },
+      { text: 'Voice Architecture', link: '/docs/voice-architecture' },
+      { text: 'Instruments', link: '/docs/physical-models' },
+      { text: 'Forms', link: '/docs/forms' },
+    ]
+  },
+  {
+    text: 'Reference',
+    items: [
+      { text: 'JavaScript API', link: '/docs/api-js' },
+      { text: 'CLI Reference', link: '/docs/cli' },
+      { text: 'Presets Reference', link: '/docs/presets' },
+      { text: 'Option Relationships', link: '/docs/option-relationships' },
+    ]
+  }
+]
 
 // JSON-LD: SoftwareApplication schema
 const softwareApplicationJsonLd = {
@@ -89,6 +136,18 @@ export default withMermaid(defineConfig({
     hostname: siteUrl
   },
 
+  // Emit an llms.txt index (https://llmstxt.org) into the build output.
+  buildEnd(siteConfig) {
+    generateLlmsTxt({
+      siteUrl,
+      srcDir: siteConfig.srcDir,
+      outDir: siteConfig.outDir,
+      summary:
+        'Algorithmic Bach instrumental MIDI generator: rule-based Baroque counterpoint produces deterministic, editable MIDI — fugues, chorale preludes, passacaglias, and other forms — for any DAW. Dual-licensed AGPL-3.0 / commercial.',
+      docsSidebar: enDocsSidebar,
+    })
+  },
+
   head: [
     ['meta', { name: 'theme-color', content: '#B8922E' }],
     ['link', { rel: 'icon', href: '/favicon.ico' }],
@@ -133,50 +192,7 @@ export default withMermaid(defineConfig({
           { text: 'GitHub', link: githubUrl }
         ],
         sidebar: {
-          '/docs/': [
-            {
-              text: 'Guide',
-              items: [
-                { text: 'Features', link: '/docs/features' },
-                { text: 'Getting Started', link: '/docs/getting-started' },
-                { text: 'Installation', link: '/docs/installation' },
-              ]
-            },
-            {
-              text: 'Counterpoint Course',
-              items: [
-                { text: 'Course Overview', link: '/docs/counterpoint' },
-                { text: '0. Music Primer for Engineers', link: '/docs/music-primer' },
-                { text: '1. Intervals & Consonance', link: '/docs/counterpoint/intervals' },
-                { text: '2. Motion & Forbidden Parallels', link: '/docs/counterpoint/motion' },
-                { text: '3. Dissonance Treatment', link: '/docs/counterpoint/dissonance' },
-                { text: '4. Melodic Writing', link: '/docs/counterpoint/melody' },
-                { text: '5. Tonal Grammar', link: '/docs/counterpoint/tonality' },
-                { text: '6. Fugal Devices', link: '/docs/counterpoint/fugue' },
-                { text: '7. Form-Specific Constraints', link: '/docs/counterpoint/form-constraints' },
-                { text: 'Validator Rule Reference', link: '/docs/validator-rules' },
-              ]
-            },
-            {
-              text: 'Technical',
-              items: [
-                { text: 'Architecture', link: '/docs/architecture' },
-                { text: 'Generation Pipeline', link: '/docs/generation-pipeline' },
-                { text: 'Voice Architecture', link: '/docs/voice-architecture' },
-                { text: 'Instruments', link: '/docs/physical-models' },
-                { text: 'Forms', link: '/docs/forms' },
-              ]
-            },
-            {
-              text: 'Reference',
-              items: [
-                { text: 'JavaScript API', link: '/docs/api-js' },
-                { text: 'CLI Reference', link: '/docs/cli' },
-                { text: 'Presets Reference', link: '/docs/presets' },
-                { text: 'Option Relationships', link: '/docs/option-relationships' },
-              ]
-            }
-          ]
+          '/docs/': enDocsSidebar
         }
       }
     },
