@@ -46,6 +46,7 @@ async function init(options) {
     getMidi: m.cwrap("bach_get_midi", "number", ["number"]),
     freeMidi: m.cwrap("bach_free_midi", null, ["number"]),
     getEvents: m.cwrap("bach_get_events", "number", ["number"]),
+    getDiagnostic: m.cwrap("bach_get_diagnostic", "number", ["number"]),
     freeEvents: m.cwrap("bach_free_events", null, ["number"]),
     getInfo: m.cwrap("bach_get_info", "number", ["number"]),
     // Form enumeration
@@ -157,6 +158,20 @@ var BachGenerator = class {
     const ptr = api2.getEvents(this.handle);
     if (ptr === 0) {
       throw new Error("No event data available. Call generate() first.");
+    }
+    const jsonPtr = m.HEAPU32[ptr >> 2];
+    const jsonStr = m.UTF8ToString(jsonPtr);
+    api2.freeEvents(ptr);
+    return JSON.parse(jsonStr);
+  }
+  /** Get diagnostic.v1 from the most recent composer validation failure. */
+  getDiagnostic() {
+    this.checkDestroyed();
+    const api2 = getApi();
+    const m = getModule();
+    const ptr = api2.getDiagnostic(this.handle);
+    if (ptr === 0) {
+      return null;
     }
     const jsonPtr = m.HEAPU32[ptr >> 2];
     const jsonStr = m.UTF8ToString(jsonPtr);

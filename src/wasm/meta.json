@@ -1,36 +1,36 @@
 {
-  "wasmSize": 330442,
-  "wasmSizeKB": 322,
-  "gzipSize": 128354,
-  "gzipKB": 125,
+  "wasmSize": 392439,
+  "wasmSizeKB": 383,
+  "gzipSize": 152116,
+  "gzipKB": 148,
   "assets": {
     "bach.js": {
-      "size": 16987,
+      "size": 17077,
       "sizeKB": 16,
-      "gzipSize": 5426,
+      "gzipSize": 5451,
       "gzipKB": 5
     },
     "index.js": {
-      "size": 7430,
+      "size": 7924,
       "sizeKB": 7,
-      "gzipSize": 1962,
+      "gzipSize": 2032,
       "gzipKB": 1
     },
     "bach.wasm": {
-      "size": 330442,
-      "sizeKB": 322,
-      "gzipSize": 128354,
-      "gzipKB": 125
+      "size": 392439,
+      "sizeKB": 383,
+      "gzipSize": 152116,
+      "gzipKB": 148
     }
   },
   "total": {
-    "size": 354859,
-    "sizeKB": 346,
-    "gzipSize": 135742,
-    "gzipKB": 132
+    "size": 417440,
+    "sizeKB": 407,
+    "gzipSize": 159599,
+    "gzipKB": 155
   },
-  "md5": "84a9e5bb69295869597deb66c0e37579",
-  "engineVersion": "0.3.1",
-  "engineCommit": "bbd9d31",
-  "updatedAt": "2026-06-12T19:33:26Z"
+  "md5": "47628510861f1cb252abe331bd5cba61",
+  "engineVersion": "0.3.2",
+  "engineCommit": "3f53bb1",
+  "updatedAt": "2026-07-17T20:05:39Z"
 }

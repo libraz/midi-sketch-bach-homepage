@@ -70,6 +70,28 @@ export interface EventData {
     description: string;
     tracks: TrackData[];
 }
+export interface DiagnosticFailure {
+    kind: 'StructuralFail' | 'MusicalFail' | 'ConfigFail';
+    rule_id: string;
+    span_id: number | null;
+}
+/** Self-contained diagnostic.v1 returned after composer validation failure. */
+export interface DiagnosticData {
+    schema_version: 'diagnostic.v1';
+    index_parallel: boolean;
+    validation: {
+        status: 'ok' | 'failed_span' | 'failed_seed';
+        failures: DiagnosticFailure[];
+    };
+    notes: Array<{
+        index: number;
+        start_tick: number;
+        duration: number;
+        pitch: number;
+        voice: number;
+    }>;
+    provenance: ProvenanceNote[];
+}
 /**
  * One note's provenance record from the provenance.v1 export
  * (emitProvenanceJson in src/composer/json_export.cpp). Index-parallel with the
@@ -148,6 +170,7 @@ export interface Api {
     getMidi: (handle: number) => number;
     freeMidi: (ptr: number) => void;
     getEvents: (handle: number) => number;
+    getDiagnostic: (handle: number) => number;
     freeEvents: (ptr: number) => void;
     getInfo: (handle: number) => number;
     formCount: () => number;
@@ -215,6 +238,8 @@ export declare class BachGenerator {
      * @throws Error if no generation has been done
      */
     getEvents(): EventData;
+    /** Get diagnostic.v1 from the most recent composer validation failure. */
+    getDiagnostic(): DiagnosticData | null;
     /**
      * Get generation info.
      * @returns BachInfo struct data
