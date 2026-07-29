@@ -1,6 +1,8 @@
 // js/src/internal.ts
 var moduleInstance = null;
 var api = null;
+var initialization = null;
+var initializationWasmPath;
 function getModule() {
   if (!moduleInstance) {
     throw new Error("Module not initialized. Call init() first.");
@@ -17,61 +19,82 @@ async function init(options) {
   if (moduleInstance) {
     return;
   }
-  const createModule = await import("./bach.js");
-  const moduleOpts = {};
-  if (options?.wasmPath) {
-    moduleOpts.locateFile = (path) => {
-      if (path.endsWith(".wasm")) {
-        return options.wasmPath;
-      }
-      return path;
+  if (initialization) {
+    if (options?.wasmPath !== initializationWasmPath) {
+      throw new Error("WASM initialization is already in progress with a different wasmPath");
+    }
+    return initialization;
+  }
+  initializationWasmPath = options?.wasmPath;
+  initialization = (async () => {
+    const createModule = await import("./bach.js");
+    const moduleOpts = {};
+    if (options?.wasmPath) {
+      moduleOpts.locateFile = (path) => {
+        if (path.endsWith(".wasm")) {
+          return options.wasmPath;
+        }
+        return path;
+      };
+    }
+    moduleInstance = await createModule.default(moduleOpts);
+    if (!moduleInstance) {
+      throw new Error("Failed to initialize WASM module");
+    }
+    const m = moduleInstance;
+    api = {
+      // Lifecycle
+      create: m.cwrap("bach_create", "number", []),
+      destroy: m.cwrap("bach_destroy", null, ["number"]),
+      // Generation
+      generateFromJson: m.cwrap("bach_generate_from_json", "number", [
+        "number",
+        "string",
+        "number"
+      ]),
+      // Output
+      getMidi: m.cwrap("bach_get_midi", "number", ["number"]),
+      freeMidi: m.cwrap("bach_free_midi", null, ["number"]),
+      getEvents: m.cwrap("bach_get_events", "number", ["number"]),
+      getGenerated: m.cwrap("bach_get_generated", "number", ["number"]),
+      getProvenance: m.cwrap("bach_get_provenance", "number", ["number"]),
+      getDiagnostic: m.cwrap("bach_get_diagnostic", "number", ["number"]),
+      freeEvents: m.cwrap("bach_free_events", null, ["number"]),
+      getInfo: m.cwrap("bach_get_info", "number", ["number"]),
+      getInfoJson: m.cwrap("bach_get_info_json", "number", ["number"]),
+      // Form enumeration
+      formCount: m.cwrap("bach_form_count", "number", []),
+      formName: m.cwrap("bach_form_name", "string", ["number"]),
+      formDisplay: m.cwrap("bach_form_display", "string", ["number"]),
+      // Instrument enumeration
+      instrumentCount: m.cwrap("bach_instrument_count", "number", []),
+      instrumentName: m.cwrap("bach_instrument_name", "string", ["number"]),
+      // Character enumeration
+      characterCount: m.cwrap("bach_character_count", "number", []),
+      characterName: m.cwrap("bach_character_name", "string", ["number"]),
+      // Key enumeration
+      keyCount: m.cwrap("bach_key_count", "number", []),
+      keyName: m.cwrap("bach_key_name", "string", ["number"]),
+      // Scale enumeration
+      scaleCount: m.cwrap("bach_scale_count", "number", []),
+      scaleName: m.cwrap("bach_scale_name", "string", ["number"]),
+      // Default instrument
+      defaultInstrumentForForm: m.cwrap("bach_default_instrument_for_form", "number", [
+        "number"
+      ]),
+      // Error handling
+      errorString: m.cwrap("bach_error_string", "string", ["number"]),
+      // Version
+      version: m.cwrap("bach_version", "string", [])
     };
+  })();
+  try {
+    await initialization;
+  } catch (error) {
+    initialization = null;
+    initializationWasmPath = void 0;
+    throw error;
   }
-  moduleInstance = await createModule.default(moduleOpts);
-  if (!moduleInstance) {
-    throw new Error("Failed to initialize WASM module");
-  }
-  const m = moduleInstance;
-  api = {
-    // Lifecycle
-    create: m.cwrap("bach_create", "number", []),
-    destroy: m.cwrap("bach_destroy", null, ["number"]),
-    // Generation
-    generateFromJson: m.cwrap("bach_generate_from_json", "number", [
-      "number",
-      "string",
-      "number"
-    ]),
-    // Output
-    getMidi: m.cwrap("bach_get_midi", "number", ["number"]),
-    freeMidi: m.cwrap("bach_free_midi", null, ["number"]),
-    getEvents: m.cwrap("bach_get_events", "number", ["number"]),
-    getDiagnostic: m.cwrap("bach_get_diagnostic", "number", ["number"]),
-    freeEvents: m.cwrap("bach_free_events", null, ["number"]),
-    getInfo: m.cwrap("bach_get_info", "number", ["number"]),
-    // Form enumeration
-    formCount: m.cwrap("bach_form_count", "number", []),
-    formName: m.cwrap("bach_form_name", "string", ["number"]),
-    formDisplay: m.cwrap("bach_form_display", "string", ["number"]),
-    // Instrument enumeration
-    instrumentCount: m.cwrap("bach_instrument_count", "number", []),
-    instrumentName: m.cwrap("bach_instrument_name", "string", ["number"]),
-    // Character enumeration
-    characterCount: m.cwrap("bach_character_count", "number", []),
-    characterName: m.cwrap("bach_character_name", "string", ["number"]),
-    // Key enumeration
-    keyCount: m.cwrap("bach_key_count", "number", []),
-    keyName: m.cwrap("bach_key_name", "string", ["number"]),
-    // Scale enumeration
-    scaleCount: m.cwrap("bach_scale_count", "number", []),
-    scaleName: m.cwrap("bach_scale_name", "string", ["number"]),
-    // Default instrument
-    defaultInstrumentForForm: m.cwrap("bach_default_instrument_for_form", "number", ["number"]),
-    // Error handling
-    errorString: m.cwrap("bach_error_string", "string", ["number"]),
-    // Version
-    version: m.cwrap("bach_version", "string", [])
-  };
 }
 
 // js/src/bach.ts
@@ -121,9 +144,15 @@ var BachGenerator = class {
     this.checkDestroyed();
     const api2 = getApi();
     const json = configToJson(config);
-    const error = api2.generateFromJson(this.handle, json, json.length);
+    const error = api2.generateFromJson(
+      this.handle,
+      json,
+      new TextEncoder().encode(json).byteLength
+    );
     if (error !== 0) {
-      throw new Error(`Generation failed: ${api2.errorString(error)}`);
+      throw new Error(
+        `Generation failed: ${api2.errorString(error)}. Call getDiagnostic() for validation details when available.`
+      );
     }
   }
   /**
@@ -164,6 +193,14 @@ var BachGenerator = class {
     api2.freeEvents(ptr);
     return JSON.parse(jsonStr);
   }
+  /** Get generated.v1 data from the most recent successful generation. */
+  getGenerated() {
+    return this.getSuccessfulJson(this.requireApi().getGenerated(this.handle), "generated.v1");
+  }
+  /** Get provenance.v1 data from the most recent successful generation. */
+  getProvenance() {
+    return this.getSuccessfulJson(this.requireApi().getProvenance(this.handle), "provenance.v1");
+  }
   /** Get diagnostic.v1 from the most recent composer validation failure. */
   getDiagnostic() {
     this.checkDestroyed();
@@ -186,15 +223,14 @@ var BachGenerator = class {
     this.checkDestroyed();
     const api2 = getApi();
     const m = getModule();
-    const ptr = api2.getInfo(this.handle);
-    const view = new DataView(m.HEAPU8.buffer, ptr, 16);
-    return {
-      totalBars: view.getUint16(0, true),
-      totalTicks: view.getUint32(4, true),
-      bpm: view.getUint16(8, true),
-      trackCount: view.getUint8(10),
-      seedUsed: view.getUint32(12, true)
-    };
+    const ptr = api2.getInfoJson(this.handle);
+    if (ptr === 0) {
+      throw new Error("No generation info available. Call generate() first.");
+    }
+    const jsonPtr = m.HEAPU32[ptr >> 2];
+    const json = m.UTF8ToString(jsonPtr);
+    api2.freeEvents(ptr);
+    return JSON.parse(json);
   }
   /**
    * Destroy this instance and free WASM resources.
@@ -211,6 +247,20 @@ var BachGenerator = class {
     if (this.destroyed) {
       throw new Error("BachGenerator has been destroyed");
     }
+  }
+  requireApi() {
+    this.checkDestroyed();
+    return getApi();
+  }
+  getSuccessfulJson(ptr, name) {
+    if (ptr === 0) {
+      throw new Error(`No ${name} data available. Call generate() first.`);
+    }
+    const m = getModule();
+    const jsonPtr = m.HEAPU32[ptr >> 2];
+    const jsonStr = m.UTF8ToString(jsonPtr);
+    getApi().freeEvents(ptr);
+    return JSON.parse(jsonStr);
   }
 };
 

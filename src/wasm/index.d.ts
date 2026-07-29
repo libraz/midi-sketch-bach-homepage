@@ -3,213 +3,7 @@
  * @packageDocumentation
  */
 
-// From types.ts
-/**
- * TypeScript type definitions for Bach MIDI Generator
- */
-/** Configuration for Bach generation. */
-export interface BachConfig {
-    /** Form type ID (0-9) or form name string. */
-    form?: number | string;
-    /** Key pitch class (0-11: C, C#, D, Eb, E, F, F#, G, Ab, A, Bb, B). */
-    key?: number;
-    /** True for minor mode, false for major. */
-    isMinor?: boolean;
-    /** Tempo in BPM (40-200, 0 = default 100). */
-    bpm?: number;
-    /** Random seed (0 = random). */
-    seed?: number;
-    /** Subject character ID (0-3) or name string. */
-    character?: number | string;
-    /** Instrument type ID (0-5) or name string. */
-    instrument?: number | string;
-    /** Duration scale ID (0-3) or name string ("short", "medium", "long", "full"). */
-    scale?: number | string;
-    /** Target bar count (overrides scale when > 0). */
-    targetBars?: number;
-}
-/** Generation info returned after successful generation. */
-export interface BachInfo {
-    /** Total number of bars. */
-    totalBars: number;
-    /** Total duration in MIDI ticks. */
-    totalTicks: number;
-    /** Tempo in BPM. */
-    bpm: number;
-    /** Number of tracks. */
-    trackCount: number;
-    /** Seed used for generation. */
-    seedUsed: number;
-}
-/** A note event from the event data (JSON keys match C API snake_case). */
-export interface NoteEvent {
-    pitch: number;
-    velocity: number;
-    start_tick: number;
-    duration: number;
-    voice: number;
-    /** Provenance tag describing how the note was generated. */
-    source?: string;
-}
-/** A track from the event data (JSON keys match C API snake_case). */
-export interface TrackData {
-    name: string;
-    channel: number;
-    program: number;
-    note_count: number;
-    notes: NoteEvent[];
-}
-/** Full event data from generation (JSON keys match C API snake_case). */
-export interface EventData {
-    form: string;
-    key: string;
-    bpm: number;
-    seed: number;
-    total_ticks: number;
-    total_bars: number;
-    description: string;
-    tracks: TrackData[];
-}
-export interface DiagnosticFailure {
-    kind: 'StructuralFail' | 'MusicalFail' | 'ConfigFail';
-    rule_id: string;
-    span_id: number | null;
-}
-/** Self-contained diagnostic.v1 returned after composer validation failure. */
-export interface DiagnosticData {
-    schema_version: 'diagnostic.v1';
-    index_parallel: boolean;
-    validation: {
-        status: 'ok' | 'failed_span' | 'failed_seed';
-        failures: DiagnosticFailure[];
-    };
-    notes: Array<{
-        index: number;
-        start_tick: number;
-        duration: number;
-        pitch: number;
-        voice: number;
-    }>;
-    provenance: ProvenanceNote[];
-}
-/**
- * One note's provenance record from the provenance.v1 export
- * (emitProvenanceJson in src/composer/json_export.cpp). Index-parallel with the
- * generated.v1 notes array.
- */
-export interface ProvenanceNote {
-    index: number;
-    /** Owning span id, or null when it equals the invalid-span sentinel. */
-    span_id: number | null;
-    voice_intent: string;
-    /** PascalCase note source: "Material" | "Compose" | "Ornament". */
-    source: string;
-    candidate_score: number;
-    /**
-     * Corpus-scorer audit fields. Emitted ONLY for `source === "Compose"` notes;
-     * Material and Ornament notes never run the scorer, so these keys are absent
-     * for them. A present `shadow_winning_pitch` that differs from the emitted
-     * pitch is the "scorer disagreed with the commit" diagnostic.
-     */
-    shadow_score?: number;
-    shadow_winning_pitch?: number;
-    shadow_winning_pitch_without_markov?: number;
-    /** Low 64 RuleId bits (bits 0-63) as an unsigned integer. */
-    satisfied_rules: number;
-    /**
-     * High RuleId lane (bits 64-127) as an unsigned integer. Emitted ONLY when
-     * the high lane is nonzero, so notes using no high-lane bit omit the field
-     * entirely (byte-identical to the pre-high-lane output). The first high-lane
-     * bit is CountersubjectInvertible (bit 64).
-     */
-    satisfied_rules_high?: number;
-    rejected_alternatives: number;
-}
-/** Preset info for enumerable options. */
-export interface PresetInfo {
-    /** Unique ID. */
-    id: number;
-    /** Internal name (e.g. "fugue", "organ"). */
-    name: string;
-    /** Display name (e.g. "Prelude and Fugue"). */
-    display?: string;
-}
-// From presets.ts
-/**
- * Preset enumeration functions for forms, instruments, characters, and keys
- */
-/** Get all available form types. */
-export declare function getForms(): PresetInfo[];
-/** Get all available instruments. */
-export declare function getInstruments(): PresetInfo[];
-/** Get all available subject characters. */
-export declare function getCharacters(): PresetInfo[];
-/** Get all available keys. */
-export declare function getKeys(): PresetInfo[];
-/** Get all available duration scales. */
-export declare function getScales(): PresetInfo[];
-/** Get the default instrument ID for a given form type. */
-export declare function getDefaultInstrumentForForm(formId: number): number;
-/** Get the library version string. */
-export declare function getVersion(): string;
-// From internal.ts
-/**
- * Internal WASM module bindings and initialization
- * @internal
- */
-export interface EmscriptenModule {
-    cwrap: (name: string, returnType: string | null, argTypes: string[]) => (...args: unknown[]) => unknown;
-    UTF8ToString: (ptr: number) => string;
-    HEAPU8: Uint8Array;
-    HEAPU32: Uint32Array;
-}
-export interface Api {
-    create: () => number;
-    destroy: (handle: number) => void;
-    generateFromJson: (handle: number, json: string, length: number) => number;
-    getMidi: (handle: number) => number;
-    freeMidi: (ptr: number) => void;
-    getEvents: (handle: number) => number;
-    getDiagnostic: (handle: number) => number;
-    freeEvents: (ptr: number) => void;
-    getInfo: (handle: number) => number;
-    formCount: () => number;
-    formName: (id: number) => string;
-    formDisplay: (id: number) => string;
-    instrumentCount: () => number;
-    instrumentName: (id: number) => string;
-    characterCount: () => number;
-    characterName: (id: number) => string;
-    keyCount: () => number;
-    keyName: (id: number) => string;
-    scaleCount: () => number;
-    scaleName: (id: number) => string;
-    defaultInstrumentForForm: (formId: number) => number;
-    errorString: (error: number) => string;
-    version: () => string;
-}
-/**
- * Get the WASM module instance
- * @throws Error if module not initialized
- * @internal
- */
-export declare function getModule(): EmscriptenModule;
-/**
- * Get the API bindings
- * @throws Error if module not initialized
- * @internal
- */
-export declare function getApi(): Api;
-/**
- * Initialize the WASM module
- */
-export declare function init(options?: {
-    wasmPath?: string;
-}): Promise<void>;
 // From bach.ts
-/**
- * BachGenerator - Main class for generating Bach MIDI compositions
- */
 /**
  * Bach MIDI Generator
  *
@@ -238,6 +32,10 @@ export declare class BachGenerator {
      * @throws Error if no generation has been done
      */
     getEvents(): EventData;
+    /** Get generated.v1 data from the most recent successful generation. */
+    getGenerated(): GeneratedData;
+    /** Get provenance.v1 data from the most recent successful generation. */
+    getProvenance(): ProvenanceData;
     /** Get diagnostic.v1 from the most recent composer validation failure. */
     getDiagnostic(): DiagnosticData | null;
     /**
@@ -251,4 +49,211 @@ export declare class BachGenerator {
      */
     destroy(): void;
     private checkDestroyed;
+    private requireApi;
+    private getSuccessfulJson;
 }
+
+// From internal.ts
+/**
+ * Initialize the WASM module
+ */
+export declare function init(options?: {
+    wasmPath?: string;
+}): Promise<void>;
+
+// From presets.ts
+/** Get all available form types. */
+export declare function getForms(): PresetInfo[];
+/** Get all available instruments. */
+export declare function getInstruments(): PresetInfo[];
+/** Get all available subject characters. */
+export declare function getCharacters(): PresetInfo[];
+/** Get all available keys. */
+export declare function getKeys(): PresetInfo[];
+/** Get all available duration scales. */
+export declare function getScales(): PresetInfo[];
+/** Get the default instrument ID for a given form type. */
+export declare function getDefaultInstrumentForForm(formId: number): number;
+/** Get the library version string. */
+export declare function getVersion(): string;
+
+// From types.ts
+/**
+ * TypeScript type definitions for Bach MIDI Generator
+ */
+export type FormName = 'fugue' | 'prelude_and_fugue' | 'trio_sonata' | 'chorale_prelude' | 'toccata_and_fugue' | 'passacaglia' | 'fantasia_and_fugue' | 'cello_prelude' | 'chaconne' | 'goldberg_variations';
+export type FormId = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+export type KeyId = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
+export type KeyName = 'C' | 'C#' | 'D' | 'Eb' | 'E' | 'F' | 'F#' | 'G' | 'Ab' | 'A' | 'Bb' | 'B';
+export type CharacterName = 'severe' | 'playful' | 'noble' | 'restless';
+export type CharacterId = 0 | 1 | 2 | 3;
+export type InstrumentName = 'organ' | 'harpsichord' | 'piano' | 'violin' | 'cello' | 'guitar';
+export type InstrumentId = 0 | 1 | 2 | 3 | 4 | 5;
+export type DurationScaleName = 'short' | 'medium' | 'long' | 'full';
+export type DurationScaleId = 0 | 1 | 2 | 3;
+/** Configuration for Bach generation. */
+export interface BachConfig {
+    /** Form type ID (0-9) or form name string. */
+    form?: FormId | FormName;
+    /** Key pitch class ID or canonical key name. */
+    key?: KeyId | KeyName;
+    /** True for minor mode, false for major. */
+    isMinor?: boolean;
+    /** Tempo in BPM (40-200, 0 = default 100). */
+    bpm?: number;
+    /** Random seed (0 = random). */
+    seed?: number;
+    /** Subject character ID (0-3) or name string. */
+    character?: CharacterId | CharacterName;
+    /** Instrument type ID (0-5) or name string. */
+    instrument?: InstrumentId | InstrumentName;
+    /** Duration scale ID (0-3) or name string ("short", "medium", "long", "full"). */
+    scale?: DurationScaleId | DurationScaleName;
+    /** Target bar count (overrides scale when > 0). */
+    targetBars?: number;
+}
+/** Generation info returned after successful generation. */
+export interface BachInfo {
+    /** Total number of bars. */
+    totalBars: number;
+    /** Total duration in MIDI ticks. */
+    totalTicks: number;
+    /** Tempo in BPM. */
+    bpm: number;
+    /** Number of tracks. */
+    trackCount: number;
+    /** Seed used for generation. */
+    seedUsed: number;
+}
+/** A note event from the event data (JSON keys match C API snake_case). */
+export interface NoteEvent {
+    pitch: number;
+    velocity: number;
+    start_tick: number;
+    duration: number;
+    voice: number;
+    /** Provenance tag describing how the note was generated. */
+    source?: NoteSource;
+}
+/** Per-note provenance tag as emitted in the `events` JSON's `source` field. */
+export type NoteSource = 'material' | 'compose' | 'ornament';
+/** A track from the event data (JSON keys match C API snake_case). */
+export interface TrackData {
+    name: string;
+    channel: number;
+    program: number;
+    note_count: number;
+    control_changes: Array<{
+        tick: number;
+        controller: number;
+        value: number;
+    }>;
+    notes: NoteEvent[];
+}
+/** Full event data from generation (JSON keys match C API snake_case). */
+export interface EventData {
+    form: string;
+    key: string;
+    bpm: number;
+    seed: number;
+    total_ticks: number;
+    total_bars: number;
+    description: string;
+    tempos: Array<{
+        tick: number;
+        bpm: number;
+    }>;
+    time_signatures: Array<{
+        tick: number;
+        numerator: number;
+        denominator: number;
+    }>;
+    tracks: TrackData[];
+}
+export interface DiagnosticFailure {
+    kind: 'StructuralFail' | 'MusicalFail' | 'ConfigFail';
+    rule_id: string;
+    span_id: number | null;
+}
+/** Self-contained diagnostic.v1 returned after composer validation failure. */
+export interface DiagnosticData {
+    schema_version: 'diagnostic.v1';
+    index_parallel: boolean;
+    validation: {
+        status: 'ok' | 'failed_span' | 'failed_seed';
+        failures: DiagnosticFailure[];
+    };
+    notes: Array<{
+        index: number;
+        start_tick: number;
+        duration: number;
+        pitch: number;
+        voice: number;
+    }>;
+    provenance: ProvenanceNote[];
+}
+/** generated.v1 document from a successful generation. */
+export interface GeneratedData {
+    schema_version: 'generated.v1';
+    ticks_per_beat: number;
+    duration_ticks: number;
+    notes: Array<{
+        index: number;
+        start_tick: number;
+        duration: number;
+        pitch: number;
+        voice: number;
+        velocity: number;
+    }>;
+}
+/** provenance.v1 document from a successful generation. */
+export interface ProvenanceData {
+    schema_version: 'provenance.v1';
+    notes: ProvenanceNote[];
+}
+/**
+ * One note's provenance record from the provenance.v1 export
+ * (emitProvenanceJson in src/composer/json_export.cpp). Index-parallel with the
+ * generated.v1 notes array.
+ */
+export interface ProvenanceNote {
+    index: number;
+    /** Owning span id, or null when it equals the invalid-span sentinel. */
+    span_id: number | null;
+    voice_intent: string;
+    /** PascalCase note source: "Material" | "Compose" | "Ornament". */
+    source: 'Material' | 'Compose' | 'Ornament';
+    candidate_score: number;
+    /**
+     * Corpus-scorer audit fields. Emitted ONLY for `source === "Compose"` notes;
+     * Material and Ornament notes never run the scorer, so these keys are absent
+     * for them. A present `shadow_winning_pitch` that differs from the emitted
+     * pitch is the "scorer disagreed with the commit" diagnostic.
+     */
+    shadow_score?: number;
+    shadow_winning_pitch?: number;
+    shadow_winning_pitch_without_markov?: number;
+    /**
+     * Low 64 RuleId bits (bits 0-63) as a base-10 unsigned integer string.
+     * Parse with `BigInt()`; JavaScript `number` cannot preserve all RuleId bits.
+     */
+    satisfied_rules: string;
+    /**
+     * High RuleId lane (bits 64-127) as an unsigned integer. Emitted ONLY when
+     * the high lane is nonzero, so notes using no high-lane bit omit the field
+     * entirely (byte-identical to the pre-high-lane output). The first high-lane
+     * bit is CountersubjectInvertible (bit 64).
+     */
+    satisfied_rules_high?: string;
+    rejected_alternatives: number;
+}
+/** Preset info for enumerable options. */
+export interface PresetInfo {
+    /** Unique ID. */
+    id: number;
+    /** Internal name (e.g. "fugue", "organ"). */
+    name: string;
+    /** Display name (e.g. "Prelude and Fugue"). */
+    display?: string;
+}
+
