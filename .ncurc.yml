@@ -1,0 +1,9 @@
+# npm-check-updates configuration.
+#
+# typescript: pinned to the 6.x line declared in package.json. Yarn 4's builtin
+# `compat/typescript` patch does not understand the TypeScript 7 package layout
+# and fails to install it (ENOENT on lib/_tsc.js). Drop this entry once Yarn
+# ships a TypeScript 7 compatible patch and vue-tsc supports the native
+# compiler; bump the 6.x range by hand until then.
+reject:
+  - typescript
