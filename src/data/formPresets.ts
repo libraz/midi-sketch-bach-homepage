@@ -10,6 +10,13 @@ export interface FormPreset {
   bwv: string
   category: 'organ' | 'solo' | 'keyboard'
   defaultInstrument: string
+  /**
+   * Instruments the engine accepts for this form. Anything else is rejected
+   * with an incompatible-instrument error, so the picker offers only these.
+   */
+  instruments: string[]
+  /** Subject characters the engine rejects for this form. */
+  excludedCharacters?: string[]
   defaultBpm: number
 }
 
@@ -23,6 +30,7 @@ export const FORM_PRESETS: FormPreset[] = [
     bwv: 'BWV 578',
     category: 'organ',
     defaultInstrument: 'organ',
+    instruments: ['organ'],
     defaultBpm: 85,
   },
   {
@@ -33,6 +41,7 @@ export const FORM_PRESETS: FormPreset[] = [
     bwv: 'BWV 543',
     category: 'organ',
     defaultInstrument: 'organ',
+    instruments: ['organ'],
     defaultBpm: 90,
   },
   {
@@ -43,6 +52,7 @@ export const FORM_PRESETS: FormPreset[] = [
     bwv: 'BWV 525',
     category: 'organ',
     defaultInstrument: 'organ',
+    instruments: ['organ'],
     defaultBpm: 90,
   },
   {
@@ -53,6 +63,8 @@ export const FORM_PRESETS: FormPreset[] = [
     bwv: 'BWV 645',
     category: 'organ',
     defaultInstrument: 'organ',
+    instruments: ['organ'],
+    excludedCharacters: ['playful', 'restless'],
     defaultBpm: 72,
   },
   {
@@ -63,6 +75,8 @@ export const FORM_PRESETS: FormPreset[] = [
     bwv: 'BWV 565',
     category: 'organ',
     defaultInstrument: 'organ',
+    instruments: ['organ'],
+    excludedCharacters: ['noble'],
     defaultBpm: 100,
   },
   {
@@ -73,6 +87,7 @@ export const FORM_PRESETS: FormPreset[] = [
     bwv: 'BWV 582',
     category: 'organ',
     defaultInstrument: 'organ',
+    instruments: ['organ'],
     defaultBpm: 76,
   },
   {
@@ -83,6 +98,7 @@ export const FORM_PRESETS: FormPreset[] = [
     bwv: 'BWV 542',
     category: 'organ',
     defaultInstrument: 'organ',
+    instruments: ['organ'],
     defaultBpm: 88,
   },
   // ── Solo forms ───────────────────────────────────────────────────────
@@ -94,6 +110,7 @@ export const FORM_PRESETS: FormPreset[] = [
     bwv: 'BWV 1007',
     category: 'solo',
     defaultInstrument: 'cello',
+    instruments: ['cello'],
     defaultBpm: 80,
   },
   {
@@ -104,6 +121,7 @@ export const FORM_PRESETS: FormPreset[] = [
     bwv: 'BWV 1004',
     category: 'solo',
     defaultInstrument: 'violin',
+    instruments: ['violin'],
     defaultBpm: 76,
   },
   // ── Keyboard forms ──────────────────────────────────────────────────────
@@ -115,6 +133,7 @@ export const FORM_PRESETS: FormPreset[] = [
     bwv: 'BWV 988',
     category: 'keyboard',
     defaultInstrument: 'harpsichord',
+    instruments: ['harpsichord', 'piano'],
     defaultBpm: 60,
   },
 ]

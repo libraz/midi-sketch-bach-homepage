@@ -1,13 +1,9 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useBachGeneration } from '@/composables/useBachGeneration'
 import { useBachPlayer } from '@/composables/useBachPlayer'
-import { useBachStore } from '@/stores/useBachStore'
+import { type FormCategory, INSTRUMENT_NAMES, INSTRUMENT_OPTIONS } from '@/data/bachDemoOptions'
 import { getFormPreset } from '@/data/formPresets'
-import {
-  INSTRUMENT_NAMES,
-  INSTRUMENT_OPTIONS,
-  type FormCategory,
-} from '@/data/bachDemoOptions'
+import { useBachStore } from '@/stores/useBachStore'
 
 export function useBachDemoController(t: (key: string) => string) {
   const generation = useBachGeneration()
@@ -19,9 +15,7 @@ export function useBachDemoController(t: (key: string) => string) {
   const isLoading = ref(true)
   const isRegenerating = ref(false)
 
-  const currentInstrumentName = computed(() => (
-    INSTRUMENT_NAMES[store.config.instrument] ?? 'organ'
-  ))
+  const currentInstrumentName = computed(() => INSTRUMENT_NAMES[store.config.instrument] ?? 'organ')
 
   const playLabel = computed(() => {
     if (isLoading.value) return t('demo.loading')
@@ -30,11 +24,29 @@ export function useBachDemoController(t: (key: string) => string) {
     return t('demo.play')
   })
 
+  /**
+   * The engine rejects an instrument or subject character the form was not
+   * written for, so both pickers offer only what the current form accepts.
+   */
   const characterOptions = computed(() => {
+    const excluded = new Set(getFormPreset(store.config.form)?.excludedCharacters ?? [])
     const chars = generation.getCharacters()
-    return chars.map((c: { id: number; name: string; display?: string }) => ({
-      id: c.id,
-      label: c.display || c.name,
+    return chars
+      .filter(
+        (c: { name: string; display?: string }) =>
+          !excluded.has((c.display || c.name).toLowerCase()),
+      )
+      .map((c: { id: number; name: string; display?: string }) => ({
+        id: c.id,
+        label: c.display || c.name,
+      }))
+  })
+
+  const instrumentOptions = computed(() => {
+    const allowed = getFormPreset(store.config.form)?.instruments
+    return INSTRUMENT_OPTIONS.map(inst => ({
+      ...inst,
+      disabled: allowed ? !allowed.includes(INSTRUMENT_NAMES[inst.id]) : false,
     }))
   })
 
@@ -72,9 +84,13 @@ export function useBachDemoController(t: (key: string) => string) {
     }
 
     if (typeof requestIdleCallback !== 'undefined') {
-      requestIdleCallback(() => { initWasm() })
+      requestIdleCallback(() => {
+        initWasm()
+      })
     } else {
-      setTimeout(() => { initWasm() }, 100)
+      setTimeout(() => {
+        initWasm()
+      }, 100)
     }
   })
 
@@ -172,6 +188,12 @@ export function useBachDemoController(t: (key: string) => string) {
       store.config.bpm = preset.defaultBpm
       activeCategory.value = preset.category
     }
+
+    // Fall back to the first accepted character when the form forbids the
+    // one that was selected for the previous form.
+    if (!characterOptions.value.some(c => c.id === store.config.character)) {
+      store.config.character = characterOptions.value[0]?.id ?? 0
+    }
   }
 
   /** Return the playhead to the beginning and play from the top. */
@@ -207,6 +229,7 @@ export function useBachDemoController(t: (key: string) => string) {
     handleRestart,
     handleSeek,
     handleStop,
+    instrumentOptions,
     isLoading,
     isRegenerating,
     player,

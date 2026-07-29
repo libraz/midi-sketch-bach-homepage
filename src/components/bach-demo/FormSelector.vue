@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import { FORM_CATEGORIES, type FormCategory } from '@/data/bachDemoOptions'
-import { getFormsByCategory, type FormPreset } from '@/data/formPresets'
+import { type FormPreset, getFormsByCategory } from '@/data/formPresets'
 
 const props = defineProps<{
   activeCategory: FormCategory
@@ -27,8 +27,11 @@ function scrollToSelected() {
   if (!selected) return
 
   const containerRect = scrollContainer.getBoundingClientRect()
-  const target = selected.offsetLeft - scrollContainer.offsetLeft
-    - (containerRect.width / 2) + (selected.offsetWidth / 2)
+  const target =
+    selected.offsetLeft -
+    scrollContainer.offsetLeft -
+    containerRect.width / 2 +
+    selected.offsetWidth / 2
 
   if (scrollRafId !== null) cancelAnimationFrame(scrollRafId)
 
@@ -38,13 +41,13 @@ function scrollToSelected() {
 
   const duration = 400
   let startTime: number | null = null
-  const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
+  const easeOutCubic = (t: number) => 1 - (1 - t) ** 3
 
   function step(now: number) {
     if (startTime === null) startTime = now
-      const elapsed = now - startTime
-      const progress = Math.min(elapsed / duration, 1)
-      scrollContainer.scrollLeft = start + delta * easeOutCubic(progress)
+    const elapsed = now - startTime
+    const progress = Math.min(elapsed / duration, 1)
+    scrollContainer.scrollLeft = start + delta * easeOutCubic(progress)
     if (progress < 1) {
       scrollRafId = requestAnimationFrame(step)
     } else {

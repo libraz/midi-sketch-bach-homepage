@@ -1,6 +1,14 @@
-import { ref, reactive } from 'vue'
-import type { BachConfig, EventData } from '@/wasm/index'
+import { reactive, ref } from 'vue'
 import { getFormPreset } from '@/data/formPresets'
+import type {
+  BachConfig,
+  CharacterId,
+  DurationScaleId,
+  EventData,
+  FormId,
+  InstrumentId,
+  KeyId,
+} from '@/wasm/index'
 
 /**
  * Reactive store for Bach demo state (non-Pinia).
@@ -19,14 +27,14 @@ export interface BachStoreConfig {
 }
 
 const DEFAULT_CONFIG: BachStoreConfig = {
-  form: 0,        // Fugue
-  key: 0,         // C
+  form: 0, // Fugue
+  key: 0, // C
   isMinor: false, // C major
   bpm: 85,
   seed: 0,
   character: 0,
-  instrument: 0,  // Organ
-  scale: 3,       // Full
+  instrument: 0, // Organ
+  scale: 3, // Full
 }
 
 const config = reactive<BachStoreConfig>({ ...DEFAULT_CONFIG })
@@ -87,19 +95,21 @@ export function useBachStore() {
       seedValue = Math.floor(Math.random() * 2147483647) + 1
     }
 
+    // The engine types its preset ids as literal unions, while the enumeration
+    // APIs that populate the UI hand back plain numbers — narrow at this boundary.
     const cfg: BachConfig = {
-      form: config.form,
-      key: config.key,
+      form: config.form as FormId,
+      key: config.key as KeyId,
       isMinor: config.isMinor,
       bpm: config.bpm,
       seed: seedValue,
-      instrument: config.instrument,
-      scale: config.scale,
+      instrument: config.instrument as InstrumentId,
+      scale: config.scale as DurationScaleId,
     }
 
     // Only include organ-specific options for organ forms
     if (isOrgan) {
-      cfg.character = config.character
+      cfg.character = config.character as CharacterId
     }
 
     return cfg

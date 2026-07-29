@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { INSTRUMENT_OPTIONS, SCALE_OPTIONS } from '@/data/bachDemoOptions'
+import { SCALE_OPTIONS } from '@/data/bachDemoOptions'
 import type { BachStoreConfig } from '@/stores/useBachStore'
 import { KEY_NAMES } from '@/utils/midiUtils'
 
 defineProps<{
   characterOptions: Array<{ id: number; label: string }>
+  instrumentOptions: Array<{ id: number; labelKey: string; disabled: boolean }>
   config: BachStoreConfig
   show: boolean
   t: (key: string) => string
@@ -76,10 +77,11 @@ function readNumber(event: Event): number {
           <label class="settings-label">{{ t('config.instrument') }}</label>
           <div class="seg seg--wrap">
             <button
-              v-for="inst in INSTRUMENT_OPTIONS"
+              v-for="inst in instrumentOptions"
               :key="inst.id"
               class="seg__btn"
               :class="{ 'seg__btn--active': config.instrument === inst.id }"
+              :disabled="inst.disabled"
               @click="config.instrument = inst.id"
             >{{ t(inst.labelKey) }}</button>
           </div>
@@ -286,6 +288,10 @@ function readNumber(event: Event): number {
   color: #D4B86A;
 }
 
+.seg__btn:disabled {
+  color: rgba(228, 224, 218, 0.16);
+  cursor: not-allowed;
+}
 .seg__btn:hover:not(.seg__btn--active):not(:disabled) {
   background: rgba(26, 26, 34, 0.7);
   color: rgba(228, 224, 218, 0.6);

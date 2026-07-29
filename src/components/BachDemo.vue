@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useI18n } from '@/composables/useI18n'
 import { useBachDemoController } from '@/composables/useBachDemoController'
+import { useI18n } from '@/composables/useI18n'
 import DemoHeader from './bach-demo/DemoHeader.vue'
 import DemoSettings from './bach-demo/DemoSettings.vue'
 import DemoStage from './bach-demo/DemoStage.vue'
@@ -67,6 +67,7 @@ function randomizeSeed() {
       v-model:show="demo.showSettings.value"
       :config="demo.store.config"
       :characterOptions="demo.characterOptions.value"
+      :instrumentOptions="demo.instrumentOptions.value"
       :t="t"
       @randomizeSeed="randomizeSeed"
     />

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { EventData } from '@/wasm/index'
 import PianoRoll from '@/components/PianoRoll.vue'
+import type { EventData } from '@/wasm/index'
 
 defineProps<{
   currentTick: number
