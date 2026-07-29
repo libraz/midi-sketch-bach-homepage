@@ -16,7 +16,7 @@ MIDI Sketch Bach の設定オプションは特定の方法で相互に作用し
 ```mermaid
 graph TD
     A["form"] -->|"固定"| C["声部数"]
-    A -->|"既定を決定"| B["instrument"]
+    A -->|"既定と許容範囲を決定"| B["instrument"]
     A -->|"構造と拍子を決定"| E["形式構造"]
     A -->|"基準長を設定"| P["基準長"]
     F["scale"] -->|"倍率"| P
@@ -69,28 +69,34 @@ generator.generate({ form: 'fugue', key: 2, isMinor: true })
 明示的に設定したフィールドは既定を上書きします。
 
 ```js
-// 楽器とBPMを上書き
+// BPMと長さを上書き
 generator.generate({
   form: 'fugue',
-  instrument: 'harpsichord',  // オルガンを上書き
-  bpm: 72                     // 既定の100を上書き
+  bpm: 72,          // 既定の100を上書き
+  scale: 'medium'   // 既定の'short'を上書き
 })
 ```
 
 形式ごとの声部数は[楽曲形式](/ja/docs/forms)の表を、完全な既定テーブルは[プリセット一覧](/ja/docs/presets)をご覧ください。
 
-## 楽器の既定
+## 楽器は形式が決める
 
-各形式は既定の楽器を選択しますが、任意の楽器に差し替えできます。
+各形式は特定の楽器のために書かれており、エンジンはその形式が想定する楽器しか受け付けません。
 
-| 形式 | 既定楽器 |
-|------|--------------|
-| `fugue`、`prelude_and_fugue`、`trio_sonata`、`chorale_prelude`、`toccata_and_fugue`、`passacaglia`、`fantasia_and_fugue` | オルガン |
-| `cello_prelude` | チェロ |
-| `chaconne` | ヴァイオリン |
-| `goldberg_variations` | チェンバロ |
+| 形式 | 既定楽器 | 他に選べる楽器 |
+|------|----------|----------------|
+| `fugue`、`prelude_and_fugue`、`trio_sonata`、`chorale_prelude`、`toccata_and_fugue`、`passacaglia`、`fantasia_and_fugue` | オルガン | -- |
+| `cello_prelude` | チェロ | -- |
+| `chaconne` | ヴァイオリン | -- |
+| `goldberg_variations` | チェンバロ | ピアノ |
 
-`instrument` の選択は、General MIDI プログラム、生成時に使う演奏可能音域、装飾処理の装飾密度に影響します。無効な楽器文字列は例外を投げます。
+`instrument` の選択は、General MIDI プログラム、生成時に使う演奏可能音域、装飾処理の装飾密度に影響します。音域は作曲そのものに反映されるため、同じ曲を別の楽器へ移し替えることはできません。その形式が受け付けない楽器を指定すると例外になり、不明な楽器文字列も同様です。
+
+::: tip
+実際に選択肢があるのはゴルトベルク変奏曲だけです。`harpsichord` は歯切れのよい発音で変奏のテクスチュアを見通しよく保ち、`piano` は同じ素材をより暖かく持続的に響かせます。
+:::
+
+楽譜全体のオクターブ移動によって出力は楽器の音域内に収められます。音域から外れた音を個別に丸め込むのではなく、曲全体をオクターブ単位でずらすため、内部の声部進行はそのまま保たれます。
 
 ## scale と targetBars
 
@@ -104,10 +110,6 @@ generator.generate({
 | どちらも未指定 | 既定: `scale: "short"`（≒ 基準長） |
 
 スケール倍率はおおよそ `short` ≒ 1倍、`medium` ≒ 2倍、`long` ≒ 3倍、`full` ≒ 4倍です。
-
-::: warning CLI との違い
-CLI ではフーガで `--scale` を省略した場合のみ `medium` になります（CLI 限定の便宜仕様）。JavaScript API の既定は形式にかかわらず常に `scale: "short"` です。詳細は [CLI 参照](/ja/docs/cli) を参照してください。
-:::
 
 ::: tip
 `targetBars` は形式の刻み（グラウンドバスの周期など）にスナップされ、`[形式の最小値, 128]` に丸め込まれます。すべての形式は128小節で上限となります。一般的なサイズカテゴリには `scale`、特定の長さには `targetBars` を使用してください。
@@ -168,14 +170,17 @@ generator.generate({ form: 'fugue', key: 0, isMinor: true, seed: 42 })
 // ニ長調
 generator.generate({ key: 2, isMinor: false })
 
-// ニ短調
+// ニ短調 — ピッチクラスでも正式名でも指定できる
 generator.generate({ key: 2, isMinor: true })
+generator.generate({ key: 'D', isMinor: true })
 ```
 
 | パラメータ | 範囲 | 既定 |
 |-----------|------|---------|
-| `key` | 0--11（ピッチクラス） | 0（C） |
+| `key` | 0--11（ピッチクラス）または正式名（`"C"`、`"C#"`、`"D"`、`"Eb"`、`"E"`、`"F"`、`"F#"`、`"G"`、`"Ab"`、`"A"`、`"Bb"`、`"B"`） | 0（C） |
 | `isMinor` | `true` / `false` | `false`（長調） |
+
+名前は完全一致で照合されるため、`"g"` と `"Db"` はどちらも例外になります。受け付ける綴りは `getKeys()` で列挙できます。
 
 調は以下に影響します：
 - 楽曲のピッチセンターと音階
@@ -220,12 +225,14 @@ generator.generate({ key: 2, isMinor: true })
 | フィールド | 型 | 範囲 | 既定 | 検証 |
 |-----------|------|------|---------|------|
 | `form` | number または string | 0--9 / 名前 | `"fugue"` | 不明な名前・範囲外の番号では例外 |
-| `key` | number | 0--11 | 0 | 範囲外では例外 |
-| `isMinor` | boolean | true/false | false | -- |
+| `key` | number または string | 0--11 / 正式名 | 0 | 範囲外の番号・不明な名前では例外 |
+| `isMinor` | boolean | true/false | false | boolean 以外では例外 |
 | `bpm` | number | 0 または 40--200 | 100 | 0 は既定値 100を使用；それ以外の範囲外では例外 |
 | `seed` | number | 0+ | 0 | 0 = ランダム；解決値は `getInfo().seedUsed` |
 | `character` | string または number | 名前 / 0--3 | `"severe"` | 不明な値では例外；禁止された形式の組み合わせでは例外 |
-| `instrument` | string または number | 名前 / 0--5 | 形式既定 | 不明な値では例外 |
+| `instrument` | string または number | 名前 / 0--5 | 形式既定 | 不明な値では例外；その形式が受け付けない楽器でも例外 |
 | `scale` | string または number | 名前 / 0--3 | `"short"` | 不明な値では例外 |
 | `targetBars` | number | >0 | -- | `scale` を上書き；形式の刻みにスナップし `[最小, 128]` に丸め込み |
 | `numVoices` | number | -- | -- | 受理されるが無視（声部数は形式が決定） |
+
+エラーメッセージは失敗ごとに異なり（`Invalid BPM (must be 0 or 40-200)`、`Incompatible instrument for this form` など）、どのフィールドが原因かを判別できます。

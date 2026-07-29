@@ -16,7 +16,7 @@ Some options choose musical structure (`form`, `key`, `isMinor`, `character`), w
 ```mermaid
 graph TD
     A["form"] -->|"fixes"| C["voice count"]
-    A -->|"determines default"| B["instrument"]
+    A -->|"determines default & allowed"| B["instrument"]
     A -->|"determines structure & meter"| E["Formal Structure"]
     A -->|"sets natural length"| P["Natural Length"]
     F["scale"] -->|"multiplies"| P
@@ -69,28 +69,34 @@ generator.generate({ form: 'fugue', key: 2, isMinor: true })
 Any field you explicitly set overrides the default:
 
 ```js
-// Override instrument and BPM
+// Override BPM and length
 generator.generate({
   form: 'fugue',
-  instrument: 'harpsichord',  // overrides organ
-  bpm: 72                     // overrides default 100
+  bpm: 72,          // overrides default 100
+  scale: 'medium'   // overrides default 'short'
 })
 ```
 
 See the [Forms](/docs/forms) table for per-form voice counts and the [Presets Reference](/docs/presets) for the full default table.
 
-## Instrument Defaults
+## Instrument Is Chosen by the Form
 
-Each form selects a default instrument, but any instrument may be substituted:
+Each form is written for a specific instrument, and the engine accepts only what that form was written for:
 
-| Form | Default Instrument |
-|------|--------------------|
-| `fugue`, `prelude_and_fugue`, `trio_sonata`, `chorale_prelude`, `toccata_and_fugue`, `passacaglia`, `fantasia_and_fugue` | Organ |
-| `cello_prelude` | Cello |
-| `chaconne` | Violin |
-| `goldberg_variations` | Harpsichord |
+| Form | Default Instrument | Also accepted |
+|------|--------------------|---------------|
+| `fugue`, `prelude_and_fugue`, `trio_sonata`, `chorale_prelude`, `toccata_and_fugue`, `passacaglia`, `fantasia_and_fugue` | Organ | -- |
+| `cello_prelude` | Cello | -- |
+| `chaconne` | Violin | -- |
+| `goldberg_variations` | Harpsichord | Piano |
 
-The `instrument` choice affects the General MIDI program, the playable range used during generation, and the ornament density of the post-pass. An invalid instrument string throws.
+The `instrument` choice affects the General MIDI program, the playable range used during generation, and the ornament density of the post-pass. Because the range feeds back into the composition, a form cannot simply be re-voiced onto another instrument: requesting one the form does not accept throws, as does an unknown instrument string.
+
+::: tip
+The Goldberg Variations is the one form with a real choice. `harpsichord` gives the crisp attack that keeps the variation texture transparent; `piano` gives a warmer, more sustained reading of the same material.
+:::
+
+Whole-score octave displacement keeps the output inside the instrument's compass: rather than clamping individual notes that fall outside the range, the engine shifts the entire piece by octaves so the internal voice leading survives intact.
 
 ## Scale and targetBars
 
@@ -104,10 +110,6 @@ The `instrument` choice affects the General MIDI program, the playable range use
 | Neither specified | Default: `scale: "short"` (≈ natural length) |
 
 The scale multipliers are approximately `short` ≈ 1x, `medium` ≈ 2x, `long` ≈ 3x, `full` ≈ 4x of the form's natural length.
-
-::: warning CLI difference
-The CLI falls back to `--scale medium` for fugue when `--scale` is omitted — a CLI-only convenience. The JS API default is always `scale: "short"` regardless of form. See the [CLI reference](/docs/cli).
-:::
 
 ::: tip
 `targetBars` is snapped to the form's granularity (e.g. the ground-bass period) and clamped to `[form minimum, 128]`. Every form caps at 128 bars. Use `scale` for a general size category; use `targetBars` for a specific length.
@@ -168,14 +170,17 @@ The **tonal center** is the pitch that feels like home. `key` chooses the pitch 
 // D major
 generator.generate({ key: 2, isMinor: false })
 
-// D minor
+// D minor — by pitch class or by canonical name
 generator.generate({ key: 2, isMinor: true })
+generator.generate({ key: 'D', isMinor: true })
 ```
 
 | Parameter | Range | Default |
 |-----------|-------|---------|
-| `key` | 0--11 (pitch class) | 0 (C) |
+| `key` | 0--11 (pitch class) or a canonical name (`"C"`, `"C#"`, `"D"`, `"Eb"`, `"E"`, `"F"`, `"F#"`, `"G"`, `"Ab"`, `"A"`, `"Bb"`, `"B"`) | 0 (C) |
 | `isMinor` | `true` / `false` | `false` (major) |
+
+Names are matched exactly — `"g"` and `"Db"` both throw. Use `getKeys()` to enumerate the accepted spellings.
 
 The key affects:
 - The pitch center and scale of the composition
@@ -220,12 +225,14 @@ This table covers API/config validation: whether option values are accepted. Cou
 | Field | Type | Range | Default | Validation |
 |-------|------|-------|---------|------------|
 | `form` | number or string | 0--9 / name | `"fugue"` | Unknown name / out-of-range number throws |
-| `key` | number | 0--11 | 0 | Out of range throws |
-| `isMinor` | boolean | true/false | false | -- |
+| `key` | number or string | 0--11 / canonical name | 0 | Out-of-range number or unknown name throws |
+| `isMinor` | boolean | true/false | false | Non-boolean throws |
 | `bpm` | number | 0 or 40--200 | 100 | 0 uses default 100; any other out-of-range value throws |
 | `seed` | number | 0+ | 0 | 0 = random; resolved value in `getInfo().seedUsed` |
 | `character` | string or number | name / 0--3 | `"severe"` | Unknown value throws; forbidden form pairs throw |
-| `instrument` | string or number | name / 0--5 | Form default | Unknown value throws |
+| `instrument` | string or number | name / 0--5 | Form default | Unknown value throws; an instrument the form does not accept throws |
 | `scale` | string or number | name / 0--3 | `"short"` | Unknown value throws |
 | `targetBars` | number | >0 | -- | Overrides scale; snapped to form granularity, clamped to `[min, 128]` |
 | `numVoices` | number | -- | -- | Accepted and ignored (form decides voices) |
+
+Each rejection carries its own message — `Invalid BPM (must be 0 or 40-200)`, `Incompatible instrument for this form`, and so on — so a failure identifies the field that caused it.

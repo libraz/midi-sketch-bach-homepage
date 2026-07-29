@@ -32,22 +32,27 @@ npm install -g @libraz/midi-sketch-bach
 
 | オプション | エイリアス | 型 | 既定 | 説明 |
 |-----------|----------|------|----------|------|
-| `--form <value>` | | string | `prelude_and_fugue` | 楽曲形式名 |
+| `--form <value>` | | string | `fugue` | 楽曲形式名 |
 | `--key <value>` | | string | `c_major` | `c_major`、`g_minor`、`F_major` などの調名 |
 | `--character <value>` | | string | `severe` | 主題の性格（`severe`、`playful`、`noble`、`restless`） |
-| `--instrument <value>` | | string | 形式の既定 | 楽器（`organ`、`harpsichord`、`piano`、`violin`、`cello`、`guitar`） |
-| `--bpm <value>` | | number | `72` | テンポ（BPM、40--200）。CLI の既定値は 72。JavaScript API では省略時 100 |
+| `--instrument <value>` | | string | 形式の既定 | その形式が受け付ける楽器（`organ`、`harpsichord`、`piano`、`violin`、`cello`、`guitar`） |
+| `--bpm <value>` | | number | `100` | 開始テンポ（BPM、40--200） |
 | `--seed <value>` | | number | `0` | ランダムシード（0 = ランダム、解決済みシードが報告される） |
-| `--scale <value>` | | string | `short` | 長さ倍率（`short`、`medium`、`long`、`full`）。CLI 限定の便宜仕様: フーガで `--scale` 省略時のみ `medium` になる（JavaScript API の既定値は常に `short`） |
+| `--scale <value>` | | string | `short` | 長さ倍率（`short`、`medium`、`long`、`full`） |
 | `--bars <value>` | | number | -- | 目標小節数（`--scale` を上書き） |
+| `--free-counterpoint` | | boolean | `false` | 実験的: パッサカリアの副次対旋律を候補探索で生成する。他の形式では利用不可の診断を出して終了 |
 | `-o <path>` | | string | `output.mid` | 出力ファイルパス |
 | `--json` | | boolean | `false` | MIDI ファイルと同じ場所に `.json` のイベントデータを書き出す |
 | `--generated-json` | | boolean | `false` | 採点用の `generated.v1` + `provenance.v1` JSON を出力（開発者向け） |
-| `--composer-phase <value>` | | string | -- | 開発用のハーネスフェーズ実行モード |
+| `--composer-phase <value>` | | string | -- | 開発用のハーネスフェーズ実行モード。上記のオプションとは併用できない |
 | `--help` | `-h` | boolean | -- | ヘルプを表示 |
 
 ::: warning 廃止されたフラグ
-`--voices`、`--minor`、`--analyze`、`--strict`、`--toccata-style` は廃止されました。声部数は形式が決定し、長調・短調は `--key` に含めます（`c_major`、`d_minor` など）。無効な `--form`/`--key`/`--character`/`--instrument`/`--scale` の値や範囲外の `--bpm` は、既定へ代替せずエラーで終了します。
+`--voices`、`--minor`、`--analyze`、`--strict`、`--toccata-style` は廃止されました。声部数は形式が決定し、長調・短調は `--key` に含めます（`c_major`、`d_minor` など）。無効な `--form`/`--key`/`--character`/`--instrument`/`--scale` の値、値が欠けたオプション、範囲外の `--bpm` は、既定へ代替せずエラーで終了します。
+:::
+
+::: info 楽器は形式が決める
+各形式は 1 つの楽器のために書かれています。形式 0--6 はオルガン、チェロ前奏曲はチェロ、シャコンヌはヴァイオリン、ゴルトベルク変奏曲はチェンバロまたはピアノです。`--instrument` はその形式が受け付ける範囲から選ぶもので、それ以外を指定すると楽器非互換エラーで終了します。
 :::
 
 ## 楽曲形式名
@@ -91,10 +96,10 @@ npm install -g @libraz/midi-sketch-bach
 
 ### 基本的な生成
 
-既定の楽曲（ハ長調の前奏曲とフーガ）を生成：
+既定の楽曲（ハ長調のフーガ）を生成：
 
 ```bash
-@libraz/midi-sketch-bach -o prelude-fugue.mid
+@libraz/midi-sketch-bach -o fugue.mid
 ```
 
 ### ニ短調のフーガ
@@ -181,7 +186,7 @@ npm install -g @libraz/midi-sketch-bach
 @libraz/midi-sketch-bach --form fugue --key d_minor --json -o fugue.mid
 ```
 
-この例では `fugue.mid` と `fugue.json` が書き出されます。
+この例では `fugue.mid` と `fugue.json` が書き出されます。`--generated-json` を付けると `fugue.generated.json` と `fugue.provenance.json` が追加されます。`-o` が既に `.json` で終わっている場合、サイドカーは拡張子を置き換えるのではなく末尾に付け足されるため、出力ファイル自身がサイドカーで上書きされることはありません。
 
 ### npxで実行
 
@@ -206,12 +211,22 @@ npx @libraz/midi-sketch-bach --form fugue --key d_minor -o fugue.mid
   "total_ticks": 80640,
   "total_bars": 42,
   "description": "Fugue, 3 voices",
+  "tempos": [
+    { "tick": 0, "bpm": 80 },
+    { "tick": 80640, "bpm": 78 }
+  ],
+  "time_signatures": [
+    { "tick": 0, "numerator": 4, "denominator": 4 }
+  ],
   "tracks": [
     {
       "name": "Soprano",
       "channel": 0,
       "program": 19,
       "note_count": 128,
+      "control_changes": [
+        { "tick": 0, "controller": 7, "value": 75 }
+      ],
       "notes": [
         {
           "pitch": 72,
@@ -227,9 +242,15 @@ npx @libraz/midi-sketch-bach --form fugue --key d_minor -o fugue.mid
 }
 ```
 
+`bpm` は開始テンポにすぎません。これらのティックを実時間に対応づける方法は[ティックを秒に変換する](/ja/docs/api-js#ティックを秒に変換する)を参照してください。
+
 ## 終了コード
 
 | コード | 意味 |
 |--------|------|
 | `0` | 成功 |
-| `1` | 無効な引数または生成エラー |
+| `2` | 使用方法のエラー — 未知のオプション、値の欠落、併用できないオプションの組み合わせ |
+| `3` | 生成エラー — 無効な設定、非互換な性格や楽器、作曲検証の失敗 |
+| `4` | 出力エラー — MIDI ファイルまたは JSON サイドカーを書き出せなかった |
+
+`--generated-json` を指定した状態で作曲検証に失敗した場合は、終了コード `3` で終わる前に `.diagnostic.json` サイドカーが出力先の隣に書き出されます。

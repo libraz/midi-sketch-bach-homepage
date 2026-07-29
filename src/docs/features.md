@@ -69,18 +69,18 @@ See [Counterpoint Course](/docs/counterpoint) for the full set of rules governin
 
 ## Multiple Instruments
 
-Six instrument presets shape the MIDI output:
+Six instrument presets shape the MIDI output, each accepted by the forms written for it:
 
-| Instrument | Typical Forms |
-|-----------|---------------|
+| Instrument | Accepted by |
+|-----------|-------------|
 | Organ | Fugue, Prelude and Fugue, Trio Sonata, Chorale Prelude, Toccata and Fugue, Passacaglia, Fantasia and Fugue |
-| Harpsichord | Goldberg Variations, any organ form (alternative voicing) |
-| Piano | Any form |
+| Harpsichord | Goldberg Variations |
+| Piano | Goldberg Variations |
 | Violin | Chaconne |
 | Cello | Cello Prelude |
-| Guitar | Cello Prelude, Chaconne (alternative voicing) |
+| Guitar | -- |
 
-Each instrument maps to a General MIDI program number and a playable range, and shapes how densely the ornament pass decorates the line.
+Each instrument maps to a General MIDI program number and a playable range, and shapes how densely the ornament pass decorates the line. Because the range feeds back into the composition, the Goldberg Variations is the only form offering a choice — everything else is fixed to the instrument it was written for.
 
 ## Subject Characters
 
@@ -133,14 +133,18 @@ Get detailed event data including track information, note events, and metadata:
 
 ```js
 const events = generator.getEvents()
-// events.form        - "fugue"
-// events.key         - pitch class (events JSON stays in C)
-// events.bpm         - 100
-// events.total_bars  - 42
-// events.tracks      - Array of TrackData; each note carries a "source" tag
+// events.form             - "fugue"
+// events.key              - pitch class (events JSON stays in C)
+// events.bpm              - 100 (starting tempo)
+// events.total_bars       - 42
+// events.tempos           - tempo map, including the closing ritardando
+// events.time_signatures  - meter map
+// events.tracks           - Array of TrackData; each note carries a "source" tag
 ```
 
 Each note's `source` records its provenance: `"material"` (subjects, grounds, cantus firmus), `"compose"` (candidate search), or `"ornament"` (the ornament pass).
+
+For scoring and analysis rather than playback, `getGenerated()` and `getProvenance()` return the flat `generated.v1` note list and the index-parallel `provenance.v1` record of how each note was chosen.
 
 ## Duration Control
 

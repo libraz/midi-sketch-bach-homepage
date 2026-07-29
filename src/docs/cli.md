@@ -32,22 +32,27 @@ npm install -g @libraz/midi-sketch-bach
 
 | Option | Alias | Type | Default | Description |
 |--------|-------|------|---------|-------------|
-| `--form <value>` | | string | `prelude_and_fugue` | Musical form name |
+| `--form <value>` | | string | `fugue` | Musical form name |
 | `--key <value>` | | string | `c_major` | Key name such as `c_major`, `g_minor`, `F_major` |
 | `--character <value>` | | string | `severe` | Subject character (`severe`, `playful`, `noble`, `restless`) |
-| `--instrument <value>` | | string | Form default | Instrument (`organ`, `harpsichord`, `piano`, `violin`, `cello`, `guitar`) |
-| `--bpm <value>` | | number | `72` | Tempo in BPM (40--200). CLI default is 72; the JS API defaults to 100 when omitted |
+| `--instrument <value>` | | string | Form default | Instrument the form accepts (`organ`, `harpsichord`, `piano`, `violin`, `cello`, `guitar`) |
+| `--bpm <value>` | | number | `100` | Starting tempo in BPM (40--200) |
 | `--seed <value>` | | number | `0` | Random seed (0 = random; resolved seed is reported) |
-| `--scale <value>` | | string | `short` | Length multiplier (`short`, `medium`, `long`, `full`). CLI convenience: fugue falls back to `medium` when `--scale` is omitted; the JS API default is always `short` |
+| `--scale <value>` | | string | `short` | Length multiplier (`short`, `medium`, `long`, `full`) |
 | `--bars <value>` | | number | -- | Target bar count (overrides `--scale`) |
+| `--free-counterpoint` | | boolean | `false` | Experimental: generate the Passacaglia secondary counterline by scored search. Other forms exit with an unavailable diagnostic |
 | `-o <path>` | | string | `output.mid` | Output file path |
 | `--json` | | boolean | `false` | Write event data beside the MIDI file as `.json` |
 | `--generated-json` | | boolean | `false` | Emit `generated.v1` + `provenance.v1` JSON for scoring (developer) |
-| `--composer-phase <value>` | | string | -- | Developer harness mode for pinned composer phases |
+| `--composer-phase <value>` | | string | -- | Developer harness mode for pinned composer phases. Cannot be combined with the options above |
 | `--help` | `-h` | boolean | -- | Show usage |
 
 ::: warning Removed flags
-`--voices`, `--minor`, `--analyze`, `--strict`, and `--toccata-style` no longer exist. The voice count is decided by the form, and mode is encoded in `--key` (`c_major`, `d_minor`, etc.). Invalid `--form`/`--key`/`--character`/`--instrument`/`--scale` values and out-of-range `--bpm` now exit with an error instead of falling back to a default.
+`--voices`, `--minor`, `--analyze`, `--strict`, and `--toccata-style` no longer exist. The voice count is decided by the form, and mode is encoded in `--key` (`c_major`, `d_minor`, etc.). Invalid `--form`/`--key`/`--character`/`--instrument`/`--scale` values, an option with a missing value, and out-of-range `--bpm` exit with an error instead of falling back to a default.
+:::
+
+::: info The form picks the instrument
+Each form is written for one instrument — organ for forms 0--6, cello for the Cello Prelude, violin for the Chaconne, harpsichord or piano for the Goldberg Variations. `--instrument` selects among what the form accepts; anything else exits with an incompatible-instrument error.
 :::
 
 ## Form Names
@@ -91,10 +96,10 @@ Use these names with the `--form` option:
 
 ### Basic Generation
 
-Generate the default piece (Prelude and Fugue in C major):
+Generate the default piece (Fugue in C major):
 
 ```bash
-@libraz/midi-sketch-bach -o prelude-fugue.mid
+@libraz/midi-sketch-bach -o fugue.mid
 ```
 
 ### Fugue in D Minor
@@ -181,7 +186,7 @@ Generate the default piece (Prelude and Fugue in C major):
 @libraz/midi-sketch-bach --form fugue --key d_minor --json -o fugue.mid
 ```
 
-This writes `fugue.mid` and `fugue.json`.
+This writes `fugue.mid` and `fugue.json`. `--generated-json` adds `fugue.generated.json` and `fugue.provenance.json`. When `-o` already ends in `.json`, the sidecars are appended to that name rather than replacing its extension, so the output file is never overwritten by its own sidecar.
 
 ### Generate with npx
 
@@ -206,12 +211,22 @@ The events JSON reports pitches in C (the requested key is applied only in the `
   "total_ticks": 80640,
   "total_bars": 42,
   "description": "Fugue, 3 voices",
+  "tempos": [
+    { "tick": 0, "bpm": 80 },
+    { "tick": 80640, "bpm": 78 }
+  ],
+  "time_signatures": [
+    { "tick": 0, "numerator": 4, "denominator": 4 }
+  ],
   "tracks": [
     {
       "name": "Soprano",
       "channel": 0,
       "program": 19,
       "note_count": 128,
+      "control_changes": [
+        { "tick": 0, "controller": 7, "value": 75 }
+      ],
       "notes": [
         {
           "pitch": 72,
@@ -227,9 +242,15 @@ The events JSON reports pitches in C (the requested key is applied only in the `
 }
 ```
 
+`bpm` is only the starting tempo — see [Converting Ticks to Seconds](/docs/api-js#converting-ticks-to-seconds) for placing these ticks on the clock.
+
 ## Exit Codes
 
 | Code | Meaning |
 |------|---------|
 | `0` | Success |
-| `1` | Invalid arguments or generation error |
+| `2` | Usage error — unknown option, missing value, or an incompatible option combination |
+| `3` | Generation error — invalid configuration, an incompatible character/instrument, or composer validation failure |
+| `4` | Output error — the MIDI file or a JSON sidecar could not be written |
+
+When `--generated-json` is set and composer validation fails, a `.diagnostic.json` sidecar is written alongside the intended output before the run exits with code `3`.

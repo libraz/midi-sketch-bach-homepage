@@ -33,6 +33,10 @@ await init({ wasmPath: '/wasm/bach.wasm' })
 
 **戻り値**: `Promise<void>`
 
+::: tip 同時呼び出しは安全
+`init()` が重なって呼ばれた場合はモジュールを二重に初期化せず、実行中のロードを共有します。エンジンを必要とする各エントリポイントからそのまま呼び出せます。ロード中に別の `wasmPath` を渡した場合は例外を投げます。
+:::
+
 ---
 
 ## BachGenerator
@@ -67,7 +71,9 @@ generator.generate({
 **戻り値**: `void`
 
 ::: warning 厳格な検証
-無効な `form`、`character`、`instrument`、`scale` 文字列、および範囲外の `bpm`（0 または 40--200 以外）は、既定へ暗黙的に代替せず**エラーを投げる**ようになりました。禁止された性格と形式の組み合わせ（[オプション関係](/ja/docs/option-relationships#性格と形式)を参照）も例外を投げます。
+無効な `form`、`key`、`character`、`instrument`、`scale` の値、および範囲外の `bpm`（0 または 40--200 以外）は、既定へ暗黙的に代替せず**エラーを投げます**。禁止された性格と形式の組み合わせ、および楽器と形式の組み合わせ（[オプション関係](/ja/docs/option-relationships#性格と形式)を参照）も例外を投げます。
+
+エラー文字列は失敗ごとに異なります。たとえば `Invalid BPM (must be 0 or 40-200)` や `Incompatible instrument for this form` です。作曲器自身が対位法の検証に失敗した場合は、[`getDiagnostic()`](#getdiagnostic) で規則単位の詳細を取得してください。
 :::
 
 ### `getMidi()`
@@ -87,18 +93,76 @@ const midi = generator.getMidi()
 
 ```js
 const events = generator.getEvents()
-console.log(events.form)        // "fugue"
-console.log(events.key)         // "D minor"
-console.log(events.bpm)         // 80
-console.log(events.total_bars)  // 42
-console.log(events.tracks)      // TrackDataの配列
+console.log(events.form)             // "fugue"
+console.log(events.key)              // "D minor"
+console.log(events.bpm)              // 80
+console.log(events.total_bars)       // 42
+console.log(events.tempos)           // 終結のリタルダンドを含むテンポマップ
+console.log(events.time_signatures)  // 拍子マップ
+console.log(events.tracks)           // TrackDataの配列
 ```
 
 ::: info ピッチは C で生成される
 エンジンは内部的に C で作曲し、指定された `key` はMIDI ファイル書き出し時に適用されます。そのためイベント JSON のピッチは C のまま報告され、`getMidi()` が返す `.mid` ファイルは選択した調に移調されます。
 :::
 
+::: warning `bpm` だけでは時刻を決められない
+`events.bpm` は開始テンポにすぎません。どの曲も終結でリタルダンドし、prelude・toccata・fantasia 系の形式ではフーガ入りでもう一度テンポが変わります。`ticks / 480 * 60 / bpm` という一定テンポの換算では数パーセントずれるため、[テンポマップ](#ティックを秒に変換する)をたどってください。
+:::
+
 **戻り値**: [EventData](#eventdata)
+
+### `getGenerated()`
+
+`generated.v1` ドキュメントを返します。再生用ではなく、採点や解析に使うためのインデックス参照可能なフラットなノート列です。
+
+```js
+const generated = generator.getGenerated()
+console.log(generated.schema_version)  // "generated.v1"
+console.log(generated.ticks_per_beat)  // 480
+console.log(generated.notes[0])
+// { index: 0, start_tick: 0, duration: 60, pitch: 72, voice: 0, velocity: 80 }
+```
+
+**戻り値**: `GeneratedData`。生成が一度も成功していない場合は例外を投げます。
+
+### `getProvenance()`
+
+`provenance.v1` ドキュメントを返します。`getGenerated().notes` とインデックスが 1 対 1 で対応し、そのノートがどう選ばれたかを 1 件ずつ記録します。
+
+```js
+const provenance = generator.getProvenance()
+const note = provenance.notes[0]
+console.log(note.voice_intent)  // "SubjectCarrier"
+console.log(note.source)        // "Material" | "Compose" | "Ornament"
+
+// 規則マスクは10進文字列。Number ではなく BigInt で読む
+const satisfied = BigInt(note.satisfied_rules)
+const high = note.satisfied_rules_high ? BigInt(note.satisfied_rules_high) : 0n
+```
+
+::: warning 規則マスクは文字列
+JavaScript の `number` では 64 個の規則ビットをすべて保持できないため、`satisfied_rules` と `satisfied_rules_high` は10進文字列です。`BigInt()` で読んでください。上位レーン（ビット 64--127）を 1 つも使わないノートでは、`satisfied_rules_high` はフィールドごと省略されます。
+:::
+
+**戻り値**: `ProvenanceData`。生成が一度も成功していない場合は例外を投げます。
+
+### `getDiagnostic()`
+
+直近の作曲検証エラーの `diagnostic.v1` ドキュメントを返します。直前の生成が成功していた場合は `null` を返します。
+
+```js
+try {
+  generator.generate({ form: 'fugue', seed: 42 })
+} catch {
+  const diagnostic = generator.getDiagnostic()
+  for (const failure of diagnostic?.validation.failures ?? []) {
+    console.log(failure.kind, failure.rule_id, failure.span_id)
+  }
+}
+```
+
+**戻り値**: `DiagnosticData | null`
 
 ### `getInfo()`
 
@@ -136,18 +200,22 @@ generator.destroy()
 
 | フィールド | 型 | 既定 | 説明 |
 |-----------|------|----------|------|
-| `form` | `number \| string` | `"fugue"` | 楽曲形式（0--9または名前）。[楽曲形式](/ja/docs/forms)と[プリセット一覧](/ja/docs/presets)を参照。 |
-| `key` | `number` | `0` | 調（0--11のピッチクラス: 0=C, 1=C#, 2=D, ... 11=B） |
+| `form` | `FormId \| FormName` | `"fugue"` | 楽曲形式（0--9または名前）。[楽曲形式](/ja/docs/forms)と[プリセット一覧](/ja/docs/presets)を参照。 |
+| `key` | `KeyId \| KeyName` | `0` | 調。ピッチクラス（0=C, 1=C#, 2=D, ... 11=B）または正式名（`"C"`、`"C#"`、`"D"`、`"Eb"`、`"E"`、`"F"`、`"F#"`、`"G"`、`"Ab"`、`"A"`、`"Bb"`、`"B"`）。 |
 | `isMinor` | `boolean` | `false` | `true` で短調、`false` で長調 |
-| `bpm` | `number` | `100` | テンポ（BPM）。`0` は既定の100を使用。それ以外は 40--200 の範囲が必須（範囲外では例外）。 |
+| `bpm` | `number` | `100` | 開始テンポ（BPM）。`0` は既定の100を使用。それ以外は 40--200 の範囲が必須（範囲外では例外）。 |
 | `seed` | `number` | `0` | ランダムシード。`0` は非ゼロのランダムシードを選び、`getInfo().seedUsed` で報告。 |
-| `character` | `string \| number` | `"severe"` | 主題の性格（`"severe"`、`"playful"`、`"noble"`、`"restless"`）。無効値では例外。 |
-| `instrument` | `string \| number` | 形式の既定 | 楽器（`"organ"`、`"harpsichord"`、`"piano"`、`"violin"`、`"cello"`、`"guitar"`）。無効値では例外。 |
-| `scale` | `string \| number` | `"short"` | 形式の基準長に対する倍率: `"short"`（約1倍）、`"medium"`（約2倍）、`"long"`（約3倍）、`"full"`（約4倍）。無効値では例外。 |
+| `character` | `CharacterId \| CharacterName` | `"severe"` | 主題の性格（`"severe"`、`"playful"`、`"noble"`、`"restless"`）。無効値では例外。 |
+| `instrument` | `InstrumentId \| InstrumentName` | 形式の既定 | 楽器（`"organ"`、`"harpsichord"`、`"piano"`、`"violin"`、`"cello"`、`"guitar"`）。その形式が受け付ける楽器である必要があり、それ以外は例外。 |
+| `scale` | `DurationScaleId \| DurationScaleName` | `"short"` | 形式の基準長に対する倍率: `"short"`（約1倍）、`"medium"`（約2倍）、`"long"`（約3倍）、`"full"`（約4倍）。無効値では例外。 |
 | `targetBars` | `number` | -- | 明示的な小節数。`> 0` のとき `scale` を上書きし、形式の刻みにスナップして `[最小, 128]` に丸め込み。 |
 
+::: info 名前文字列は完全一致
+形式・調・スケールの名前は正式な綴りと完全に一致する必要があり、`"Fugue"`、`"g"`、`"FULL"` はいずれも例外になります。性格名だけは例外で大文字小文字を区別しないため、`getCharacters()` が返す先頭大文字のラベルをそのまま渡せます。
+:::
+
 ::: warning `numVoices` は廃止されました
-声部数は `form` によって決定されます（[楽曲形式](/ja/docs/forms)の表を参照）。後方互換のため `num_voices`/`numVoices` の指定は受理されますが無視されます。エラーにはならず、効果もありません。
+声部数は `form` によって決定されます（[楽曲形式](/ja/docs/forms)の表を参照）。後方互換のため `num_voices`/`numVoices` の指定は受理されますが無視され、出力には影響しません。
 :::
 
 ### 楽曲形式の値
@@ -169,14 +237,16 @@ generator.destroy()
 
 ### 楽器の値
 
-| 番号 | 文字列 |
-|------|--------|
-| `0` | `"organ"` |
-| `1` | `"harpsichord"` |
-| `2` | `"piano"` |
-| `3` | `"violin"` |
-| `4` | `"cello"` |
-| `5` | `"guitar"` |
+| 番号 | 文字列 | 受け付ける形式 |
+|------|--------|----------------|
+| `0` | `"organ"` | 形式 0--6 |
+| `1` | `"harpsichord"` | ゴルトベルク変奏曲 |
+| `2` | `"piano"` | ゴルトベルク変奏曲 |
+| `3` | `"violin"` | シャコンヌ |
+| `4` | `"cello"` | チェロ前奏曲 |
+| `5` | `"guitar"` | -- |
+
+各形式は特定の楽器のために書かれており、その形式の欄にない楽器は拒否されます。`instrument` を省略すると形式の既定が使われます。
 
 ### 性格の値
 
@@ -208,14 +278,18 @@ generator.destroy()
 interface EventData {
   form: string          // 形式名（例: "fugue"）
   key: string           // 指定された調名（例: "D minor"）
-  bpm: number           // テンポ
+  bpm: number           // 開始テンポ
   seed: number          // 生成に使用された解決済みシード
   total_ticks: number   // MIDIティック単位の総時間
   total_bars: number    // 総小節数
   description: string   // 人間が読める説明文
+  tempos: Array<{ tick: number; bpm: number }>
+  time_signatures: Array<{ tick: number; numerator: number; denominator: number }>
   tracks: TrackData[]   // トラックデータの配列
 }
 ```
+
+`tempos` の先頭は必ずティック 0 の要素で、その `bpm` が開始テンポです。`time_signatures` は形式の拍子を示し、多くの形式は 4/4、パッサカリアとシャコンヌは 3/4 です。
 
 ### TrackData
 
@@ -225,9 +299,12 @@ interface TrackData {
   channel: number       // MIDI チャンネル（0-15）
   program: number       // General MIDI プログラム番号
   note_count: number    // このトラックのノート数
+  control_changes: Array<{ tick: number; controller: number; value: number }>
   notes: NoteEvent[]    // ノートイベントの配列
 }
 ```
+
+`control_changes` は演奏プロファイルの強弱の輪郭を、重複を統合済みの点列として持ちます。現在使われるのは CC 7（チャンネルボリューム）です。
 
 ### NoteEvent
 
@@ -248,6 +325,60 @@ interface NoteEvent {
 - `"compose"` — 和声プランに対して候補探索が選択したノート。
 - `"ornament"` — 装飾処理（トリル、モルデント、ナッハシュラーク）が追加したノート。
 :::
+
+---
+
+## ティックを秒に変換する
+
+ティックは音楽上の時間、秒は実時間です。曲の途中でテンポが変わるため、両者の変換はテンポマップを区間ごとにたどる必要があります。
+
+```js
+const PPQ = 480
+
+function secondsAtTick(tick, events) {
+  const tempos = [...events.tempos].sort((a, b) => a.tick - b.tick)
+  let seconds = 0
+  let previousTick = 0
+  let bpm = tempos[0].bpm
+
+  for (const tempo of tempos) {
+    if (tempo.tick <= 0) {
+      bpm = tempo.bpm
+      continue
+    }
+    if (tempo.tick >= tick) break
+    seconds += ((tempo.tick - previousTick) / PPQ) * (60 / bpm)
+    previousTick = tempo.tick
+    bpm = tempo.bpm
+  }
+  return seconds + ((tick - previousTick) / PPQ) * (60 / bpm)
+}
+
+const events = generator.getEvents()
+const total = secondsAtTick(events.total_ticks, events)
+const noteStart = secondsAtTick(events.tracks[0].notes[0].start_tick, events)
+```
+
+ノートの長さを秒で求めるときは、長さ単体を換算するのではなく両端の差を取ります。
+
+```js
+const start = secondsAtTick(note.start_tick, events)
+const end = secondsAtTick(note.start_tick + note.duration, events)
+const durationSeconds = end - start
+```
+
+小節番号と拍番号も同じ要領で拍子マップから求めます。1 拍は `(480 * 4) / denominator` ティック、1 小節はその `numerator` 倍です。
+
+```js
+function timeSignatureAtTick(tick, events) {
+  let active = events.time_signatures[0]
+  for (const signature of events.time_signatures) {
+    if (signature.tick > tick) break
+    active = signature
+  }
+  return active
+}
+```
 
 ---
 
@@ -279,7 +410,10 @@ const instruments = getInstruments()
 import { getCharacters } from '@libraz/midi-sketch-bach'
 
 const characters = getCharacters()
+// [{ id: 0, name: "Severe" }, ...]
 ```
+
+性格名は表示用に先頭が大文字で返ります。`character` は大文字小文字を区別しないため、この値をそのまま `generate()` に渡せます。
 
 ### `getKeys()`
 
@@ -289,6 +423,8 @@ import { getKeys } from '@libraz/midi-sketch-bach'
 const keys = getKeys()
 // [{ id: 0, name: "C" }, { id: 1, name: "C#" }, ...]
 ```
+
+これが調の正式名なので、`key` には `id` と `name` のどちらでも渡せます。
 
 ### `getScales()`
 
@@ -305,7 +441,7 @@ const scales = getScales()
 import { getVersion } from '@libraz/midi-sketch-bach'
 
 const version = getVersion()
-// 例: "0.1.0"
+// 例: "0.4.0"
 ```
 
 ---

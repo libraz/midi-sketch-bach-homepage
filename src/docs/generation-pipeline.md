@@ -79,7 +79,7 @@ Rendered notes keep their provenance: `"material"` for fixed source material, `"
 Deterministic post-passes decorate the rendered tracks. At the C++ library level the ornament pass is a separate function (`applyOrnamentPass`) deliberately kept out of `Composer::run()`; the public generation path `bach_generate_from_json` — used by the JS API, CLI, and this demo — always invokes it after validation.
 
 - **Ornaments** — trills, mordents, and Nachschlag, with density depending on character and instrument. Ground-bass and cantus-firmus lines are never ornamented.
-- **Expression** — organ registration as a CC#7/#11 curve following the form's energy arc, and closing ritardando tempo events.
+- **Expression** — a CC 7 / CC 11 registration curve following the form's energy arc, plus tempo events: the closing ritardando and, for the prelude, toccata and fantasia forms, a section tempo change at the fugue entry. The velocity curve is applied after final validation, so it never affects the notes the validator judged.
 
 Notes added by these passes carry the `source: "ornament"` provenance tag (versus `"material"` and `"compose"`).
 

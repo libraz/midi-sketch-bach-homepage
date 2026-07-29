@@ -83,21 +83,21 @@ The Goldberg Variations form is a theme-and-variations cycle over an immutable b
 
 ## Instruments Reference
 
-| ID | Name | String | GM Program | Sound | Typical Forms |
-|----|------|--------|-----------|-------|---------------|
-| 0 | Organ | `"organ"` | 19 | Church Organ | All organ forms (0--6) |
-| 1 | Harpsichord | `"harpsichord"` | 6 | Harpsichord | Goldberg Variations (9), any form |
-| 2 | Piano | `"piano"` | 0 | Acoustic Grand Piano | Any form |
+| ID | Name | String | GM Program | Sound | Accepted by |
+|----|------|--------|-----------|-------|-------------|
+| 0 | Organ | `"organ"` | 19 | Church Organ | Organ forms (0--6) |
+| 1 | Harpsichord | `"harpsichord"` | 6 | Harpsichord | Goldberg Variations (9) |
+| 2 | Piano | `"piano"` | 0 | Acoustic Grand Piano | Goldberg Variations (9) |
 | 3 | Violin | `"violin"` | 40 | Violin | Chaconne (8) |
 | 4 | Cello | `"cello"` | 42 | Cello | Cello Prelude (7) |
-| 5 | Guitar | `"guitar"` | 24 | Nylon Guitar | Solo forms (7--8) |
+| 5 | Guitar | `"guitar"` | 24 | Nylon Guitar | -- |
 
 ::: info Instrument does not decide the composition
 The `instrument` selects MIDI sound, playable range, and ornament density. It does not change voice count, meter, form layout, or validator rules; those come from `form`.
 :::
 
-::: tip
-While each form has a default instrument, you can override it with any instrument. For example, a fugue played on harpsichord has a distinctly different character than on organ — the harpsichord's crisp attack makes counterpoint lines more distinct.
+::: warning The form fixes the instrument
+Every form except the Goldberg Variations accepts exactly one instrument — the one it was written for. Requesting another throws an incompatible-instrument error rather than transcribing the piece. The Goldberg Variations is the one form that offers a choice, between `harpsichord` and `piano`.
 :::
 
 ## Subject Characters

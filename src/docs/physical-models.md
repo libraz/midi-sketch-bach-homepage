@@ -14,10 +14,10 @@ Earlier versions included detailed physical performer models (bow direction, han
 Choosing an `instrument` affects three things:
 
 1. **General MIDI program** — the sound written into the MIDI file.
-2. **Playable range** — the pitch window the candidate search keeps the generated lines within. Notes are folded back into range rather than modeled for ergonomic difficulty.
+2. **Playable range** — the pitch window the candidate search keeps the generated lines within, and the compass the finished score is fitted to. Notes are folded back into range rather than modeled for ergonomic difficulty; a score that sits outside the compass is displaced by whole octaves instead of having individual notes clamped.
 3. **Ornament density** — how heavily the opt-in ornament pass decorates the line (combined with the `character`).
 
-The voice count, meter, and structure come from the `form`, not from the instrument. Each form has a default instrument, but any instrument may be substituted.
+The voice count, meter, and structure come from the `form`, not from the instrument. Because the range feeds back into the composition itself, each form accepts only the instrument it was written for — see [Default Instrument per Form](#default-instrument-per-form).
 
 ::: info Instrument vs voice
 An **instrument** is the playback sound and range profile. A **voice** is the musical line being generated. A single instrument, such as organ, can carry several voices.
@@ -38,12 +38,14 @@ An unknown instrument string is rejected (it throws) rather than silently fallin
 
 ## Default Instrument per Form
 
-| Form | Default Instrument |
-|------|--------------------|
-| `fugue`, `prelude_and_fugue`, `trio_sonata`, `chorale_prelude`, `toccata_and_fugue`, `passacaglia`, `fantasia_and_fugue` | Organ |
-| `cello_prelude` | Cello |
-| `chaconne` | Violin |
-| `goldberg_variations` | Harpsichord |
+| Form | Default Instrument | Also accepted |
+|------|--------------------|---------------|
+| `fugue`, `prelude_and_fugue`, `trio_sonata`, `chorale_prelude`, `toccata_and_fugue`, `passacaglia`, `fantasia_and_fugue` | Organ | -- |
+| `cello_prelude` | Cello | -- |
+| `chaconne` | Violin | -- |
+| `goldberg_variations` | Harpsichord | Piano |
+
+Guitar has a General MIDI program and a range profile but is not currently accepted by any form. Requesting an instrument outside a form's row throws an incompatible-instrument error.
 
 ## Ornament Density
 
@@ -60,11 +62,13 @@ Notes added here carry the `source: "ornament"` provenance tag.
 
 ## Expression Output
 
-Beyond ornaments, the engine writes form-appropriate expression:
+Beyond ornaments, the engine writes form-appropriate expression, and all of it is readable from the event data as well as the MIDI file:
 
-- **Organ registration** — a CC#7/#11 curve that follows the form's energy arc.
-- **Closing ritardando** — tempo events that slow the final cadence.
-- **Time signature** — 3/4 for passacaglia and chaconne, 4/4 otherwise.
+- **Registration curve** — CC 7 and CC 11 points following the form's energy arc, reported per track as `control_changes` with duplicates already merged.
+- **Tempo map** — the closing ritardando, plus a section tempo change at the fugue entry of the prelude, toccata and fantasia forms. Reported as `tempos`.
+- **Time signature** — 3/4 for passacaglia and chaconne, 4/4 otherwise. Reported as `time_signatures`.
+
+Because tempo varies within a piece, use the tempo map rather than `bpm` when placing events on the clock — see [Converting Ticks to Seconds](/docs/api-js#converting-ticks-to-seconds).
 
 ::: tip
 See [Voice Architecture](/docs/voice-architecture) for how voices map to instruments and tracks, and the [Generation Pipeline](/docs/generation-pipeline) for where the ornament and expression passes sit.
