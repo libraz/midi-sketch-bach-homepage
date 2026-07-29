@@ -19,7 +19,7 @@ export const fugueBachExamples: Record<string, StaffExampleDef> = {
       ja: 'リズムは一音残らず同じ——しかしすべての上行が、同じ音階幅の下行で応えられています。',
     },
     caption: {
-      en: 'The subject of the D♯ minor fugue climbs a fifth from tonic to dominant and circles back down. From the fugue\'s second half Bach turns the whole line upside down: the inverted form quoted here (bar 45) falls a fifth from dominant to tonic and circles back up — and it enters one bar after another inverted entry in the bass, an inversion stretto. Play the two staves in sequence: the rhythm is identical, the contour an exact mirror within the scale. This is the same transform the engine\'s episode rule verifies, recomputing every expected note. Quoted in E♭ minor spelling for readability; the companion voices around each entry are omitted, and the final note of each quote is trimmed to close the two-bar frame.',
+      en: "The subject of the D♯ minor fugue climbs a fifth from tonic to dominant and circles back down. From the fugue's second half Bach turns the whole line upside down: the inverted form quoted here (bar 45) falls a fifth from dominant to tonic and circles back up — and it enters one bar after another inverted entry in the bass, an inversion stretto. Play the two staves in sequence: the rhythm is identical, the contour an exact mirror within the scale. This is the same transform the engine's episode rule verifies, recomputing every expected note. Quoted in E♭ minor spelling for readability; the companion voices around each entry are omitted, and the final note of each quote is trimmed to close the two-bar frame.",
       ja: '嬰ニ短調フーガの主題は、主音から属音へ5度を上り、回り道をして戻ってきます。フーガの後半に入るとバッハはこの線を丸ごと逆さにします。ここに引いた反行形（第45小節）は属音から主音へ5度を下り、回り道をして上がってくる——しかも1小節前にバスへ入った別の反行形を追いかける、反行同士のストレットの中で。二つの段を順に再生してください。リズムは完全に同一、輪郭は音階の中での正確な鏡です。これはエンジンの嬉遊部ルールが期待される音列を再計算して検査するのと同じ変形です。読みやすさのため変ホ短調の綴りで引用し、各エントリの周りの声部は省略、引用末尾の音は2小節の枠に収めるため切り詰めています。',
     },
     time: '4/4',
@@ -74,7 +74,7 @@ export const fugueBachExamples: Record<string, StaffExampleDef> = {
       ja: '交替する二つの和声の下で、同じ G が4回打たれます——緊張を引き延ばすドミナント保続音です。',
     },
     caption: {
-      en: 'Bars 24–25 of the C major prelude — the same ripple the primer\'s figure showed at bar 1, but now listen to the bottom. The harmony alternates above (a dominant seventh, then the tonic chord in 6/4 position) while the bass strikes G, and only G, again and again: a dominant pedal. It lasts eight bars in the piece, winding the spring that the ending releases — and when release comes, Bach does it again, riding a tonic pedal C from bar 32 to the final chord. Its companion fugue closes the same way, with the last bar\'s voices running above a held C. Dominant and tonic: the only two degrees the validator lets carry this weight.',
+      en: "Bars 24–25 of the C major prelude — the same ripple the primer's figure showed at bar 1, but now listen to the bottom. The harmony alternates above (a dominant seventh, then the tonic chord in 6/4 position) while the bass strikes G, and only G, again and again: a dominant pedal. It lasts eight bars in the piece, winding the spring that the ending releases — and when release comes, Bach does it again, riding a tonic pedal C from bar 32 to the final chord. Its companion fugue closes the same way, with the last bar's voices running above a held C. Dominant and tonic: the only two degrees the validator lets carry this weight.",
       ja: 'ハ長調プレリュードの第24〜25小節——入門の譜例で第1小節に見たのと同じさざ波です。ただし今度は底を聴いてください。上では和声が交替し（属七、つづいて6/4位置の主和音）、その下でバスは G を、G だけを、何度も打ち続けます。ドミナント保続音です。曲中では8小節続き、終結が解放するゼンマイを巻き上げます——そして解放のあと、バッハは同じことをもう一度やります。第32小節から最後の和音まで、今度は主音 C の保続音に乗って。相方のフーガも同じ閉じ方で、最終小節の声部たちは保持された C の上を走ります。属音と主音——検証器がこの重みを許す、たった二つの音度です。',
     },
     time: '4/4',
@@ -132,9 +132,12 @@ export const fugueBachExamples: Record<string, StaffExampleDef> = {
   bachTonalAnswer: {
     ruleIds: ['tonal_answer_dominant_mapping'],
     badge: { en: 'From Bach', ja: 'バッハの実例' },
-    title: { en: 'Bach: WTC I Fugue in C minor — the tonal answer', ja: 'バッハ: 平均律 I 巻 ハ短調フーガ — 変応' },
+    title: {
+      en: 'Bach: WTC I Fugue in C minor — the tonal answer',
+      ja: 'バッハ: 平均律 I 巻 ハ短調フーガ — 変応',
+    },
     diagnosis: {
-      en: 'The subject\'s fourth note falls to the dominant (G); the answer bends that one note back to the tonic (C) and transposes everything else literally.',
+      en: "The subject's fourth note falls to the dominant (G); the answer bends that one note back to the tonic (C) and transposes everything else literally.",
       ja: '主唱の4音目は属音（G）へ落ちます。応唱はその一音だけを主音（C）へ曲げ戻し、残りは忠実に移調しています。',
     },
     caption: {
@@ -197,7 +200,12 @@ export const fugueBachExamples: Record<string, StaffExampleDef> = {
     ],
     issues: [
       { kind: 'vertical', label: 'I ↔ V', upperIndex: 1, lowerIndex: 1, color: AMBER },
-      { kind: 'note', label: 'bent back to C (a literal answer would give D)', lowerIndex: 4, color: GREEN },
+      {
+        kind: 'note',
+        label: 'bent back to C (a literal answer would give D)',
+        lowerIndex: 4,
+        color: GREEN,
+      },
     ],
   },
 
@@ -206,11 +214,11 @@ export const fugueBachExamples: Record<string, StaffExampleDef> = {
     badge: { en: 'From Bach', ja: 'バッハの実例' },
     title: { en: 'Bach: BWV 847 — the countersubject at work', ja: 'バッハ: BWV 847 — 働く対主題' },
     diagnosis: {
-      en: 'While the soprano sings the answer, the alto\'s countersubject fills every quarter-beat of the window without a single rest.',
+      en: "While the soprano sings the answer, the alto's countersubject fills every quarter-beat of the window without a single rest.",
       ja: 'ソプラノが応唱を歌うあいだ、アルトの対主題は一度も休まず窓のすべての4分音符位置を満たしています。',
     },
     caption: {
-      en: 'Bars 3–4 of the C minor fugue: the answer above, the countersubject below — a falling sixteenth scale, a register leap, then climbing eighths. Notice what it never does: rest. Every quarter-beat of the answer\'s window has the countersubject sounding, which is literally the check `countersubject_continuous` performs. The pair is built to be reused with the voices exchanged; chapter 2\'s invertible-counterpoint rules police that property, and bars 7–8 of the same fugue cash it in.',
+      en: "Bars 3–4 of the C minor fugue: the answer above, the countersubject below — a falling sixteenth scale, a register leap, then climbing eighths. Notice what it never does: rest. Every quarter-beat of the answer's window has the countersubject sounding, which is literally the check `countersubject_continuous` performs. The pair is built to be reused with the voices exchanged; chapter 2's invertible-counterpoint rules police that property, and bars 7–8 of the same fugue cash it in.",
       ja: 'ハ短調フーガの第3〜4小節。上が応唱、下が対主題——下行する16分音符の音階、音域の跳躍、そして上っていく8分音符。決してしないことに注目してください。休むことです。応唱の窓のすべての4分音符位置で対主題が鳴っている——`countersubject_continuous` が行う検査は文字どおりこれです。このペアは上下を入れ替えて再利用される前提で書かれており、その性質は第2章の転回対位法ルールが見張ります。同じフーガの第7〜8小節が、その投資を回収する瞬間です。',
     },
     time: '4/4',
@@ -267,7 +275,13 @@ export const fugueBachExamples: Record<string, StaffExampleDef> = {
       { key: 'f#/4', duration: '8' },
     ],
     issues: [
-      { kind: 'bracket', label: 'no rests anywhere in the window', fromLower: 0, toLower: 19, color: GREEN },
+      {
+        kind: 'bracket',
+        label: 'no rests anywhere in the window',
+        fromLower: 0,
+        toLower: 19,
+        color: GREEN,
+      },
     ],
   },
 
@@ -279,11 +293,11 @@ export const fugueBachExamples: Record<string, StaffExampleDef> = {
       ja: 'バッハ: BWV 847 — 一段ずつ上る最初の嬉遊部',
     },
     diagnosis: {
-      en: 'The subject\'s head cell is restated one diatonic step higher each half bar while the alto runs counter-scales.',
+      en: "The subject's head cell is restated one diatonic step higher each half bar while the alto runs counter-scales.",
       ja: '主題の頭の音型が半小節ごとに1度ずつ上に置き直され、アルトが対になる音階走句を走らせます。',
     },
     caption: {
-      en: 'Bars 5–6 of the C minor fugue — the bridge between the answer (bars 3–4) and the bass entry (bars 7–8). The episode\'s material is not new: the soprano\'s sixteenth cell E♭–D–E♭ is the subject\'s opening neighbour figure, restated exactly one step higher each half bar — E♭, then F, then G — while the alto answers with rising sixteenth runs in its own sequence. Derived material, exact steps: the two contracts `episode_motif_derived` and `sequence_pattern_consistency` check. The soprano\'s last F is tied on into bar 7, where the bass entry — the passage chapter 2 quotes for invertible counterpoint — takes over.',
+      en: "Bars 5–6 of the C minor fugue — the bridge between the answer (bars 3–4) and the bass entry (bars 7–8). The episode's material is not new: the soprano's sixteenth cell E♭–D–E♭ is the subject's opening neighbour figure, restated exactly one step higher each half bar — E♭, then F, then G — while the alto answers with rising sixteenth runs in its own sequence. Derived material, exact steps: the two contracts `episode_motif_derived` and `sequence_pattern_consistency` check. The soprano's last F is tied on into bar 7, where the bass entry — the passage chapter 2 quotes for invertible counterpoint — takes over.",
       ja: 'ハ短調フーガの第5〜6小節——応唱（第3〜4小節）とバスの入り（第7〜8小節）をつなぐ橋です。嬉遊部の素材は新作ではありません。ソプラノの16分音符のセル E♭–D–E♭ は主題冒頭の刺繍音型そのもので、半小節ごとに正確に1度ずつ上——E♭、F、G——へ置き直されます。アルトも上行する16分音符の走句で自分のゼクエンツを答えます。導出された素材と正確な段——`episode_motif_derived` と `sequence_pattern_consistency` が検査する二つの契約です。ソプラノ最後の F は第7小節へタイでつながれ、そこでバスの入り——第2章が転回対位法の実例として引用するパッセージ——が引き継ぎます。',
     },
     time: '4/4',
@@ -343,7 +357,7 @@ export const fugueBachExamples: Record<string, StaffExampleDef> = {
       { key: 'b/4', duration: '16', accidental: 'n' },
     ],
     issues: [
-      { kind: 'bracket', label: 'the subject\'s head cell', fromUpper: 1, toUpper: 3, color: AMBER },
+      { kind: 'bracket', label: "the subject's head cell", fromUpper: 1, toUpper: 3, color: AMBER },
       { kind: 'bracket', label: 'one step higher', fromUpper: 6, toUpper: 8, color: GREEN },
       { kind: 'bracket', label: 'and again', fromUpper: 11, toUpper: 13, color: GREEN },
     ],
@@ -405,14 +419,23 @@ export const fugueBachExamples: Record<string, StaffExampleDef> = {
     ],
     issues: [
       { kind: 'bracket', label: 'leader', fromLower: 0, toLower: 9, color: AMBER },
-      { kind: 'bracket', label: '+1 bar, +a ninth — verbatim', fromUpper: 1, toUpper: 10, color: GREEN },
+      {
+        kind: 'bracket',
+        label: '+1 bar, +a ninth — verbatim',
+        fromUpper: 1,
+        toUpper: 10,
+        color: GREEN,
+      },
     ],
   },
 
   bachStretto: {
     ruleIds: ['stretto_overlap_valid'],
     badge: { en: 'From Bach', ja: 'バッハの実例' },
-    title: { en: 'Bach: WTC I Fugue in C major — stretto at one beat', ja: 'バッハ: 平均律 I 巻 ハ長調フーガ — 1拍差のストレッタ' },
+    title: {
+      en: 'Bach: WTC I Fugue in C major — stretto at one beat',
+      ja: 'バッハ: 平均律 I 巻 ハ長調フーガ — 1拍差のストレッタ',
+    },
     diagnosis: {
       en: 'The alto starts the subject one beat after the soprano, a fourth below — the leader is only four notes in.',
       ja: 'アルトはソプラノの1拍後、4度下で主題を開始します。先行声部はまだ4音目です。',
@@ -471,7 +494,13 @@ export const fugueBachExamples: Record<string, StaffExampleDef> = {
     ],
     issues: [
       { kind: 'bracket', label: 'leader', fromUpper: 1, toUpper: 8, color: AMBER },
-      { kind: 'bracket', label: 'follower: one beat later, a 4th below', fromLower: 2, toLower: 9, color: GREEN },
+      {
+        kind: 'bracket',
+        label: 'follower: one beat later, a 4th below',
+        fromLower: 2,
+        toLower: 9,
+        color: GREEN,
+      },
     ],
   },
 }

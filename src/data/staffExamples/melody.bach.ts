@@ -45,9 +45,7 @@ export const melodyBachExamples: Record<string, StaffExampleDef> = {
       { key: 'eb/3', duration: '16' },
       { key: 'c/3', duration: '16' },
     ],
-    lower: [
-      { key: 'd/3', duration: 'w', rest: true },
-    ],
+    lower: [{ key: 'd/3', duration: 'w', rest: true }],
     issues: [
       { kind: 'bracket', label: 'raised on the way up', fromUpper: 3, toUpper: 4, color: GREEN },
     ],
@@ -104,7 +102,10 @@ export const melodyBachExamples: Record<string, StaffExampleDef> = {
   bachLeapResolution: {
     ruleIds: ['diminished_melodic'],
     badge: { en: 'From Bach', ja: 'バッハの実例' },
-    title: { en: 'Bach: WTC I Fugue in C♯ minor — a leap that is dissonant only on paper', ja: 'バッハ: 平均律 I 巻 嬰ハ短調フーガ — 紙の上だけ不協和な跳躍' },
+    title: {
+      en: 'Bach: WTC I Fugue in C♯ minor — a leap that is dissonant only on paper',
+      ja: 'バッハ: 平均律 I 巻 嬰ハ短調フーガ — 紙の上だけ不協和な跳躍',
+    },
     diagnosis: {
       en: 'B♯ up to E is a diminished fourth in spelling — but only 4 semitones in sound, identical to a major third, and the line resolves it by step.',
       ja: 'B♯ から E への上行は綴りの上では減4度——しかし響きは4半音、長3度と同一で、旋律は順次進行でこれを解決します。',
@@ -134,7 +135,13 @@ export const melodyBachExamples: Record<string, StaffExampleDef> = {
       { key: 'b/2', duration: 'w', rest: true },
     ],
     issues: [
-      { kind: 'motion', label: 'dim 4th — but only 4 semitones', fromUpper: 1, toUpper: 2, color: AMBER },
+      {
+        kind: 'motion',
+        label: 'dim 4th — but only 4 semitones',
+        fromUpper: 1,
+        toUpper: 2,
+        color: AMBER,
+      },
       { kind: 'motion', label: 'left by step', fromUpper: 2, toUpper: 3, color: GREEN },
     ],
   },

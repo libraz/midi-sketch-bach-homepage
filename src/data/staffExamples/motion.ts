@@ -1,5 +1,5 @@
 import type { StaffExampleDef } from './types'
-import { RED, AMBER, GREEN } from './types'
+import { AMBER, GREEN, RED } from './types'
 
 /** Highlight color tracking one line through the invertible-swap toggle. */
 const SWAP_BLUE = '#2563eb'
@@ -31,13 +31,17 @@ export const motionExamples: Record<string, StaffExampleDef> = {
       { key: 'd/5', annotation: 'M6' },
       { key: 'd/5', annotation: 'P5', color: GREEN },
     ],
-    lower: [
-      { key: 'c/4' },
-      { key: 'f/4' },
-      { key: 'g/4', color: GREEN },
-    ],
+    lower: [{ key: 'c/4' }, { key: 'f/4' }, { key: 'g/4', color: GREEN }],
     issues: [
-      { kind: 'motion', label: 'contrary', fromUpper: 0, toUpper: 1, fromLower: 0, toLower: 1, color: GREEN },
+      {
+        kind: 'motion',
+        label: 'contrary',
+        fromUpper: 0,
+        toUpper: 1,
+        fromLower: 0,
+        toLower: 1,
+        color: GREEN,
+      },
       { kind: 'motion', label: 'oblique into P5 - safe', fromLower: 1, toLower: 2, color: GREEN },
     ],
   },
@@ -69,7 +73,15 @@ export const motionExamples: Record<string, StaffExampleDef> = {
       { key: 'g/4', color: GREEN },
     ],
     issues: [
-      { kind: 'motion', label: 'parallel imperfects - allowed', fromUpper: 0, toUpper: 2, fromLower: 0, toLower: 2, color: GREEN },
+      {
+        kind: 'motion',
+        label: 'parallel imperfects - allowed',
+        fromUpper: 0,
+        toUpper: 2,
+        fromLower: 0,
+        toLower: 2,
+        color: GREEN,
+      },
     ],
   },
 
@@ -100,7 +112,14 @@ export const motionExamples: Record<string, StaffExampleDef> = {
     issues: [
       { kind: 'vertical', label: 'P5', upperIndex: 0, lowerIndex: 0 },
       { kind: 'vertical', label: 'P5', upperIndex: 1, lowerIndex: 1 },
-      { kind: 'motion', label: 'similar motion', fromUpper: 0, toUpper: 1, fromLower: 0, toLower: 1 },
+      {
+        kind: 'motion',
+        label: 'similar motion',
+        fromUpper: 0,
+        toUpper: 1,
+        fromLower: 0,
+        toLower: 1,
+      },
     ],
   },
 
@@ -131,7 +150,14 @@ export const motionExamples: Record<string, StaffExampleDef> = {
     issues: [
       { kind: 'vertical', label: '8ve', upperIndex: 0, lowerIndex: 0 },
       { kind: 'vertical', label: '8ve', upperIndex: 1, lowerIndex: 1 },
-      { kind: 'motion', label: 'parallel motion', fromUpper: 0, toUpper: 1, fromLower: 0, toLower: 1 },
+      {
+        kind: 'motion',
+        label: 'parallel motion',
+        fromUpper: 0,
+        toUpper: 1,
+        fromLower: 0,
+        toLower: 1,
+      },
     ],
   },
 
@@ -155,13 +181,17 @@ export const motionExamples: Record<string, StaffExampleDef> = {
       { key: 'a/4', annotation: 'M3' },
       { key: 'd/5', annotation: 'P5', color: RED, issue: true },
     ],
-    lower: [
-      { key: 'f/4' },
-      { key: 'g/4', color: RED, issue: true },
-    ],
+    lower: [{ key: 'f/4' }, { key: 'g/4', color: RED, issue: true }],
     issues: [
       { kind: 'vertical', label: 'lands on P5', upperIndex: 1, lowerIndex: 1 },
-      { kind: 'motion', label: 'similar approach', fromUpper: 0, toUpper: 1, fromLower: 0, toLower: 1 },
+      {
+        kind: 'motion',
+        label: 'similar approach',
+        fromUpper: 0,
+        toUpper: 1,
+        fromLower: 0,
+        toLower: 1,
+      },
     ],
   },
 
@@ -185,13 +215,17 @@ export const motionExamples: Record<string, StaffExampleDef> = {
       { key: 'c/5', annotation: 'm6' },
       { key: 'g/5', annotation: 'P8', color: RED, issue: true },
     ],
-    lower: [
-      { key: 'e/4' },
-      { key: 'g/4', color: RED, issue: true },
-    ],
+    lower: [{ key: 'e/4' }, { key: 'g/4', color: RED, issue: true }],
     issues: [
       { kind: 'vertical', label: 'lands on P8', upperIndex: 1, lowerIndex: 1 },
-      { kind: 'motion', label: 'similar approach', fromUpper: 0, toUpper: 1, fromLower: 0, toLower: 1 },
+      {
+        kind: 'motion',
+        label: 'similar approach',
+        fromUpper: 0,
+        toUpper: 1,
+        fromLower: 0,
+        toLower: 1,
+      },
     ],
   },
 
@@ -211,14 +245,8 @@ export const motionExamples: Record<string, StaffExampleDef> = {
     width: 440,
     upperClef: 'treble',
     lowerClef: 'treble',
-    upper: [
-      { key: 'e/4' },
-      { key: 'c/4', color: RED, issue: true },
-    ],
-    lower: [
-      { key: 'c/4' },
-      { key: 'e/4', color: RED, issue: true },
-    ],
+    upper: [{ key: 'e/4' }, { key: 'c/4', color: RED, issue: true }],
+    lower: [{ key: 'c/4' }, { key: 'e/4', color: RED, issue: true }],
     issues: [
       { kind: 'vertical', label: 'voices reversed', upperIndex: 1, lowerIndex: 1 },
       { kind: 'motion', label: 'crossing', fromUpper: 0, toUpper: 1, fromLower: 0, toLower: 1 },
@@ -241,23 +269,18 @@ export const motionExamples: Record<string, StaffExampleDef> = {
     width: 440,
     upperClef: 'treble',
     lowerClef: 'treble',
-    upper: [
-      { key: 'g/5', annotation: '>8ve', color: RED, issue: true },
-      { key: 'f/5' },
-    ],
-    lower: [
-      { key: 'c/4', color: RED, issue: true },
-      { key: 'd/4' },
-    ],
-    issues: [
-      { kind: 'vertical', label: 'upper spacing > octave', upperIndex: 0, lowerIndex: 0 },
-    ],
+    upper: [{ key: 'g/5', annotation: '>8ve', color: RED, issue: true }, { key: 'f/5' }],
+    lower: [{ key: 'c/4', color: RED, issue: true }, { key: 'd/4' }],
+    issues: [{ kind: 'vertical', label: 'upper spacing > octave', upperIndex: 0, lowerIndex: 0 }],
   },
 
   spacingTrio: {
     ruleIds: ['spacing_adjacent_voices_within_octave'],
     badge: { en: 'Spacing', ja: '間隔' },
-    title: { en: 'Three-voice spacing: tight on top, free below', ja: '三声の間隔 — 上は密に、下は自由に' },
+    title: {
+      en: 'Three-voice spacing: tight on top, free below',
+      ja: '三声の間隔 — 上は密に、下は自由に',
+    },
     diagnosis: {
       en: 'The soprano-alto gap stays within an octave; the alto-bass gap may exceed it.',
       ja: 'ソプラノとアルトの間隔はオクターヴ以内、アルトとバスの間隔は超えてもかまいません。',
@@ -274,24 +297,18 @@ export const motionExamples: Record<string, StaffExampleDef> = {
     upperLabel: { en: 'soprano', ja: 'ソプラノ' },
     middleLabel: { en: 'alto', ja: 'アルト' },
     lowerLabel: { en: 'bass', ja: 'バス' },
-    upper: [
-      { key: 'e/5', color: GREEN },
-      { key: 'd/5' },
-      { key: 'c/5' },
-    ],
-    middle: [
-      { key: 'g/4', color: GREEN },
-      { key: 'f/4' },
-      { key: 'e/4' },
-    ],
-    lower: [
-      { key: 'c/3', color: GREEN },
-      { key: 'd/3' },
-      { key: 'e/3' },
-    ],
+    upper: [{ key: 'e/5', color: GREEN }, { key: 'd/5' }, { key: 'c/5' }],
+    middle: [{ key: 'g/4', color: GREEN }, { key: 'f/4' }, { key: 'e/4' }],
+    lower: [{ key: 'c/3', color: GREEN }, { key: 'd/3' }, { key: 'e/3' }],
     issues: [
       { kind: 'vertical', label: 'within an octave', upperIndex: 0, middleIndex: 0, color: GREEN },
-      { kind: 'vertical', label: 'bottom pair may spread', middleIndex: 2, lowerIndex: 2, color: AMBER },
+      {
+        kind: 'vertical',
+        label: 'bottom pair may spread',
+        middleIndex: 2,
+        lowerIndex: 2,
+        color: AMBER,
+      },
     ],
   },
 
@@ -328,7 +345,10 @@ export const motionExamples: Record<string, StaffExampleDef> = {
   invertibleSwap: {
     ruleIds: ['invertible_at_octave'],
     badge: { en: 'Invertible counterpoint', ja: '転回対位法' },
-    title: { en: 'Lift one line an octave — and it still works', ja: '下の線を1オクターヴ上げても、成り立つ' },
+    title: {
+      en: 'Lift one line an octave — and it still works',
+      ja: '下の線を1オクターヴ上げても、成り立つ',
+    },
     diagnosis: {
       en: 'Toggle the two: line A on top never moves; only line B (blue) rises an octave, and every third becomes a sixth.',
       ja: 'トグルで切り替えても、上の線A は動かない。下の線B（青）だけが1オクターヴ上がり、すべての3度が6度になる。',
@@ -345,12 +365,7 @@ export const motionExamples: Record<string, StaffExampleDef> = {
     lowerLabel: { en: 'line B', ja: '線B' },
     verdict: 'good',
     variantsHint: { en: 'raise line B an octave —', ja: '線Bを1オクターヴ上げる —' },
-    upper: [
-      { key: 'g/4' },
-      { key: 'a/4' },
-      { key: 'b/4' },
-      { key: 'g/4' },
-    ],
+    upper: [{ key: 'g/4' }, { key: 'a/4' }, { key: 'b/4' }, { key: 'g/4' }],
     lower: [
       { key: 'e/4', color: SWAP_BLUE, annotation: '3' },
       { key: 'c/4', color: SWAP_BLUE, annotation: '6' },
@@ -394,12 +409,7 @@ export const motionExamples: Record<string, StaffExampleDef> = {
       { key: 'f/5', annotation: '4', color: AMBER, issue: true },
       { key: 'e/5', annotation: '3' },
     ],
-    lower: [
-      { key: 'c/5', color: AMBER, issue: true },
-      { key: 'c/5' },
-    ],
-    issues: [
-      { kind: 'vertical', label: 'strong-beat 4th', upperIndex: 0, lowerIndex: 0 },
-    ],
+    lower: [{ key: 'c/5', color: AMBER, issue: true }, { key: 'c/5' }],
+    issues: [{ kind: 'vertical', label: 'strong-beat 4th', upperIndex: 0, lowerIndex: 0 }],
   },
 }

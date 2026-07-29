@@ -85,7 +85,7 @@ function renderSection(
   leaves: LeafPage[],
 ): string {
   if (leaves.length === 0) return ''
-  const bullets = leaves.map((leaf) => renderBullet(siteUrl, srcDir, leaf))
+  const bullets = leaves.map(leaf => renderBullet(siteUrl, srcDir, leaf))
   return `## ${heading}\n\n${bullets.join('\n')}\n`
 }
 

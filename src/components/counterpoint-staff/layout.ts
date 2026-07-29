@@ -5,9 +5,10 @@
  * resolve note positions through the same beat math so the static fallback
  * and the hydrated score line up.
  */
+
+import type { VoicePart } from '@/composables/useStaffPlayer'
 import type { StaffNote } from '@/data/staffExamples'
 import { durationBeats } from '@/data/staffExamples'
-import type { VoicePart } from '@/composables/useStaffPlayer'
 
 export type Clef = 'treble' | 'bass'
 
@@ -63,8 +64,15 @@ export function startBeats(notes: StaffNote[]): number[] {
 }
 
 /** Split a voice into per-system segments. Segments begin at bar boundaries. */
-export function splitIntoSystems(notes: StaffNote[], beatsPerSystem: number, systems: number): SystemSegment[] {
-  const segments: SystemSegment[] = Array.from({ length: systems }, () => ({ startIndex: 0, notes: [] }))
+export function splitIntoSystems(
+  notes: StaffNote[],
+  beatsPerSystem: number,
+  systems: number,
+): SystemSegment[] {
+  const segments: SystemSegment[] = Array.from({ length: systems }, () => ({
+    startIndex: 0,
+    notes: [],
+  }))
   let beat = 0
   notes.forEach((note, index) => {
     const sys = Math.min(Math.floor(beat / beatsPerSystem + 1e-6), systems - 1)

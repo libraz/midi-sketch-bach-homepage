@@ -1,5 +1,5 @@
 import type { StaffExampleDef } from './types'
-import { RED, AMBER } from './types'
+import { AMBER, RED } from './types'
 
 /**
  * Chapter 1 — Intervals and consonance.
@@ -28,11 +28,7 @@ export const intervalExamples: Record<string, StaffExampleDef> = {
       { key: 'c/5', annotation: 'P8' },
       { key: 'g/5', annotation: 'P12' },
     ],
-    lower: [
-      { key: 'c/4' },
-      { key: 'c/4' },
-      { key: 'c/4' },
-    ],
+    lower: [{ key: 'c/4' }, { key: 'c/4' }, { key: 'c/4' }],
     issues: [],
   },
 
@@ -57,11 +53,7 @@ export const intervalExamples: Record<string, StaffExampleDef> = {
       { key: 'a/4', annotation: 'M6' },
       { key: 'e/5', annotation: 'M10' },
     ],
-    lower: [
-      { key: 'c/4' },
-      { key: 'c/4' },
-      { key: 'c/4' },
-    ],
+    lower: [{ key: 'c/4' }, { key: 'c/4' }, { key: 'c/4' }],
     issues: [],
   },
 
@@ -118,10 +110,7 @@ export const intervalExamples: Record<string, StaffExampleDef> = {
       { key: 'f/4', annotation: '4', color: AMBER, issue: true },
       { key: 'e/4', annotation: '3' },
     ],
-    lower: [
-      { key: 'c/3' },
-      { key: 'c/3' },
-    ],
+    lower: [{ key: 'c/3' }, { key: 'c/3' }],
     issues: [
       { kind: 'vertical', label: '4 -> 3', upperIndex: 0, lowerIndex: 0 },
       { kind: 'motion', label: 'resolves down', fromUpper: 0, toUpper: 1 },

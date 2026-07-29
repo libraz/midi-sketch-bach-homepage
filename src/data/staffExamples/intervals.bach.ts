@@ -68,7 +68,13 @@ export const intervalBachExamples: Record<string, StaffExampleDef> = {
     ],
     issues: [
       { kind: 'vertical', label: 'm10', upperIndex: 1, lowerIndex: 1, color: GREEN },
-      { kind: 'bracket', label: 'tenths on every sixteenth', fromUpper: 1, toUpper: 15, color: GREEN },
+      {
+        kind: 'bracket',
+        label: 'tenths on every sixteenth',
+        fromUpper: 1,
+        toUpper: 15,
+        color: GREEN,
+      },
     ],
   },
 
@@ -84,7 +90,7 @@ export const intervalBachExamples: Record<string, StaffExampleDef> = {
       ja: '強い位置はむき出しのオクターヴで錨を下ろし、間の16分音符はすべて6度で走ります。',
     },
     caption: {
-      en: 'Bar 1 of the C minor prelude (WTC I, BWV 847) divides the labor exactly as this chapter describes. On the strong half-bars the hands meet in a bare double octave — the perfect consonance, stable and hollow, used as a pillar. Every sixteenth in between is a sixth — the imperfect consonance, full and mobile, carrying all the motion. Neither family does the other\'s job: the octaves never move in parallel (that would fuse the hands into one voice), and the sixths never have to bear structural weight. One bar of churning texture, and the whole division of labor is on display.',
+      en: "Bar 1 of the C minor prelude (WTC I, BWV 847) divides the labor exactly as this chapter describes. On the strong half-bars the hands meet in a bare double octave — the perfect consonance, stable and hollow, used as a pillar. Every sixteenth in between is a sixth — the imperfect consonance, full and mobile, carrying all the motion. Neither family does the other's job: the octaves never move in parallel (that would fuse the hands into one voice), and the sixths never have to bear structural weight. One bar of churning texture, and the whole division of labor is on display.",
       ja: 'ハ短調プレリュード（平均律 I 巻、BWV 847）の第1小節は、この章で述べた役割分担をそのまま実演しています。強い半小節の頭では両手がむき出しの複オクターヴで出会います——安定していて、しかし空洞な完全協和。柱の役目です。その間の16分音符はすべて6度——豊かで動きやすい不完全協和が、運動のすべてを担います。互いの仕事を侵さないことにも注目してください。オクターヴは決して並行では動かず（動けば両手が1つの声部に融けてしまいます）、6度は構造的な重みを背負わされません。うねる音型のたった1小節に、分業の全体が見えています。',
     },
     time: '4/4',

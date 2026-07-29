@@ -1,10 +1,10 @@
-import DefaultTheme from 'vitepress/theme'
 import type { Theme } from 'vitepress'
-import { h } from 'vue'
 import { useData } from 'vitepress'
+import DefaultTheme from 'vitepress/theme'
+import { h } from 'vue'
 import './custom.css'
-import DemoLayout from './DemoLayout.vue'
 import CounterpointStaff from '../../src/components/CounterpointStaff.vue'
+import DemoLayout from './DemoLayout.vue'
 
 export default {
   extends: DefaultTheme,
@@ -17,5 +17,5 @@ export default {
       return h(DemoLayout)
     }
     return h(DefaultTheme.Layout, null, {})
-  }
+  },
 } satisfies Theme

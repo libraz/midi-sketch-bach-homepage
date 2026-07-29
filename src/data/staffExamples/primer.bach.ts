@@ -47,9 +47,7 @@ export const primerBachExamples: Record<string, StaffExampleDef> = {
       { key: 'c/5', duration: '16' },
       { key: 'e/5', duration: '16' },
     ],
-    lower: [
-      { key: 'd/3', duration: 'w', rest: true },
-    ],
+    lower: [{ key: 'd/3', duration: 'w', rest: true }],
     issues: [
       { kind: 'bracket', label: 'tonic triad only', fromUpper: 0, toUpper: 7, color: GREEN },
     ],
@@ -96,9 +94,7 @@ export const primerBachExamples: Record<string, StaffExampleDef> = {
       { key: 'b/3', duration: '16' },
       { key: 'd/3', duration: '16' },
     ],
-    lower: [
-      { key: 'd/3', duration: 'w', rest: true },
-    ],
+    lower: [{ key: 'd/3', duration: 'w', rest: true }],
     issues: [
       { kind: 'motion', label: 'P5', fromUpper: 0, toUpper: 1, color: AMBER },
       { kind: 'motion', label: 'M6', fromUpper: 1, toUpper: 2, color: AMBER },

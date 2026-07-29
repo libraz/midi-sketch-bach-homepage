@@ -84,7 +84,7 @@ export const formConstraintBachExamples: Record<string, StaffExampleDef> = {
       ja: 'たった一つの8分音符が最初の小節線の前に鳴り、フレーズが始まる小節頭へ流れ込みます。',
     },
     caption: {
-      en: 'The Courante of the first cello suite (BWV 1007) begins one eighth note early: a single G whose only job is to launch the downbeat G that actually starts the phrase. This is the anacrusis as a declared property — the engine\'s contract says that once a piece declares an upbeat of a given length, every upbeat fragment must begin exactly that distance before a phrase start. `anacrusis_consistent` checks the consistency, not the existence.',
+      en: "The Courante of the first cello suite (BWV 1007) begins one eighth note early: a single G whose only job is to launch the downbeat G that actually starts the phrase. This is the anacrusis as a declared property — the engine's contract says that once a piece declares an upbeat of a given length, every upbeat fragment must begin exactly that distance before a phrase start. `anacrusis_consistent` checks the consistency, not the existence.",
       ja: 'チェロ組曲第1番（BWV 1007）のクーラントは、8分音符ひとつぶん早く始まります。この G の仕事はただ一つ、フレーズを本当に始める小節頭の G を発進させることです。これが「宣言されたプロパティとしてのアウフタクト」です——エンジンの契約では、ある長さの弱起を一度宣言したら、すべての弱起断片はフレーズ開始のちょうどその距離だけ手前で始まらなければなりません。`anacrusis_consistent` が検査するのは弱起の有無ではなく、その一貫性です。',
     },
     time: '3/4',
@@ -140,7 +140,7 @@ export const formConstraintBachExamples: Record<string, StaffExampleDef> = {
       ja: '8分音符と4分音符の主題、途切れない16分音符の対旋律、8分音符で歩くペダル——どの声部も他の影になりません。',
     },
     caption: {
-      en: 'Bar 3 of the E♭ major organ trio sonata (BWV 525): one manual takes the theme while the other spins the continuous sixteenth line, and the pedal walks underneath. Three voices, three rhythmic grids — at almost every note boundary the other voices are either holding or moving the other way. This is the texture `voice_independence_threshold` scores toward: every voice pair measured on rhythmic offset and contrary/oblique motion, failing the piece if any pair drops below the threshold. (The theme\'s last G is tied on into the next bar; the excerpt clips it at the barline.)',
+      en: "Bar 3 of the E♭ major organ trio sonata (BWV 525): one manual takes the theme while the other spins the continuous sixteenth line, and the pedal walks underneath. Three voices, three rhythmic grids — at almost every note boundary the other voices are either holding or moving the other way. This is the texture `voice_independence_threshold` scores toward: every voice pair measured on rhythmic offset and contrary/oblique motion, failing the piece if any pair drops below the threshold. (The theme's last G is tied on into the next bar; the excerpt clips it at the barline.)",
       ja: '変ホ長調のオルガン・トリオソナタ（BWV 525）第3小節。片方の手鍵盤が主題を取り、もう片方が途切れない16分音符の線を紡ぎ、ペダルがその下を歩きます。三つの声部に三つのリズムグリッド——ほぼすべての音の変わり目で、他の声部は保持しているか、反対へ動いています。これが `voice_independence_threshold` が目指して採点するテクスチュアです。すべての声部ペアがリズムのずれと反行・斜行で測られ、どこかのペアがしきい値を割れば曲は失敗します。（主題最後の G は次の小節へタイでつながれており、譜例は小節線で切り上げています。）',
     },
     time: '4/4',
@@ -270,21 +270,36 @@ export const formConstraintBachExamples: Record<string, StaffExampleDef> = {
       { key: 'g/2', duration: 'h', color: AMBER },
     ],
     issues: [
-      { kind: 'bracket', label: 'one cell (group_size = 8)', fromUpper: 0, toUpper: 7, color: AMBER },
-      { kind: 'motion', label: 'steps up over a held bass', fromMiddle: 1, toMiddle: 2, color: GREEN },
+      {
+        kind: 'bracket',
+        label: 'one cell (group_size = 8)',
+        fromUpper: 0,
+        toUpper: 7,
+        color: AMBER,
+      },
+      {
+        kind: 'motion',
+        label: 'steps up over a held bass',
+        fromMiddle: 1,
+        toMiddle: 2,
+        color: GREEN,
+      },
     ],
   },
 
   bachGroundBass: {
     ruleIds: ['ground_bass_immutable', 'passacaglia_ground_immutable'],
     badge: { en: 'From Bach', ja: 'バッハの実例' },
-    title: { en: 'Bach: Goldberg Variations — the Aria\'s ground', ja: 'バッハ: ゴルトベルク変奏曲 — アリアの基礎低音' },
+    title: {
+      en: "Bach: Goldberg Variations — the Aria's ground",
+      ja: 'バッハ: ゴルトベルク変奏曲 — アリアの基礎低音',
+    },
     diagnosis: {
-      en: 'Strip the passing notes from the Aria\'s bass and one scheme tone per bar remains — the skeleton all thirty variations keep.',
+      en: "Strip the passing notes from the Aria's bass and one scheme tone per bar remains — the skeleton all thirty variations keep.",
       ja: 'アリアのバスから経過音を取り除くと、1小節に1つの骨格音が残ります。30の変奏すべてが守り続ける骨組みです。',
     },
     caption: {
-      en: 'The first eight bars of the Aria of the Goldberg Variations (BWV 988): the actual bass voice above, its reduction to one tone per bar below. The famous descent G–F♯–E–D, then B–C–D–G closing the half-phrase. It is this scheme — not the ornamented melody — that every variation restates, which is exactly the relation the immutable-ground rules enforce between declared material and its replays. Bar 8\'s mordent is shown plain. Switch to a variation above to hear a completely different surface walk the same eight downbeats. The demo\'s Goldberg preset builds on the same idea.',
+      en: "The first eight bars of the Aria of the Goldberg Variations (BWV 988): the actual bass voice above, its reduction to one tone per bar below. The famous descent G–F♯–E–D, then B–C–D–G closing the half-phrase. It is this scheme — not the ornamented melody — that every variation restates, which is exactly the relation the immutable-ground rules enforce between declared material and its replays. Bar 8's mordent is shown plain. Switch to a variation above to hear a completely different surface walk the same eight downbeats. The demo's Goldberg preset builds on the same idea.",
       ja: 'ゴルトベルク変奏曲（BWV 988）のアリア、最初の8小節。上が実際のバス声部、下がそれを1小節1音に簡約したものです。名高い G–F♯–E–D の下行、続く B–C–D–G の半終止。30の変奏が再提示し続けるのは装飾された旋律ではなくこの骨組みであり、不変グラウンドのルールが宣言素材と再生のあいだに強制するのと同じ関係です。第8小節のモルデントは装飾記号を省いて示しています。上の切り替えで変奏を選ぶと、まったく違う表面が同じ8つの小節頭を歩くのが聴き取れます。デモの Goldberg プリセットも同じ発想の上に立っています。',
     },
     time: '3/4',
@@ -329,7 +344,13 @@ export const formConstraintBachExamples: Record<string, StaffExampleDef> = {
       { key: 'g/2', duration: 'hd', annotation: '1', color: AMBER },
     ],
     issues: [
-      { kind: 'bracket', label: 'the scheme every variation keeps', fromLower: 0, toLower: 3, color: AMBER },
+      {
+        kind: 'bracket',
+        label: 'the scheme every variation keeps',
+        fromLower: 0,
+        toLower: 3,
+        color: AMBER,
+      },
       { kind: 'bracket', label: '', fromLower: 4, toLower: 7, color: AMBER },
     ],
     variants: [
@@ -432,7 +453,7 @@ export const formConstraintBachExamples: Record<string, StaffExampleDef> = {
         override: {
           upperLabel: { en: 'Var. 13', ja: '第13変奏' },
           diagnosis: {
-            en: 'The bass of Variation 13 walks with the Aria\'s own gesture — a long scheme tone, then three eighths into the next bar.',
+            en: "The bass of Variation 13 walks with the Aria's own gesture — a long scheme tone, then three eighths into the next bar.",
             ja: '第13変奏のバスはアリアそのものの身振りで歩きます——長い骨格音、つづく3つの8分音符が次の小節へ。',
           },
           caption: {
@@ -481,9 +502,12 @@ export const formConstraintBachExamples: Record<string, StaffExampleDef> = {
   bachFiguration: {
     ruleIds: ['figuration_harmonic_consistency'],
     badge: { en: 'From Bach', ja: 'バッハの実例' },
-    title: { en: 'Bach: WTC I Prelude in C — figuration over a slow harmony', ja: 'バッハ: 平均律 I 巻 ハ長調プレリュード — ゆっくりした和声の上の音型' },
+    title: {
+      en: 'Bach: WTC I Prelude in C — figuration over a slow harmony',
+      ja: 'バッハ: 平均律 I 巻 ハ長調プレリュード — ゆっくりした和声の上の音型',
+    },
     diagnosis: {
-      en: 'One broken-chord figure per half bar, one chord per bar — each downbeat states a chord tone of that bar\'s harmony.',
+      en: "One broken-chord figure per half bar, one chord per bar — each downbeat states a chord tone of that bar's harmony.",
       ja: '半小節に一つの分散和音、1小節に一つの和音。各小節頭はその小節の和音の和声音を打ちます。',
     },
     caption: {
@@ -552,7 +576,13 @@ export const formConstraintBachExamples: Record<string, StaffExampleDef> = {
     ],
     issues: [
       { kind: 'bracket', label: 'a single written line', fromUpper: 1, toUpper: 13, color: AMBER },
-      { kind: 'bracket', label: 'held beneath the figure', fromMiddle: 1, toMiddle: 2, color: GREEN },
+      {
+        kind: 'bracket',
+        label: 'held beneath the figure',
+        fromMiddle: 1,
+        toMiddle: 2,
+        color: GREEN,
+      },
     ],
   },
 }

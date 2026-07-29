@@ -82,23 +82,31 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import type { StaffExampleDef, StaffLocale } from '@/data/staffExamples'
-import { exampleVerdict, getStaffExample, resolveStaffVariant, verdictColor } from '@/data/staffExamples'
 import { useStaffPlayer, type VoicePart } from '@/composables/useStaffPlayer'
-import type { PartDef } from './counterpoint-staff/layout'
+import type { StaffExampleDef, StaffLocale } from '@/data/staffExamples'
+import {
+  exampleVerdict,
+  getStaffExample,
+  resolveStaffVariant,
+  verdictColor,
+} from '@/data/staffExamples'
 import { renderInline } from './counterpoint-staff/inlineMarkdown'
+import type { PartDef } from './counterpoint-staff/layout'
 import { buildStaticScoreSvg } from './counterpoint-staff/staticScore'
-import { renderVexFlow } from './counterpoint-staff/vexflowRenderer'
 import { useStaffHighlight } from './counterpoint-staff/useStaffHighlight'
+import { renderVexFlow } from './counterpoint-staff/vexflowRenderer'
 
 type Status = 'loading' | 'ready' | 'error'
 
-const props = withDefaults(defineProps<{
-  example: string
-  locale?: StaffLocale
-}>(), {
-  locale: 'en',
-})
+const props = withDefaults(
+  defineProps<{
+    example: string
+    locale?: StaffLocale
+  }>(),
+  {
+    locale: 'en',
+  },
+)
 
 const target = ref<HTMLDivElement | null>(null)
 const progressFill = ref<HTMLDivElement | null>(null)
@@ -109,9 +117,36 @@ const { play, stop, isLoading, playingId, playbackState, audioNow } = useStaffPl
 
 const isPlayingThis = computed(() => playingId.value === props.example)
 
-const uiCopy: Record<StaffLocale, { upper: string; middle: string; lower: string; play: string; stop: string; sequential: string; variants: string }> = {
-  en: { upper: 'upper', middle: 'middle', lower: 'lower', play: 'Play this example', stop: 'Stop playback', sequential: 'voices play in turn', variants: 'Choose the excerpt' },
-  ja: { upper: '上声', middle: '中声', lower: '下声', play: 'この譜例を再生', stop: '再生を停止', sequential: '声部を順に再生', variants: '抜粋を選択' },
+const uiCopy: Record<
+  StaffLocale,
+  {
+    upper: string
+    middle: string
+    lower: string
+    play: string
+    stop: string
+    sequential: string
+    variants: string
+  }
+> = {
+  en: {
+    upper: 'upper',
+    middle: 'middle',
+    lower: 'lower',
+    play: 'Play this example',
+    stop: 'Stop playback',
+    sequential: 'voices play in turn',
+    variants: 'Choose the excerpt',
+  },
+  ja: {
+    upper: '上声',
+    middle: '中声',
+    lower: '下声',
+    play: 'この譜例を再生',
+    stop: '再生を停止',
+    sequential: '声部を順に再生',
+    variants: '抜粋を選択',
+  },
 }
 
 const baseDef = computed<StaffExampleDef>(() => {
@@ -120,16 +155,24 @@ const baseDef = computed<StaffExampleDef>(() => {
   // Unknown id: fall back to the canonical first example so the page
   // still renders, and make the mistake visible in the console.
   console.warn(`[CounterpointStaff] unknown example id: ${props.example}`)
-  return getStaffExample('parallelFifths')!
+  const fallback = getStaffExample('parallelFifths')
+  if (!fallback) {
+    throw new Error(
+      `[CounterpointStaff] unknown example id "${props.example}" and the fallback example is missing`,
+    )
+  }
+  return fallback
 })
 
 /** Selected variant id (first variant by default; empty for variant-less examples). */
 const selectedVariantId = ref(baseDef.value.variants?.[0]?.id ?? '')
-watch(baseDef, (d) => {
+watch(baseDef, d => {
   selectedVariantId.value = d.variants?.[0]?.id ?? ''
 })
 
-const def = computed<StaffExampleDef>(() => resolveStaffVariant(baseDef.value, selectedVariantId.value))
+const def = computed<StaffExampleDef>(() =>
+  resolveStaffVariant(baseDef.value, selectedVariantId.value),
+)
 
 function selectVariant(id: string) {
   if (id === selectedVariantId.value) return
@@ -146,9 +189,19 @@ const view = computed(() => {
     { part: 'upper', notes: d.upper, clef: d.upperClef, label: d.upperLabel?.[locale] ?? ui.upper },
   ]
   if (d.middle) {
-    parts.push({ part: 'middle', notes: d.middle, clef: d.middleClef ?? 'treble', label: d.middleLabel?.[locale] ?? ui.middle })
+    parts.push({
+      part: 'middle',
+      notes: d.middle,
+      clef: d.middleClef ?? 'treble',
+      label: d.middleLabel?.[locale] ?? ui.middle,
+    })
   }
-  parts.push({ part: 'lower', notes: d.lower, clef: d.lowerClef, label: d.lowerLabel?.[locale] ?? ui.lower })
+  parts.push({
+    part: 'lower',
+    notes: d.lower,
+    clef: d.lowerClef,
+    label: d.lowerLabel?.[locale] ?? ui.lower,
+  })
   return {
     badge: d.badge[locale],
     title: d.title[locale],
@@ -159,7 +212,7 @@ const view = computed(() => {
     playLabel: ui.play,
     stopLabel: ui.stop,
     sequentialHint: d.playback === 'sequential' ? ui.sequential : '',
-    variants: (d.variants ?? []).map((variant) => ({ id: variant.id, label: variant.label[locale] })),
+    variants: (d.variants ?? []).map(variant => ({ id: variant.id, label: variant.label[locale] })),
     variantsLabel: ui.variants,
     variantsHint: d.variantsHint?.[locale] ?? '',
   }
@@ -170,10 +223,14 @@ const verdict = computed(() => exampleVerdict(def.value))
 const markColor = computed(() => verdictColor(verdict.value))
 const verdictIcon = computed(() => {
   switch (verdict.value) {
-    case 'bad': return '✕'
-    case 'good': return '✓'
-    case 'caution': return '!'
-    default: return ''
+    case 'bad':
+      return '✕'
+    case 'good':
+      return '✓'
+    case 'caution':
+      return '!'
+    default:
+      return ''
   }
 })
 
@@ -189,7 +246,9 @@ async function togglePlay() {
 }
 
 /** Static SVG fallback, shown until VexFlow hydrates the score. */
-const staticScoreSvg = computed(() => buildStaticScoreSvg(def.value, view.value.parts, markColor.value))
+const staticScoreSvg = computed(() =>
+  buildStaticScoreSvg(def.value, view.value.parts, markColor.value),
+)
 
 // --- VexFlow render & playback highlight -----------------------------------
 

@@ -70,7 +70,7 @@ export const dissonanceBachExamples: Record<string, StaffExampleDef> = {
       ja: '歩くバスの上で、ソプラノとアルトが交互に音を吊り、不協和を作っては順次下行で解決します。',
     },
     caption: {
-      en: 'The opening of the B minor prelude that closes WTC I (BWV 869). Three suspensions in two bars, handed between the voices: the alto holds B into a fourth over the bass\'s F♯ and falls to A; the soprano ties F♯ across the barline into a fourth over C♯ and falls to E; the alto holds C♯ into a ninth over B and falls to B. Every one follows the three-stage script — consonant preparation, tie, step-down resolution — that `suspension_preparation` and `suspension_resolution_step_down` enforce. The soprano\'s final D is itself tied on into bar 3, where it makes the next seventh: the chain simply keeps going.',
+      en: "The opening of the B minor prelude that closes WTC I (BWV 869). Three suspensions in two bars, handed between the voices: the alto holds B into a fourth over the bass's F♯ and falls to A; the soprano ties F♯ across the barline into a fourth over C♯ and falls to E; the alto holds C♯ into a ninth over B and falls to B. Every one follows the three-stage script — consonant preparation, tie, step-down resolution — that `suspension_preparation` and `suspension_resolution_step_down` enforce. The soprano's final D is itself tied on into bar 3, where it makes the next seventh: the chain simply keeps going.",
       ja: '平均律 I 巻を閉じるロ短調プレリュード（BWV 869）の冒頭。2小節に3つの掛留が、声部から声部へ手渡されていきます。アルトは B を保持してバスの F♯ との4度を作り、A へ落ちる。ソプラノは F♯ を小節線越しにタイでつなぎ、C♯ 上の4度を作って E へ落ちる。アルトは C♯ を保持して B 上の9度を作り、B へ落ちる。どれも協和な準備・タイ・順次下行解決という三段の台本どおり——`suspension_preparation` と `suspension_resolution_step_down` が強制する型そのものです。ソプラノ最後の D もまた第3小節へタイでつながれ、そこで次の7度を作ります。連鎖はただ続いていくのです。',
     },
     time: '4/4',
@@ -125,7 +125,13 @@ export const dissonanceBachExamples: Record<string, StaffExampleDef> = {
       { kind: 'vertical', label: '4th', middleIndex: 2, lowerIndex: 4, color: AMBER },
       { kind: 'vertical', label: '4th', upperIndex: 3, lowerIndex: 8, color: AMBER },
       { kind: 'vertical', label: '9th', middleIndex: 6, lowerIndex: 12, color: AMBER },
-      { kind: 'motion', label: 'each resolves down by step', fromUpper: 3, toUpper: 4, color: GREEN },
+      {
+        kind: 'motion',
+        label: 'each resolves down by step',
+        fromUpper: 3,
+        toUpper: 4,
+        color: GREEN,
+      },
     ],
   },
 }

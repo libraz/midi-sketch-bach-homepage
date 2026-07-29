@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import BachDemo from '@/components/BachDemo.vue'
-import { useI18n } from '@/composables/useI18n'
 import { useData } from 'vitepress'
 import { computed, ref } from 'vue'
+import BachDemo from '@/components/BachDemo.vue'
+import { useI18n } from '@/composables/useI18n'
 import wasmMeta from '@/wasm/meta.json'
 
 const { lang } = useData()
@@ -17,7 +17,20 @@ const buildDate = computed(() => {
   if (lang.value === 'ja') {
     return `${d.getUTCMonth() + 1}月${d.getUTCDate()}日版`
   }
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ]
   return `${months[d.getUTCMonth()]} ${d.getUTCDate()} Build`
 })
 
@@ -36,7 +49,7 @@ const localePath = (path: string) => `${currentLocale.value.path}${path}`
 const otherLocales = computed(() =>
   Object.entries(locales)
     .filter(([key]) => key !== lang.value)
-    .map(([key, config]) => ({ key, ...config }))
+    .map(([key, config]) => ({ key, ...config })),
 )
 </script>
 

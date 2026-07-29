@@ -40,7 +40,13 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
     ],
     issues: [
       { kind: 'vertical', label: 'I maps to V', upperIndex: 0, lowerIndex: 0, color: AMBER },
-      { kind: 'motion', label: 'head adjusted, tail transposed', fromLower: 0, toLower: 3, color: AMBER },
+      {
+        kind: 'motion',
+        label: 'head adjusted, tail transposed',
+        fromLower: 0,
+        toLower: 3,
+        color: AMBER,
+      },
     ],
   },
 
@@ -62,12 +68,7 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
     lowerClef: 'treble',
     upperLabel: { en: 'answer', ja: '応唱' },
     lowerLabel: { en: 'CS', ja: '対主題' },
-    upper: [
-      { key: 'g/4' },
-      { key: 'a/4' },
-      { key: 'b/4' },
-      { key: 'c/5' },
-    ],
+    upper: [{ key: 'g/4' }, { key: 'a/4' }, { key: 'b/4' }, { key: 'c/5' }],
     lower: [
       { key: 'e/4', duration: '8', color: GREEN },
       { key: 'd/4', duration: '8', color: GREEN },
@@ -191,7 +192,13 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
       { key: 'e/4', color: GREEN },
     ],
     issues: [
-      { kind: 'bracket', label: 'same subject, related key', fromLower: 0, toLower: 3, color: GREEN },
+      {
+        kind: 'bracket',
+        label: 'same subject, related key',
+        fromLower: 0,
+        toLower: 3,
+        color: GREEN,
+      },
     ],
   },
 
@@ -200,7 +207,7 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
     badge: { en: 'Imitation', ja: '模倣' },
     title: { en: 'Imitative entry at the fourth below', ja: '4度下の模倣エントリ' },
     diagnosis: {
-      en: 'The follower restates the leader\'s figure one bar later, a fourth lower.',
+      en: "The follower restates the leader's figure one bar later, a fourth lower.",
       ja: '後続声部が、先行声部の音型を1小節遅れ・4度下で再現しています。',
     },
     caption: {
@@ -239,7 +246,7 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
       ja: '先行声部が主題を歌い終わる前に、後続声部が主題を開始しています。',
     },
     caption: {
-      en: 'In a stretto the subject chases itself: the second entry begins inside the first one\'s window. It is the classic intensification device near a fugue\'s climax. The validator requires a genuine overlap and an exact transposition of the subject.',
+      en: "In a stretto the subject chases itself: the second entry begins inside the first one's window. It is the classic intensification device near a fugue's climax. The validator requires a genuine overlap and an exact transposition of the subject.",
       ja: 'ストレッタでは主題が主題を追いかけます。第2のエントリが第1のエントリの途中で始まる、フーガの頂点付近を熱くする常套手段です。検証器は本当に重なっていること、そして主題が正確に移調されていることを要求します。',
     },
     time: '2/4',
@@ -261,9 +268,7 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
       { key: 'e/3', color: GREEN },
       { key: 'g/3', color: GREEN },
     ],
-    issues: [
-      { kind: 'bracket', label: 'overlap zone', fromUpper: 1, toUpper: 3, color: GREEN },
-    ],
+    issues: [{ kind: 'bracket', label: 'overlap zone', fromUpper: 1, toUpper: 3, color: GREEN }],
   },
 
   pedalPoint: {
@@ -288,11 +293,15 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
       { key: 'a/4', annotation: '6' },
       { key: 'b/4', annotation: '7', color: AMBER },
     ],
-    lower: [
-      { key: 'c/3', duration: 'w', annotation: 'pedal', color: GREEN },
-    ],
+    lower: [{ key: 'c/3', duration: 'w', annotation: 'pedal', color: GREEN }],
     issues: [
-      { kind: 'bracket', label: 'harmony moves over a held tonic', fromUpper: 0, toUpper: 3, color: GREEN },
+      {
+        kind: 'bracket',
+        label: 'harmony moves over a held tonic',
+        fromUpper: 0,
+        toUpper: 3,
+        color: GREEN,
+      },
     ],
   },
 }

@@ -1,19 +1,21 @@
-import { computed } from 'vue'
 import { useData } from 'vitepress'
+import { computed } from 'vue'
 import en from '@/locales/en.json'
 import ja from '@/locales/ja.json'
 
 type LocaleMessages = typeof en
-type NestedKeyOf<T> = T extends object
-  ? { [K in keyof T]: K extends string
-      ? T[K] extends object
-        ? `${K}` | `${K}.${NestedKeyOf<T[K]>}`
-        : `${K}`
-      : never
-    }[keyof T]
-  : never
 
 const messages: Record<string, LocaleMessages> = { en, ja }
+
+/** Walk a dotted key path through a message tree; null when it does not resolve to a string. */
+function lookup(root: LocaleMessages, keys: string[]): string | null {
+  let node: unknown = root
+  for (const key of keys) {
+    if (typeof node !== 'object' || node === null || !(key in node)) return null
+    node = (node as Record<string, unknown>)[key]
+  }
+  return typeof node === 'string' ? node : null
+}
 
 export function useI18n() {
   const { lang } = useData()
@@ -22,23 +24,9 @@ export function useI18n() {
 
   function t(key: string, params?: Record<string, string>): string {
     const keys = key.split('.')
-    let result: any = currentMessages.value
-    for (const k of keys) {
-      if (result && typeof result === 'object' && k in result) {
-        result = result[k]
-      } else {
-        result = messages.en
-        for (const fallbackKey of keys) {
-          if (result && typeof result === 'object' && fallbackKey in result) {
-            result = result[fallbackKey]
-          } else {
-            return key
-          }
-        }
-        break
-      }
-    }
-    if (typeof result !== 'string') return key
+    // Fall back to English when the active locale has no entry for this key.
+    const result = lookup(currentMessages.value, keys) ?? lookup(messages.en, keys)
+    if (result === null) return key
     if (params) {
       return result.replace(/\{(\w+)\}/g, (_, paramKey) => params[paramKey] || `{${paramKey}}`)
     }

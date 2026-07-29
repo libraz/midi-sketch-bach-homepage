@@ -7,9 +7,11 @@
  * The markup added on top of VexFlow's SVG (stave labels, issue rings,
  * overlay) is generated from the trusted local example registry and escaped.
  */
+
+import type { VoicePart } from '@/composables/useStaffPlayer'
 import type { StaffExampleDef, StaffNote } from '@/data/staffExamples'
 import { beatsPerBar, durationBeats } from '@/data/staffExamples'
-import type { VoicePart } from '@/composables/useStaffPlayer'
+import { escapeHtml } from './inlineMarkdown'
 import {
   type Clef,
   type PartDef,
@@ -20,7 +22,6 @@ import {
   systemCount,
   systemStride,
 } from './layout'
-import { escapeHtml } from './inlineMarkdown'
 import { overlaySvg } from './overlaySvg'
 
 const SVG_NS = 'http://www.w3.org/2000/svg'
@@ -114,21 +115,24 @@ export async function renderVexFlow(
   }
 
   // Per-system segmentation: built[sys][pi] holds that system row's notes.
-  const segments = parts.map((p) => splitIntoSystems(p.notes, beatsPerSystem, systems))
+  const segments = parts.map(p => splitIntoSystems(p.notes, beatsPerSystem, systems))
   const built = Array.from({ length: systems }, (_, sys) =>
-    parts.map((p, pi) => buildTickables(segments[pi][sys].notes, p.clef)))
+    parts.map((p, pi) => buildTickables(segments[pi][sys].notes, p.clef)),
+  )
   const sysVoices = built.map((row, sys) => {
     const barsInSystem = Math.min(sysBars, bars - sys * sysBars)
-    return row.map((b) => {
+    return row.map(b => {
       const voice = new VF.Voice({ numBeats: barsInSystem * perBar, beatValue: 4 })
       voice.setMode(VF.VoiceMode.SOFT).addTickables(b.tickables)
       return voice
     })
   })
 
-  const formatters = sysVoices.map((voices) => {
+  const formatters = sysVoices.map(voices => {
     const formatter = new VF.Formatter()
-    voices.forEach((voice) => formatter.joinVoices([voice]))
+    voices.forEach(voice => {
+      formatter.joinVoices([voice])
+    })
     return formatter
   })
 
@@ -150,14 +154,18 @@ export async function renderVexFlow(
   // the viewBox scaling shrinks it back to the container — instead of
   // letting notes run past the stave's right edge.
   const RIGHT_PAD = 24
-  const modifierWidth = Math.max(...parts.map((p) => {
-    const probe = new VF.Stave(0, 0, 200)
-    probe.addClef(p.clef)
-    if (d.keySignature) probe.addKeySignature(d.keySignature)
-    probe.addTimeSignature(d.time)
-    return probe.getNoteStartX() - probe.getX()
-  }))
-  const minNoteWidth = Math.max(...formatters.map((formatter, sys) => formatter.preCalculateMinTotalWidth(sysVoices[sys])))
+  const modifierWidth = Math.max(
+    ...parts.map(p => {
+      const probe = new VF.Stave(0, 0, 200)
+      probe.addClef(p.clef)
+      if (d.keySignature) probe.addKeySignature(d.keySignature)
+      probe.addTimeSignature(d.time)
+      return probe.getNoteStartX() - probe.getX()
+    }),
+  )
+  const minNoteWidth = Math.max(
+    ...formatters.map((formatter, sys) => formatter.preCalculateMinTotalWidth(sysVoices[sys])),
+  )
   const staveWidth = Math.max(d.width - 120, Math.ceil(modifierWidth + minNoteWidth + RIGHT_PAD))
   const renderWidth = staveWidth + 120
 
@@ -166,7 +174,7 @@ export async function renderVexFlow(
   const context = renderer.getContext()
   context.setFont('Arial', 10)
 
-  const staves = built.map((row, sys) =>
+  const staves = built.map((_row, sys) =>
     parts.map((p, pi) => {
       const stave = new VF.Stave(STATIC_LEFT, 24 + sys * stride + pi * 100, staveWidth)
       stave.addClef(p.clef)
@@ -175,9 +183,10 @@ export async function renderVexFlow(
       if (sys === 0) stave.addTimeSignature(d.time)
       stave.setContext(context).draw()
       return stave
-    }))
+    }),
+  )
 
-  staves.forEach((row) => {
+  staves.forEach(row => {
     const connector = new VF.StaveConnector(row[0], row[row.length - 1])
     connector.setType(VF.StaveConnector.type.BRACE)
     connector.setContext(context).draw()
@@ -185,30 +194,40 @@ export async function renderVexFlow(
 
   // Format each system into the space actually left after its stave modifiers.
   formatters.forEach((formatter, sys) => {
-    const noteAreaWidth = Math.min(...staves[sys].map((s) => s.getNoteEndX() - s.getNoteStartX()))
+    const noteAreaWidth = Math.min(...staves[sys].map(s => s.getNoteEndX() - s.getNoteStartX()))
     formatter.format(sysVoices[sys], noteAreaWidth - RIGHT_PAD)
   })
 
   // Beam each contiguous run of sounding notes separately — generateBeams
   // treats its input as contiguous, so feeding it the rest-filtered array
   // would beam across rests.
-  const beams = built.flatMap((row) => row.map((b) => {
-    const runs: InstanceType<typeof VF.StaveNote>[][] = []
-    let run: InstanceType<typeof VF.StaveNote>[] = []
-    for (const note of b.staveNotes) {
-      if (note.isRest()) {
-        if (run.length) runs.push(run)
-        run = []
-      } else {
-        run.push(note)
+  const beams = built.flatMap(row =>
+    row.map(b => {
+      const runs: InstanceType<typeof VF.StaveNote>[][] = []
+      let run: InstanceType<typeof VF.StaveNote>[] = []
+      for (const note of b.staveNotes) {
+        if (note.isRest()) {
+          if (run.length) runs.push(run)
+          run = []
+        } else {
+          run.push(note)
+        }
       }
-    }
-    if (run.length) runs.push(run)
-    return runs.flatMap((notes) => VF.Beam.generateBeams(notes))
-  }))
+      if (run.length) runs.push(run)
+      return runs.flatMap(notes => VF.Beam.generateBeams(notes))
+    }),
+  )
 
-  sysVoices.forEach((row, sys) => row.forEach((voice, pi) => voice.draw(context, staves[sys][pi])))
-  beams.forEach((set) => set.forEach((beam) => beam.setContext(context).draw()))
+  sysVoices.forEach((row, sys) => {
+    row.forEach((voice, pi) => {
+      voice.draw(context, staves[sys][pi])
+    })
+  })
+  beams.forEach(set => {
+    set.forEach(beam => {
+      beam.setContext(context).draw()
+    })
+  })
 
   // Ties between a tied note and its successor on the same stave
   // (a tie across a system break is not drawn).
@@ -218,7 +237,12 @@ export async function renderVexFlow(
       const first = locate(pi, i)
       const last = locate(pi, i + 1)
       if (!first || !last || first.sys !== last.sys) return
-      const tie = new VF.StaveTie({ firstNote: first.note, lastNote: last.note, firstIndexes: [0], lastIndexes: [0] })
+      const tie = new VF.StaveTie({
+        firstNote: first.note,
+        lastNote: last.note,
+        firstIndexes: [0],
+        lastIndexes: [0],
+      })
       tie.setContext(context).draw()
     })
   })
@@ -245,8 +269,8 @@ export async function renderVexFlow(
     const positions: Positions = {}
     parts.forEach((p, pi) => {
       positions[p.part] = {
-        x: (i) => noteX(pi, i),
-        y: (i) => noteY(pi, i),
+        x: i => noteX(pi, i),
+        y: i => noteY(pi, i),
       }
       renderedPositions[p.part] = p.notes.map((_, i) => ({
         x: noteX(pi, i),
@@ -254,21 +278,31 @@ export async function renderVexFlow(
       }))
     })
     const staveLabels = parts
-      .map((p, pi) => `<text x="6" y="${staves[0][pi].getYForLine(2) + 4}" class="counterpoint-staff__svg-clef">${escapeHtml(p.label)}</text>`)
+      .map(
+        (p, pi) =>
+          `<text x="6" y="${staves[0][pi].getYForLine(2) + 4}" class="counterpoint-staff__svg-clef">${escapeHtml(p.label)}</text>`,
+      )
       .join('')
     // Dashed ring around every note flagged `issue` — the static
     // fallback draws the same ring, so the problem note stays marked
     // after VexFlow hydrates.
     const issueRings = parts
-      .map((p, pi) => p.notes
-        .map((note, i) => note.issue && !note.rest
-          ? `<circle cx="${noteX(pi, i)}" cy="${noteY(pi, i)}" r="15" class="counterpoint-staff__svg-issue-ring" style="stroke: ${note.color ?? markColor}" />`
-          : '')
-        .join(''))
+      .map((p, pi) =>
+        p.notes
+          .map((note, i) =>
+            note.issue && !note.rest
+              ? `<circle cx="${noteX(pi, i)}" cy="${noteY(pi, i)}" r="15" class="counterpoint-staff__svg-issue-ring" style="stroke: ${note.color ?? markColor}" />`
+              : '',
+          )
+          .join(''),
+      )
       .join('')
     const group = document.createElementNS(SVG_NS, 'g')
     group.setAttribute('class', 'counterpoint-staff__overlay')
-    fillSvgGroup(group, staveLabels + issueRings + overlaySvg(d.issues ?? [], positions, svgHeight, markColor))
+    fillSvgGroup(
+      group,
+      staveLabels + issueRings + overlaySvg(d.issues ?? [], positions, svgHeight, markColor),
+    )
     svg.appendChild(group)
 
     // One hidden highlight mark per part — a soft candlelight halo under
@@ -276,7 +310,7 @@ export async function renderVexFlow(
     // sounding.
     const playheads = document.createElementNS(SVG_NS, 'g')
     playheads.setAttribute('class', 'counterpoint-staff__playheads')
-    parts.forEach((p) => {
+    parts.forEach(p => {
       const mark = document.createElementNS(SVG_NS, 'g')
       mark.setAttribute('class', 'counterpoint-staff__playhead')
       mark.style.visibility = 'hidden'

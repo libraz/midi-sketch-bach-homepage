@@ -19,7 +19,7 @@ export const tonalityBachExamples: Record<string, StaffExampleDef> = {
       ja: '旋律が導音 F♯ に降り立って G へ上がり、バスは属音から主音へ落ちます。',
     },
     caption: {
-      en: 'The last two bars of the Goldberg Aria (BWV 988). In the penultimate bar the melody\'s sixteenths circle down onto F♯ — the leading tone — while the bass winds through the cadential harmony and lands on D. Then the contract closes: F♯ rises a semitone to G, the bass falls D to G, and an inner voice slips in only for the final bar to fill the chord. Outer-voice behavior at the cadence tick is exactly what `cadence_voice_leading` verifies for a perfect authentic close. The final notes are held under a fermata in performance; the excerpt trims them at the double bar.',
+      en: "The last two bars of the Goldberg Aria (BWV 988). In the penultimate bar the melody's sixteenths circle down onto F♯ — the leading tone — while the bass winds through the cadential harmony and lands on D. Then the contract closes: F♯ rises a semitone to G, the bass falls D to G, and an inner voice slips in only for the final bar to fill the chord. Outer-voice behavior at the cadence tick is exactly what `cadence_voice_leading` verifies for a perfect authentic close. The final notes are held under a fermata in performance; the excerpt trims them at the double bar.",
       ja: 'ゴルトベルクのアリア（BWV 988）、最後の2小節です。終わりから2番目の小節では、旋律の16分音符が旋回しながら導音 F♯ へ降りていき、バスは終止の和声を縫って D に着地します。そして契約が履行されます。F♯ は半音上がって G へ、バスは D から G へ落ち、内声は和音を満たすために最後の小節だけそっと加わります。終止ティックでの外声の振る舞い——`cadence_voice_leading` が完全正格終止に対して検証するのは、まさにこれです。最後の音は演奏ではフェルマータで延ばされますが、譜例は複縦線で切り上げています。',
     },
     time: '3/4',
@@ -201,21 +201,36 @@ export const tonalityBachExamples: Record<string, StaffExampleDef> = {
       { key: 'e/2', duration: 'hd', annotation: 'V', color: GREEN },
     ],
     issues: [
-      { kind: 'motion', label: 'half step onto the dominant', fromLower: 2, toLower: 3, color: AMBER },
-      { kind: 'bracket', label: 'suspensions resolve over V', fromUpper: 12, toUpper: 13, color: GREEN },
+      {
+        kind: 'motion',
+        label: 'half step onto the dominant',
+        fromLower: 2,
+        toLower: 3,
+        color: AMBER,
+      },
+      {
+        kind: 'bracket',
+        label: 'suspensions resolve over V',
+        fromUpper: 12,
+        toUpper: 13,
+        color: GREEN,
+      },
     ],
   },
 
   bachPicardy: {
     ruleIds: ['cadence_voice_leading'],
     badge: { en: 'From Bach', ja: 'バッハの実例' },
-    title: { en: 'Bach: BWV 847 — the final bar turns major', ja: 'バッハ: BWV 847 — 最後の小節で長調になる' },
+    title: {
+      en: 'Bach: BWV 847 — the final bar turns major',
+      ja: 'バッハ: BWV 847 — 最後の小節で長調になる',
+    },
     diagnosis: {
       en: 'Over the tonic pedal, the seventh of the dominant harmony (F) falls to E♮ — a major third ends a C minor fugue.',
       ja: '主音の保続の上で、属和音の第7音（F）が E♮ へ下行します。ハ短調のフーガが長3度で終わります。',
     },
     caption: {
-      en: 'The last bar of the C minor fugue (WTC I, BWV 847). The bass has held the tonic C since bar 29; above it the dominant harmony gathers one last time, the upper voice climbs F–G–A♭ and falls back, and the chordal seventh F resolves down to E natural — the raised, major third, sounding on top as the piece ends. A minor fugue closing on a major chord is the Picardy convention the validator\'s Picardy check encodes: the leading tone resolves, and the final tonic chord carries a major third. (One inner voice is omitted; the score doubles the pedal an octave lower.)',
+      en: "The last bar of the C minor fugue (WTC I, BWV 847). The bass has held the tonic C since bar 29; above it the dominant harmony gathers one last time, the upper voice climbs F–G–A♭ and falls back, and the chordal seventh F resolves down to E natural — the raised, major third, sounding on top as the piece ends. A minor fugue closing on a major chord is the Picardy convention the validator's Picardy check encodes: the leading tone resolves, and the final tonic chord carries a major third. (One inner voice is omitted; the score doubles the pedal an octave lower.)",
       ja: 'ハ短調フーガ（平均律 I 巻、BWV 847）の最終小節。バスは第29小節から主音 C を保続しています。その上で属和音が最後にもう一度集まり、上声は F–G–A♭ と上って戻り、和音の第7音 F が E ナチュラル——半音上げられた長3度——へ解決して、曲の最後の響きの最上声に座ります。短調のフーガが長和音で閉じる——これが検証器のピカルディ検査が符号化している慣習です。導音は解決し、最後の主和音は長3度を含む。（内声を一つ省略しています。原典では保続音はさらに1オクターヴ下で重複されます。）',
     },
     time: '4/4',
@@ -243,9 +258,7 @@ export const tonalityBachExamples: Record<string, StaffExampleDef> = {
       { key: 'd/4', duration: '8', rest: true },
       { key: 'c/4', duration: 'h' },
     ],
-    lower: [
-      { key: 'c/3', duration: 'w', annotation: 'tonic pedal', color: AMBER },
-    ],
+    lower: [{ key: 'c/3', duration: 'w', annotation: 'tonic pedal', color: AMBER }],
     issues: [
       { kind: 'motion', label: 'the 7th falls: F → E♮', fromUpper: 4, toUpper: 5, color: GREEN },
     ],

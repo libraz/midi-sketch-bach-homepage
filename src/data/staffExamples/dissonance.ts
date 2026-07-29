@@ -1,5 +1,5 @@
 import type { StaffExampleDef } from './types'
-import { RED, AMBER, GREEN } from './types'
+import { AMBER, GREEN, RED } from './types'
 
 /**
  * Chapter 3 — Dissonance treatment.
@@ -23,17 +23,9 @@ export const dissonanceExamples: Record<string, StaffExampleDef> = {
     width: 440,
     upperClef: 'treble',
     lowerClef: 'bass',
-    upper: [
-      { key: 'f/4', annotation: 'NCT', color: RED, issue: true },
-      { key: 'e/4' },
-    ],
-    lower: [
-      { key: 'c/3' },
-      { key: 'c/3' },
-    ],
-    issues: [
-      { kind: 'note', label: 'not in C-E-G', upperIndex: 0 },
-    ],
+    upper: [{ key: 'f/4', annotation: 'NCT', color: RED, issue: true }, { key: 'e/4' }],
+    lower: [{ key: 'c/3' }, { key: 'c/3' }],
+    issues: [{ kind: 'note', label: 'not in C-E-G', upperIndex: 0 }],
   },
 
   verticalDissonance: {
@@ -52,17 +44,9 @@ export const dissonanceExamples: Record<string, StaffExampleDef> = {
     width: 440,
     upperClef: 'treble',
     lowerClef: 'bass',
-    upper: [
-      { key: 'd/4', annotation: '2nd', color: RED, issue: true },
-      { key: 'e/4' },
-    ],
-    lower: [
-      { key: 'c/3', color: RED, issue: true },
-      { key: 'c/3' },
-    ],
-    issues: [
-      { kind: 'vertical', label: 'unsupported dissonance', upperIndex: 0, lowerIndex: 0 },
-    ],
+    upper: [{ key: 'd/4', annotation: '2nd', color: RED, issue: true }, { key: 'e/4' }],
+    lower: [{ key: 'c/3', color: RED, issue: true }, { key: 'c/3' }],
+    issues: [{ kind: 'vertical', label: 'unsupported dissonance', upperIndex: 0, lowerIndex: 0 }],
   },
 
   passingTone: {
@@ -87,11 +71,7 @@ export const dissonanceExamples: Record<string, StaffExampleDef> = {
       { key: 'd/4', annotation: 'PT', color: AMBER, issue: true },
       { key: 'c/4', annotation: '8' },
     ],
-    lower: [
-      { key: 'c/3' },
-      { key: 'c/3', color: AMBER, issue: true },
-      { key: 'c/3' },
-    ],
+    lower: [{ key: 'c/3' }, { key: 'c/3', color: AMBER, issue: true }, { key: 'c/3' }],
     issues: [
       { kind: 'vertical', label: 'weak dissonance', upperIndex: 1, lowerIndex: 1 },
       { kind: 'motion', label: 'stepwise in/out', fromUpper: 0, toUpper: 2 },
@@ -120,11 +100,7 @@ export const dissonanceExamples: Record<string, StaffExampleDef> = {
       { key: 'b/3', annotation: 'N', color: AMBER, issue: true },
       { key: 'c/4', annotation: '8' },
     ],
-    lower: [
-      { key: 'c/3' },
-      { key: 'c/3', color: AMBER, issue: true },
-      { key: 'c/3' },
-    ],
+    lower: [{ key: 'c/3' }, { key: 'c/3', color: AMBER, issue: true }, { key: 'c/3' }],
     issues: [
       { kind: 'vertical', label: 'weak dissonance', upperIndex: 1, lowerIndex: 1 },
       { kind: 'motion', label: 'step away, step back', fromUpper: 0, toUpper: 2 },
@@ -152,11 +128,7 @@ export const dissonanceExamples: Record<string, StaffExampleDef> = {
       { key: 'd/4', annotation: 'NCT', color: RED, issue: true },
       { key: 'g/4', annotation: 'leap', color: RED, issue: true },
     ],
-    lower: [
-      { key: 'c/3' },
-      { key: 'c/3', color: RED },
-      { key: 'c/3' },
-    ],
+    lower: [{ key: 'c/3' }, { key: 'c/3', color: RED }, { key: 'c/3' }],
     issues: [
       { kind: 'vertical', label: 'dissonance', upperIndex: 1, lowerIndex: 1 },
       { kind: 'motion', label: 'leaves by leap', fromUpper: 1, toUpper: 2 },
@@ -184,11 +156,7 @@ export const dissonanceExamples: Record<string, StaffExampleDef> = {
       { key: 'f/4', annotation: '4', color: AMBER, issue: true },
       { key: 'e/4', annotation: '3', color: GREEN },
     ],
-    lower: [
-      { key: 'd/3' },
-      { key: 'c/3', color: AMBER, issue: true },
-      { key: 'c/3' },
-    ],
+    lower: [{ key: 'd/3' }, { key: 'c/3', color: AMBER, issue: true }, { key: 'c/3' }],
     issues: [
       { kind: 'bracket', label: 'prep - suspension - resolution', fromUpper: 0, toUpper: 2 },
       { kind: 'vertical', label: '4 -> 3', upperIndex: 1, lowerIndex: 1 },
@@ -197,7 +165,11 @@ export const dissonanceExamples: Record<string, StaffExampleDef> = {
   },
 
   suspension76: {
-    ruleIds: ['suspension_preparation', 'suspension_resolution_step_down', 'suspension_seventh_sixth'],
+    ruleIds: [
+      'suspension_preparation',
+      'suspension_resolution_step_down',
+      'suspension_seventh_sixth',
+    ],
     badge: { en: 'Allowed pattern', ja: '許容される型' },
     title: { en: '7-6 suspension', ja: '7-6の掛留' },
     diagnosis: {
@@ -217,11 +189,7 @@ export const dissonanceExamples: Record<string, StaffExampleDef> = {
       { key: 'b/4', annotation: '7', color: AMBER, issue: true },
       { key: 'a/4', annotation: '6', color: GREEN },
     ],
-    lower: [
-      { key: 'g/3' },
-      { key: 'c/3', color: AMBER, issue: true },
-      { key: 'c/3' },
-    ],
+    lower: [{ key: 'g/3' }, { key: 'c/3', color: AMBER, issue: true }, { key: 'c/3' }],
     issues: [
       { kind: 'bracket', label: 'prep - suspension - resolution', fromUpper: 0, toUpper: 2 },
       { kind: 'vertical', label: '7 -> 6', upperIndex: 1, lowerIndex: 1 },
@@ -250,11 +218,7 @@ export const dissonanceExamples: Record<string, StaffExampleDef> = {
       { key: 'd/5', annotation: '9', color: AMBER, issue: true },
       { key: 'c/5', annotation: '8', color: GREEN },
     ],
-    lower: [
-      { key: 'g/3' },
-      { key: 'c/3', color: AMBER, issue: true },
-      { key: 'c/3' },
-    ],
+    lower: [{ key: 'g/3' }, { key: 'c/3', color: AMBER, issue: true }, { key: 'c/3' }],
     issues: [
       { kind: 'bracket', label: 'prep - suspension - resolution', fromUpper: 0, toUpper: 2 },
       { kind: 'vertical', label: '9 -> 8', upperIndex: 1, lowerIndex: 1 },
@@ -295,7 +259,13 @@ export const dissonanceExamples: Record<string, StaffExampleDef> = {
       { key: 'b/2', duration: 'h' },
     ],
     issues: [
-      { kind: 'bracket', label: '7-6 rides the falling bass', fromUpper: 1, toUpper: 6, color: AMBER },
+      {
+        kind: 'bracket',
+        label: '7-6 rides the falling bass',
+        fromUpper: 1,
+        toUpper: 6,
+        color: AMBER,
+      },
       { kind: 'motion', label: 'bass steps down', fromLower: 0, toLower: 3, color: GREEN },
     ],
   },

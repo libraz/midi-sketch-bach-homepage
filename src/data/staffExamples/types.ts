@@ -52,13 +52,27 @@ export interface IssueMark {
 }
 
 /** Fields a variant may replace on its base example. */
-export type StaffVariantOverride = Partial<Pick<StaffExampleDef,
-  'upper' | 'middle' | 'lower' |
-  'upperLabel' | 'middleLabel' | 'lowerLabel' |
-  'caption' | 'diagnosis' | 'issues' | 'width' |
-  'time' | 'keySignature' | 'bars' |
-  'upperClef' | 'middleClef' | 'lowerClef'
->>
+export type StaffVariantOverride = Partial<
+  Pick<
+    StaffExampleDef,
+    | 'upper'
+    | 'middle'
+    | 'lower'
+    | 'upperLabel'
+    | 'middleLabel'
+    | 'lowerLabel'
+    | 'caption'
+    | 'diagnosis'
+    | 'issues'
+    | 'width'
+    | 'time'
+    | 'keySignature'
+    | 'bars'
+    | 'upperClef'
+    | 'middleClef'
+    | 'lowerClef'
+  >
+>
 
 /**
  * One switchable alternative for an example — e.g. which variation sounds
@@ -142,7 +156,7 @@ export type StaffVerdict = 'bad' | 'good' | 'caution' | 'neutral'
 
 /** The example with one variant's overrides applied (the base def when it has no variants). */
 export function resolveStaffVariant(def: StaffExampleDef, variantId?: string): StaffExampleDef {
-  const variant = def.variants?.find((v) => v.id === variantId) ?? def.variants?.[0]
+  const variant = def.variants?.find(v => v.id === variantId) ?? def.variants?.[0]
   return variant ? { ...def, ...variant.override } : def
 }
 
@@ -162,9 +176,9 @@ export const GREEN = '#047857'
 export function exampleVerdict(def: StaffExampleDef): StaffVerdict {
   if (def.verdict) return def.verdict
   const notes = [...def.upper, ...(def.middle ?? []), ...def.lower]
-  if (notes.some((note) => note.color === RED)) return 'bad'
-  if (notes.some((note) => note.color === GREEN)) return 'good'
-  if (notes.some((note) => note.color === AMBER)) return 'caution'
+  if (notes.some(note => note.color === RED)) return 'bad'
+  if (notes.some(note => note.color === GREEN)) return 'good'
+  if (notes.some(note => note.color === AMBER)) return 'caution'
   return 'neutral'
 }
 
@@ -187,12 +201,18 @@ export function durationBeats(duration?: string): number {
   const dotted = value.endsWith('d')
   const base = (() => {
     switch (dotted ? value.slice(0, -1) : value) {
-      case 'w': return 4
-      case 'h': return 2
-      case '8': return 0.5
-      case '16': return 0.25
-      case '32': return 0.125
-      default: return 1
+      case 'w':
+        return 4
+      case 'h':
+        return 2
+      case '8':
+        return 0.5
+      case '16':
+        return 0.25
+      case '32':
+        return 0.125
+      default:
+        return 1
     }
   })()
   return dotted ? base * 1.5 : base

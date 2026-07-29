@@ -6,18 +6,18 @@
  */
 import type { StaffExampleDef, StaffNote } from '@/data/staffExamples'
 import { beatsPerBar, durationBeats } from '@/data/staffExamples'
+import { escapeHtml } from './inlineMarkdown'
 import {
   type PartDef,
   type Positions,
-  STATIC_LEFT,
   pitchY,
+  STATIC_LEFT,
   staffHeight,
   startBeats,
   staticTops,
   systemCount,
   systemStride,
 } from './layout'
-import { escapeHtml } from './inlineMarkdown'
 import { overlaySvg } from './overlaySvg'
 
 function staticNoteSvg(note: StaffNote, x: number, y: number, ringColor: string): string {
@@ -35,14 +35,19 @@ function staticNoteSvg(note: StaffNote, x: number, y: number, ringColor: string)
   const accidental = note.accidental
     ? `<text x="${x - 16}" y="${y + 5}" text-anchor="middle" class="counterpoint-staff__svg-label" fill="${color}">${note.accidental === '#' ? '♯' : note.accidental === 'b' ? '♭' : '♮'}</text>`
     : ''
-  const head = beats >= 2
-    ? `<ellipse cx="${x}" cy="${y}" rx="8.8" ry="6.2" transform="rotate(-18 ${x} ${y})" fill="none" stroke="${color}" stroke-width="2.4" />`
-    : `<ellipse cx="${x}" cy="${y}" rx="8.8" ry="6.2" transform="rotate(-18 ${x} ${y})" fill="${color}" />`
+  const head =
+    beats >= 2
+      ? `<ellipse cx="${x}" cy="${y}" rx="8.8" ry="6.2" transform="rotate(-18 ${x} ${y})" fill="none" stroke="${color}" stroke-width="2.4" />`
+      : `<ellipse cx="${x}" cy="${y}" rx="8.8" ry="6.2" transform="rotate(-18 ${x} ${y})" fill="${color}" />`
   return `${label}${issueRing}${accidental}${head}`
 }
 
 /** Build the static-fallback SVG for an example resolved to its parts. */
-export function buildStaticScoreSvg(d: StaffExampleDef, parts: PartDef[], markColor: string): string {
+export function buildStaticScoreSvg(
+  d: StaffExampleDef,
+  parts: PartDef[],
+  markColor: string,
+): string {
   const tops = staticTops(parts.length)
   const bars = d.bars ?? 1
   const perBar = beatsPerBar(d.time)
@@ -55,67 +60,101 @@ export function buildStaticScoreSvg(d: StaffExampleDef, parts: PartDef[], markCo
   const startX = 170
   const beatWidth = (right - startX - 20) / beatsPerSystem
 
-  const partStarts = parts.map((p) => startBeats(p.notes))
+  const partStarts = parts.map(p => startBeats(p.notes))
   const systemOf = (beat: number) => Math.min(Math.floor(beat / beatsPerSystem + 1e-6), systems - 1)
   const beatX = (beat: number, beats: number) =>
     startX + (beat - systemOf(beat) * beatsPerSystem + Math.min(beats, 1) / 2) * beatWidth
   const positions: Positions = {}
   parts.forEach((p, pi) => {
     positions[p.part] = {
-      x: (i) => beatX(partStarts[pi][i] ?? 0, durationBeats(p.notes[i]?.duration)),
-      y: (i) => pitchY(p.notes[i]?.key ?? 'c/4', p.clef, tops[pi] + systemOf(partStarts[pi][i] ?? 0) * stride),
+      x: i => beatX(partStarts[pi][i] ?? 0, durationBeats(p.notes[i]?.duration)),
+      y: i =>
+        pitchY(
+          p.notes[i]?.key ?? 'c/4',
+          p.clef,
+          tops[pi] + systemOf(partStarts[pi][i] ?? 0) * stride,
+        ),
     }
   })
 
-  const systemTops = Array.from({ length: systems }, (_, sys) => tops.map((top) => top + sys * stride))
+  const systemTops = Array.from({ length: systems }, (_, sys) =>
+    tops.map(top => top + sys * stride),
+  )
 
-  const staffLines = (top: number) => [0, 1, 2, 3, 4]
-    .map((line) => `<line x1="${STATIC_LEFT}" y1="${top + line * 10}" x2="${right}" y2="${top + line * 10}" />`)
-    .join('')
+  const staffLines = (top: number) =>
+    [0, 1, 2, 3, 4]
+      .map(
+        line =>
+          `<line x1="${STATIC_LEFT}" y1="${top + line * 10}" x2="${right}" y2="${top + line * 10}" />`,
+      )
+      .join('')
 
-  const barlines = systemTops.map((rowTops, sys) => {
-    const barlineX: number[] = [STATIC_LEFT, right]
-    const barsInSystem = Math.min(d.systemBars ?? bars, bars - sys * (d.systemBars ?? bars))
-    for (let bar = 1; bar < barsInSystem; bar++) {
-      barlineX.push(startX + bar * perBar * beatWidth - beatWidth * 0.25)
-    }
-    return barlineX.map((x) => rowTops
-      .map((top) => `<line x1="${x}" y1="${top}" x2="${x}" y2="${top + 40}" />`)
-      .join('')).join('')
-  }).join('')
-
-  const noteGroup = (p: PartDef, pi: number) => p.notes
-    .map((note, index) => staticNoteSvg(
-      note,
-      positions[p.part]!.x(index),
-      pitchY(note.key, p.clef, tops[pi] + systemOf(partStarts[pi][index]) * stride),
-      markColor,
-    ))
-    .join('')
-
-  // Tie arcs between a tied note and its successor (skipped across a system break).
-  const tieGroup = (p: PartDef, pi: number) => p.notes
-    .map((note, index) => {
-      if (!note.tie || !p.notes[index + 1]) return ''
-      if (systemOf(partStarts[pi][index]) !== systemOf(partStarts[pi][index + 1])) return ''
-      const acc = positions[p.part]!
-      const x1 = acc.x(index)
-      const x2 = acc.x(index + 1)
-      const y = acc.y(index)
-      return `<path d="M${x1 + 10} ${y + 9} Q${(x1 + x2) / 2} ${y + 17} ${x2 - 10} ${y + 9}" fill="none" stroke="${note.color ?? '#111827'}" stroke-width="1.6" />`
+  const barlines = systemTops
+    .map((rowTops, sys) => {
+      const barlineX: number[] = [STATIC_LEFT, right]
+      const barsInSystem = Math.min(d.systemBars ?? bars, bars - sys * (d.systemBars ?? bars))
+      for (let bar = 1; bar < barsInSystem; bar++) {
+        barlineX.push(startX + bar * perBar * beatWidth - beatWidth * 0.25)
+      }
+      return barlineX
+        .map(x =>
+          rowTops.map(top => `<line x1="${x}" y1="${top}" x2="${x}" y2="${top + 40}" />`).join(''),
+        )
+        .join('')
     })
     .join('')
 
+  // `positions` was keyed above from the same `parts` array both groups iterate,
+  // so the lookup always resolves; the guard keeps the partial type honest.
+  const noteGroup = (p: PartDef, pi: number) => {
+    const acc = positions[p.part]
+    if (!acc) return ''
+    return p.notes
+      .map((note, index) =>
+        staticNoteSvg(
+          note,
+          acc.x(index),
+          pitchY(note.key, p.clef, tops[pi] + systemOf(partStarts[pi][index]) * stride),
+          markColor,
+        ),
+      )
+      .join('')
+  }
+
+  // Tie arcs between a tied note and its successor (skipped across a system break).
+  const tieGroup = (p: PartDef, pi: number) => {
+    const acc = positions[p.part]
+    if (!acc) return ''
+    return p.notes
+      .map((note, index) => {
+        if (!note.tie || !p.notes[index + 1]) return ''
+        if (systemOf(partStarts[pi][index]) !== systemOf(partStarts[pi][index + 1])) return ''
+        const x1 = acc.x(index)
+        const x2 = acc.x(index + 1)
+        const y = acc.y(index)
+        return `<path d="M${x1 + 10} ${y + 9} Q${(x1 + x2) / 2} ${y + 17} ${x2 - 10} ${y + 9}" fill="none" stroke="${note.color ?? '#111827'}" stroke-width="1.6" />`
+      })
+      .join('')
+  }
+
   const partLabels = parts
-    .map((p, pi) => `<text x="20" y="${tops[pi] + 25}" class="counterpoint-staff__svg-clef">${escapeHtml(p.label)}</text>`)
+    .map(
+      (p, pi) =>
+        `<text x="20" y="${tops[pi] + 25}" class="counterpoint-staff__svg-clef">${escapeHtml(p.label)}</text>`,
+    )
     .join('')
   const timeLabels = tops
-    .map((top) => `<text x="104" y="${top + 25}" class="counterpoint-staff__svg-time">${escapeHtml(d.time)}</text>`)
+    .map(
+      top =>
+        `<text x="104" y="${top + 25}" class="counterpoint-staff__svg-time">${escapeHtml(d.time)}</text>`,
+    )
     .join('')
-  const braces = systemTops.map((rowTops) => {
-    const bottomTop = rowTops[rowTops.length - 1]
-    return `<path d="M61 ${rowTops[0] - 2} C43 ${rowTops[0] + 22}, 43 ${bottomTop + 18}, 61 ${bottomTop + 42}" fill="none" stroke-width="2.2" />`
-  }).join('')
+  const braces = systemTops
+    .map(rowTops => {
+      const bottomTop = rowTops[rowTops.length - 1]
+      return `<path d="M61 ${rowTops[0] - 2} C43 ${rowTops[0] + 22}, 43 ${bottomTop + 18}, 61 ${bottomTop + 42}" fill="none" stroke-width="2.2" />`
+    })
+    .join('')
 
   return `
     <svg
@@ -127,7 +166,7 @@ export function buildStaticScoreSvg(d: StaffExampleDef, parts: PartDef[], markCo
       aria-hidden="true"
     >
       <g class="counterpoint-staff__svg-staff" stroke="#111827" stroke-width="1">
-        ${systemTops.map((rowTops) => rowTops.map(staffLines).join('')).join('')}
+        ${systemTops.map(rowTops => rowTops.map(staffLines).join('')).join('')}
         ${barlines}
         ${braces}
       </g>

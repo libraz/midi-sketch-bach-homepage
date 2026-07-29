@@ -24,7 +24,7 @@ export const motionBachExamples: Record<string, StaffExampleDef> = {
       ja: '後続声部は先行声部を上下逆さまに再現します。上行は下行で、1小節遅れて答えられます。',
     },
     caption: {
-      en: 'Variation 12 of the Goldberg Variations (BWV 988) is a canon by inversion: the lower voice repeats the upper voice\'s line one bar later with every interval flipped — where the leader steps up, the follower steps down, mirror-exact for the whole variation. The result is contrary motion elevated from a recommendation to a structural law: in bar 2 the leader climbs to its peak while the follower descends beneath it, and the two lines could not be more audibly independent. (The bass of the ground, which runs under both voices, is omitted here.)',
+      en: "Variation 12 of the Goldberg Variations (BWV 988) is a canon by inversion: the lower voice repeats the upper voice's line one bar later with every interval flipped — where the leader steps up, the follower steps down, mirror-exact for the whole variation. The result is contrary motion elevated from a recommendation to a structural law: in bar 2 the leader climbs to its peak while the follower descends beneath it, and the two lines could not be more audibly independent. (The bass of the ground, which runs under both voices, is omitted here.)",
       ja: 'ゴルトベルク変奏曲（BWV 988）の第12変奏は反行カノンです。下声部が上声部の旋律を1小節遅れで、すべての音程を裏返して再現します——先行声部が一歩上がれば、後続声部は一歩下がる。この鏡映しが変奏全体で正確に貫かれます。反行は「推奨」から「構造の掟」に格上げされ、第2小節では先行声部が頂点へ駆け上がるその下を後続声部が降りていきます。これ以上ないほど独立して聞こえる二本の線です。（両声部の下を流れる低音主題のバスは、ここでは省略しています。）',
     },
     time: '3/4',
@@ -73,8 +73,22 @@ export const motionBachExamples: Record<string, StaffExampleDef> = {
     ],
     issues: [
       { kind: 'bracket', label: 'leader', fromUpper: 1, toUpper: 9, color: GREEN },
-      { kind: 'bracket', label: 'the same line, inverted', fromLower: 2, toLower: 10, color: GREEN },
-      { kind: 'motion', label: 'contrary', fromUpper: 16, toUpper: 18, fromLower: 5, toLower: 7, color: GREEN },
+      {
+        kind: 'bracket',
+        label: 'the same line, inverted',
+        fromLower: 2,
+        toLower: 10,
+        color: GREEN,
+      },
+      {
+        kind: 'motion',
+        label: 'contrary',
+        fromUpper: 16,
+        toUpper: 18,
+        fromLower: 5,
+        toLower: 7,
+        color: GREEN,
+      },
     ],
     variantsHint: { en: 'the same mirror at two intervals —', ja: '同じ鏡を二つの音程で——' },
     variants: [
@@ -125,8 +139,22 @@ export const motionBachExamples: Record<string, StaffExampleDef> = {
           ],
           issues: [
             { kind: 'bracket', label: 'leader', fromLower: 1, toLower: 7, color: GREEN },
-            { kind: 'bracket', label: 'inverted, a fifth higher', fromUpper: 2, toUpper: 8, color: GREEN },
-            { kind: 'motion', label: 'contrary', fromUpper: 6, toUpper: 8, fromLower: 10, toLower: 12, color: GREEN },
+            {
+              kind: 'bracket',
+              label: 'inverted, a fifth higher',
+              fromUpper: 2,
+              toUpper: 8,
+              color: GREEN,
+            },
+            {
+              kind: 'motion',
+              label: 'contrary',
+              fromUpper: 6,
+              toUpper: 8,
+              fromLower: 10,
+              toLower: 12,
+              color: GREEN,
+            },
           ],
         },
       },
@@ -145,7 +173,7 @@ export const motionBachExamples: Record<string, StaffExampleDef> = {
       ja: '二つのカノン声部は同じ音域に住んでいます。フォロワーが入った瞬間、リーダーはその下へ潜ります。',
     },
     caption: {
-      en: 'Variation 3 of the Goldbergs is a canon at the unison: the follower repeats the leader\'s line one bar later at the very same pitch. Same pitch means same register — and when the follower enters in bar 2 on the B the leader sang a bar ago, the leader has already stepped down to G, a third below it. The voices are crossed from the follower\'s first note; half a bar later the leader vaults an octave to G5 and order is restored. Bach accepts the tangle as the price of strict imitation — on a page, slurs and stems keep the lines legible. The engine\'s generated voices carry no page, so `voice_crossing` refuses every crossing outright, with no exemptions. The ground bass below the two canonic voices is omitted here.',
+      en: "Variation 3 of the Goldbergs is a canon at the unison: the follower repeats the leader's line one bar later at the very same pitch. Same pitch means same register — and when the follower enters in bar 2 on the B the leader sang a bar ago, the leader has already stepped down to G, a third below it. The voices are crossed from the follower's first note; half a bar later the leader vaults an octave to G5 and order is restored. Bach accepts the tangle as the price of strict imitation — on a page, slurs and stems keep the lines legible. The engine's generated voices carry no page, so `voice_crossing` refuses every crossing outright, with no exemptions. The ground bass below the two canonic voices is omitted here.",
       ja: 'ゴルトベルク変奏曲の第3変奏は同度のカノンです。フォロワーはリーダーの線を、1小節遅れで*まったく同じ高さ*のままなぞります。同じ高さということは同じ音域ということ——第2小節、リーダーが1小節前に歌った B の音でフォロワーが入ってくるとき、リーダー自身はすでに3度下の G へ降りています。フォロワーの最初の音から声部は交差しているのです。半小節後、リーダーはオクターヴ跳躍で G5 へ駆け上がり、上下は元に戻ります。バッハは厳格な模倣の代価としてこのもつれを受け入れます——紙の上ではスラーと符尾が線を読み分けさせてくれるからです。エンジンが生成する声部には紙がありません。だから `voice_crossing` は例外なく、すべての交差を拒否します。二つのカノン声部の下を歩く低音は省略しています。',
     },
     time: '12/8',
@@ -202,7 +230,13 @@ export const motionBachExamples: Record<string, StaffExampleDef> = {
     ],
     issues: [
       { kind: 'bracket', label: 'leader, bar 1', fromUpper: 0, toUpper: 6, color: AMBER },
-      { kind: 'bracket', label: 'the same notes, a bar later', fromLower: 2, toLower: 8, color: GREEN },
+      {
+        kind: 'bracket',
+        label: 'the same notes, a bar later',
+        fromLower: 2,
+        toLower: 8,
+        color: GREEN,
+      },
       { kind: 'vertical', label: 'crossed', upperIndex: 14, lowerIndex: 2, color: AMBER },
     ],
   },
@@ -210,7 +244,10 @@ export const motionBachExamples: Record<string, StaffExampleDef> = {
   bachInvertible: {
     ruleIds: ['invertible_at_octave', 'fourth_only_on_weak_beat'],
     badge: { en: 'From Bach', ja: 'バッハの実例' },
-    title: { en: 'Bach: BWV 847 — the same pair, top and bottom', ja: 'バッハ: BWV 847 — 同じペアが、上にも下にも' },
+    title: {
+      en: 'Bach: BWV 847 — the same pair, top and bottom',
+      ja: 'バッハ: BWV 847 — 同じペアが、上にも下にも',
+    },
     diagnosis: {
       en: 'At bar 7 the countersubject (blue) sits above the subject; at bar 20 Bach turns the pair over and the same countersubject runs below — every interval still holds.',
       ja: '第7小節では対主題（青）が主唱の上にあり、第20小節ではバッハが同じペアを裏返して、対主題が下を走る。それでも全ての音程が成立している。',
@@ -273,8 +310,20 @@ export const motionBachExamples: Record<string, StaffExampleDef> = {
       { key: 'f/3', duration: '16' },
     ],
     issues: [
-      { kind: 'bracket', label: 'countersubject, on top', fromUpper: 0, toUpper: 10, color: CS_BLUE },
-      { kind: 'bracket', label: 'subject, in the bass', fromLower: 1, toLower: 9, color: SUBJ_GRAY },
+      {
+        kind: 'bracket',
+        label: 'countersubject, on top',
+        fromUpper: 0,
+        toUpper: 10,
+        color: CS_BLUE,
+      },
+      {
+        kind: 'bracket',
+        label: 'subject, in the bass',
+        fromLower: 1,
+        toLower: 9,
+        color: SUBJ_GRAY,
+      },
     ],
     variants: [
       { id: 'bar7', label: { en: 'bar 7', ja: '第7小節' }, override: {} },
@@ -328,8 +377,20 @@ export const motionBachExamples: Record<string, StaffExampleDef> = {
             { key: 'b/3', duration: '8', color: CS_BLUE },
           ],
           issues: [
-            { kind: 'bracket', label: 'subject — now on top', fromUpper: 1, toUpper: 9, color: SUBJ_GRAY },
-            { kind: 'bracket', label: 'countersubject, beneath', fromLower: 0, toLower: 10, color: CS_BLUE },
+            {
+              kind: 'bracket',
+              label: 'subject — now on top',
+              fromUpper: 1,
+              toUpper: 9,
+              color: SUBJ_GRAY,
+            },
+            {
+              kind: 'bracket',
+              label: 'countersubject, beneath',
+              fromLower: 0,
+              toLower: 10,
+              color: CS_BLUE,
+            },
           ],
         },
       },

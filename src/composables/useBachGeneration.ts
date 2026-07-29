@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import type { BachConfig, EventData, BachGenerator } from '@/wasm/index'
+import type { BachConfig, BachGenerator, EventData } from '@/wasm/index'
 
 /**
  * Singleton WASM instance management for Bach generator.
@@ -9,6 +9,11 @@ let _module: typeof import('../wasm/index.js') | null = null
 let _instance: BachGenerator | null = null
 let _isInitialized = false
 let _initPromise: Promise<void> | null = null
+
+/** Message of a thrown value, whether or not it is an Error. */
+function errorMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e)
+}
 
 export function useBachGeneration() {
   const isInitializing = ref(false)
@@ -36,8 +41,8 @@ export function useBachGeneration() {
         const wasmPath = new URL('../wasm/bach.wasm', import.meta.url).href
         await mod.init({ wasmPath })
         _isInitialized = true
-      } catch (e: any) {
-        error.value = e.message
+      } catch (e) {
+        error.value = errorMessage(e)
         throw e
       } finally {
         isInitializing.value = false
@@ -73,8 +78,8 @@ export function useBachGeneration() {
       _instance.generate(config)
       const events = _instance.getEvents()
       return events
-    } catch (e: any) {
-      error.value = e.message
+    } catch (e) {
+      error.value = errorMessage(e)
       throw e
     } finally {
       isGenerating.value = false
@@ -111,9 +116,11 @@ export function useBachGeneration() {
     let finalFilename = filename
     if (!finalFilename) {
       const now = new Date()
-      const ts = now.getFullYear().toString() +
+      const ts =
+        now.getFullYear().toString() +
         (now.getMonth() + 1).toString().padStart(2, '0') +
-        now.getDate().toString().padStart(2, '0') + '_' +
+        now.getDate().toString().padStart(2, '0') +
+        '_' +
         now.getHours().toString().padStart(2, '0') +
         now.getMinutes().toString().padStart(2, '0') +
         now.getSeconds().toString().padStart(2, '0')

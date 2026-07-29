@@ -1,5 +1,5 @@
 import type { StaffExampleDef } from './types'
-import { RED, AMBER, GREEN } from './types'
+import { AMBER, GREEN, RED } from './types'
 
 /**
  * Chapter 5 — Tonal grammar.
@@ -32,7 +32,14 @@ export const tonalityExamples: Record<string, StaffExampleDef> = {
       { key: 'c/3', annotation: 'I', color: GREEN, issue: true },
     ],
     issues: [
-      { kind: 'motion', label: 'LT -> I / V -> I', fromUpper: 0, toUpper: 1, fromLower: 0, toLower: 1 },
+      {
+        kind: 'motion',
+        label: 'LT -> I / V -> I',
+        fromUpper: 0,
+        toUpper: 1,
+        fromLower: 0,
+        toLower: 1,
+      },
       { kind: 'vertical', label: 'cadence', upperIndex: 1, lowerIndex: 1, color: GREEN },
     ],
   },
@@ -88,10 +95,7 @@ export const tonalityExamples: Record<string, StaffExampleDef> = {
       { key: 'c/5', annotation: 'I' },
       { key: 'b/4', annotation: 'V', color: AMBER },
     ],
-    lower: [
-      { key: 'c/3' },
-      { key: 'g/2', annotation: 'V', color: AMBER, issue: true },
-    ],
+    lower: [{ key: 'c/3' }, { key: 'g/2', annotation: 'V', color: AMBER, issue: true }],
     issues: [
       { kind: 'motion', label: 'comes to rest on V', fromLower: 0, toLower: 1, color: AMBER },
       { kind: 'vertical', label: 'open ending', upperIndex: 1, lowerIndex: 1, color: AMBER },
@@ -153,7 +157,15 @@ export const tonalityExamples: Record<string, StaffExampleDef> = {
       { key: 'e/3', annotation: 'half step', color: AMBER, issue: true },
     ],
     issues: [
-      { kind: 'motion', label: 'contrary steps onto V', fromUpper: 0, toUpper: 1, fromLower: 0, toLower: 1, color: AMBER },
+      {
+        kind: 'motion',
+        label: 'contrary steps onto V',
+        fromUpper: 0,
+        toUpper: 1,
+        fromLower: 0,
+        toLower: 1,
+        color: AMBER,
+      },
     ],
   },
 
@@ -203,17 +215,9 @@ export const tonalityExamples: Record<string, StaffExampleDef> = {
     width: 440,
     upperClef: 'treble',
     lowerClef: 'bass',
-    upper: [
-      { key: 'b/4', annotation: 'LT', color: RED, issue: true },
-      { key: 'c/5' },
-    ],
-    lower: [
-      { key: 'b/2', annotation: 'LT', color: RED, issue: true },
-      { key: 'c/3' },
-    ],
-    issues: [
-      { kind: 'vertical', label: 'doubled leading tone', upperIndex: 0, lowerIndex: 0 },
-    ],
+    upper: [{ key: 'b/4', annotation: 'LT', color: RED, issue: true }, { key: 'c/5' }],
+    lower: [{ key: 'b/2', annotation: 'LT', color: RED, issue: true }, { key: 'c/3' }],
+    issues: [{ kind: 'vertical', label: 'doubled leading tone', upperIndex: 0, lowerIndex: 0 }],
   },
 
   doublingSeventh: {
@@ -232,17 +236,9 @@ export const tonalityExamples: Record<string, StaffExampleDef> = {
     width: 440,
     upperClef: 'treble',
     lowerClef: 'bass',
-    upper: [
-      { key: 'f/4', annotation: '7th', color: RED, issue: true },
-      { key: 'e/4' },
-    ],
-    lower: [
-      { key: 'f/3', annotation: '7th', color: RED, issue: true },
-      { key: 'e/3' },
-    ],
-    issues: [
-      { kind: 'vertical', label: 'doubled seventh', upperIndex: 0, lowerIndex: 0 },
-    ],
+    upper: [{ key: 'f/4', annotation: '7th', color: RED, issue: true }, { key: 'e/4' }],
+    lower: [{ key: 'f/3', annotation: '7th', color: RED, issue: true }, { key: 'e/3' }],
+    issues: [{ kind: 'vertical', label: 'doubled seventh', upperIndex: 0, lowerIndex: 0 }],
   },
 
   crossRelation: {
@@ -265,13 +261,8 @@ export const tonalityExamples: Record<string, StaffExampleDef> = {
       { key: 'f#/4', accidental: '#', annotation: 'F#', color: RED, issue: true },
       { key: 'g/4' },
     ],
-    lower: [
-      { key: 'f/3', annotation: 'F', color: RED, issue: true },
-      { key: 'e/3' },
-    ],
-    issues: [
-      { kind: 'vertical', label: 'chromatic conflict', upperIndex: 0, lowerIndex: 0 },
-    ],
+    lower: [{ key: 'f/3', annotation: 'F', color: RED, issue: true }, { key: 'e/3' }],
+    issues: [{ kind: 'vertical', label: 'chromatic conflict', upperIndex: 0, lowerIndex: 0 }],
   },
 
   secondaryDominant: {
@@ -307,7 +298,10 @@ export const tonalityExamples: Record<string, StaffExampleDef> = {
   pivotModulation: {
     ruleIds: ['modulation_pivot_chord_required'],
     badge: { en: 'Modulation', ja: '転調' },
-    title: { en: 'Pivot-chord modulation (C major to G major)', ja: 'ピボット転調（ハ長調からト長調へ）' },
+    title: {
+      en: 'Pivot-chord modulation (C major to G major)',
+      ja: 'ピボット転調（ハ長調からト長調へ）',
+    },
     diagnosis: {
       en: 'The A-minor sonority is vi in C and ii in G — diatonic in both keys.',
       ja: 'イ短調の響きはハ長調の vi であり、ト長調の ii でもあります。両方の調に属する和音です。',

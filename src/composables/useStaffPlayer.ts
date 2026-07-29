@@ -1,5 +1,5 @@
-import { ref } from 'vue'
 import { Soundfont } from 'smplr'
+import { ref } from 'vue'
 import type { StaffExampleDef, StaffNote } from '@/data/staffExamples/types'
 import { durationBeats } from '@/data/staffExamples/types'
 import { staffKeyToMidi } from '@/utils/midiUtils'
@@ -70,7 +70,8 @@ async function loadInstrument(): Promise<Soundfont> {
       if (!audioContext || audioContext.state === 'closed') {
         audioContext = createAudioContext()
       }
-      const sf = await new Soundfont(audioContext, { instrument: 'harpsichord' }).load
+      const sf = Soundfont(audioContext, { instrument: 'harpsichord' })
+      await sf.ready
       instrument = sf
       return sf
     })()
@@ -204,12 +205,14 @@ export function useStaffPlayer() {
 
     const now = audioContext.currentTime + 0.05
     for (const note of all) {
-      noteStops.push(sf.start({
-        note: note.midi,
-        velocity: VELOCITY,
-        time: now + note.startBeat * SECONDS_PER_BEAT,
-        duration: note.beats * SECONDS_PER_BEAT * 0.95,
-      }))
+      noteStops.push(
+        sf.start({
+          note: note.midi,
+          velocity: VELOCITY,
+          time: now + note.startBeat * SECONDS_PER_BEAT,
+          duration: note.beats * SECONDS_PER_BEAT * 0.95,
+        }),
+      )
     }
 
     playingId.value = id
@@ -219,9 +222,12 @@ export function useStaffPlayer() {
       windows: [...upper.windows, ...(middle?.windows ?? []), ...lower.windows],
     }
     const totalBeats = all.reduce((max, n) => Math.max(max, n.startBeat + n.beats), 0)
-    stopTimer = setTimeout(() => {
-      if (playingId.value === id) stop()
-    }, totalBeats * SECONDS_PER_BEAT * 1000 + 400)
+    stopTimer = setTimeout(
+      () => {
+        if (playingId.value === id) stop()
+      },
+      totalBeats * SECONDS_PER_BEAT * 1000 + 400,
+    )
   }
 
   return { play, stop, isLoading, playingId, playbackState, audioNow }

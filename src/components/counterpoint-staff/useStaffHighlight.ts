@@ -6,7 +6,7 @@
  * playing and advances the progress hairline. The rendered marks and note
  * positions are read through getters so the loop always sees the latest render.
  */
-import { onUnmounted, watch, type Ref } from 'vue'
+import { onUnmounted, type Ref, watch } from 'vue'
 import type { PlaybackState, VoicePart } from '@/composables/useStaffPlayer'
 
 interface StaffHighlightOptions {
@@ -70,7 +70,7 @@ export function useStaffHighlight(opts: StaffHighlightOptions) {
     rafId = requestAnimationFrame(highlightTick)
   }
 
-  watch(opts.playbackState, (state) => {
+  watch(opts.playbackState, state => {
     if (state && state.id === opts.exampleId()) {
       if (!rafId) rafId = requestAnimationFrame(highlightTick)
     } else {

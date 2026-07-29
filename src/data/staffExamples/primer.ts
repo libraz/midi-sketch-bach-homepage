@@ -60,7 +60,7 @@ export const primerExamples: Record<string, StaffExampleDef> = {
       ja: '7つのステップのうち2か所だけが半音（H）、残り5つは全音（W）です。',
     },
     caption: {
-      en: 'A key name is a tonic plus a step pattern. Play the scale over the held tonic: degrees 3→4 and 7→1 are semitones, every other step is a whole tone — W W H W W W H. Start that same pattern on any of the 12 pitch classes and you get that pitch\'s major key; the accidentals needed to keep the pattern intact become the key signature. Note how the final semitone (the leading tone) pulls the line home to the tonic.',
+      en: "A key name is a tonic plus a step pattern. Play the scale over the held tonic: degrees 3→4 and 7→1 are semitones, every other step is a whole tone — W W H W W W H. Start that same pattern on any of the 12 pitch classes and you get that pitch's major key; the accidentals needed to keep the pattern intact become the key signature. Note how the final semitone (the leading tone) pulls the line home to the tonic.",
       ja: '調の名前は「主音＋ステップの並び」です。保持された主音の上でスケールを再生してみてください。第3音→第4音と第7音→主音だけが半音で、ほかはすべて全音 — W W H W W W H の並びです。この並びを12のピッチクラスのどれから始めても、その音を主音とする長調になります。並びを保つために必要なシャープやフラットが、そのまま調号になります。最後の半音（導音）が、線を主音へ引き戻す引力も聴き取れます。',
     },
     time: '4/4',
@@ -94,7 +94,10 @@ export const primerExamples: Record<string, StaffExampleDef> = {
   majorVsMinor: {
     ruleIds: [],
     badge: { en: 'Foundation', ja: '基礎' },
-    title: { en: 'C major vs. C minor — same home, different mode', ja: 'ハ長調とハ短調 — 同じ主音、違う旋法' },
+    title: {
+      en: 'C major vs. C minor — same home, different mode',
+      ja: 'ハ長調とハ短調 — 同じ主音、違う旋法',
+    },
     diagnosis: {
       en: 'The minor scale lowers degrees 3, 6, and 7 — three notes turn bright into dark.',
       ja: '短音階は第3・第6・第7音を半音下げます。3つの音が明るさを暗さに変えます。',
@@ -158,9 +161,7 @@ export const primerExamples: Record<string, StaffExampleDef> = {
       { key: 'g/4', color: GREEN },
       { key: 'c/5', color: AMBER },
     ],
-    lower: [
-      { key: 'c/3', duration: 'w' },
-    ],
+    lower: [{ key: 'c/3', duration: 'w' }],
     issues: [
       { kind: 'motion', label: 'steps', fromUpper: 0, toUpper: 2, color: GREEN },
       { kind: 'motion', label: 'leap (P4)', fromUpper: 2, toUpper: 3, color: AMBER },

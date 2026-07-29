@@ -1,5 +1,5 @@
 import type { StaffExampleDef } from './types'
-import { RED, GREEN } from './types'
+import { GREEN, RED } from './types'
 
 /**
  * Chapter 4 — Melodic writing.
@@ -27,13 +27,8 @@ export const melodyExamples: Record<string, StaffExampleDef> = {
       { key: 'c/4' },
       { key: 'f#/4', accidental: '#', annotation: 'TT', color: RED, issue: true },
     ],
-    lower: [
-      { key: 'c/3' },
-      { key: 'c/3' },
-    ],
-    issues: [
-      { kind: 'motion', label: 'tritone leap', fromUpper: 0, toUpper: 1 },
-    ],
+    lower: [{ key: 'c/3' }, { key: 'c/3' }],
+    issues: [{ kind: 'motion', label: 'tritone leap', fromUpper: 0, toUpper: 1 }],
   },
 
   augmentedSecond: {
@@ -56,13 +51,8 @@ export const melodyExamples: Record<string, StaffExampleDef> = {
       { key: 'f/4', annotation: '♮6' },
       { key: 'g#/4', accidental: '#', annotation: 'A2', color: RED, issue: true },
     ],
-    lower: [
-      { key: 'a/2' },
-      { key: 'a/2' },
-    ],
-    issues: [
-      { kind: 'motion', label: 'augmented 2nd', fromUpper: 0, toUpper: 1 },
-    ],
+    lower: [{ key: 'a/2' }, { key: 'a/2' }],
+    issues: [{ kind: 'motion', label: 'augmented 2nd', fromUpper: 0, toUpper: 1 }],
   },
 
   consecutiveLeaps: {
@@ -86,11 +76,7 @@ export const melodyExamples: Record<string, StaffExampleDef> = {
       { key: 'g/4', annotation: 'leap', color: RED, issue: true },
       { key: 'd/5', annotation: 'leap', color: RED, issue: true },
     ],
-    lower: [
-      { key: 'c/3' },
-      { key: 'c/3' },
-      { key: 'c/3' },
-    ],
+    lower: [{ key: 'c/3' }, { key: 'c/3' }, { key: 'c/3' }],
     issues: [
       { kind: 'motion', label: 'two large leaps', fromUpper: 0, toUpper: 1 },
       { kind: 'motion', label: 'no recovery', fromUpper: 1, toUpper: 2 },
@@ -119,9 +105,7 @@ export const melodyExamples: Record<string, StaffExampleDef> = {
       { key: 'g/4', annotation: 'step', color: GREEN },
       { key: 'f/4', annotation: 'step', color: GREEN },
     ],
-    lower: [
-      { key: 'f/2', duration: 'w' },
-    ],
+    lower: [{ key: 'f/2', duration: 'w' }],
     issues: [
       { kind: 'motion', label: 'leap up', fromUpper: 0, toUpper: 1, color: GREEN },
       { kind: 'motion', label: 'steps back down', fromUpper: 1, toUpper: 3, color: GREEN },
@@ -150,12 +134,8 @@ export const melodyExamples: Record<string, StaffExampleDef> = {
       { key: 'g/4', annotation: 'peak', color: GREEN },
       { key: 'e/4' },
     ],
-    lower: [
-      { key: 'c/3', duration: 'w' },
-    ],
-    issues: [
-      { kind: 'note', label: 'single climax', upperIndex: 2, color: GREEN },
-    ],
+    lower: [{ key: 'c/3', duration: 'w' }],
+    issues: [{ kind: 'note', label: 'single climax', upperIndex: 2, color: GREEN }],
   },
 
   leadingTone: {
@@ -178,13 +158,8 @@ export const melodyExamples: Record<string, StaffExampleDef> = {
       { key: 'b/4', annotation: 'LT', color: RED, issue: true },
       { key: 'a/4', annotation: 'wrong', color: RED, issue: true },
     ],
-    lower: [
-      { key: 'g/2' },
-      { key: 'c/3' },
-    ],
-    issues: [
-      { kind: 'motion', label: 'should resolve to C', fromUpper: 0, toUpper: 1 },
-    ],
+    lower: [{ key: 'g/2' }, { key: 'c/3' }],
+    issues: [{ kind: 'motion', label: 'should resolve to C', fromUpper: 0, toUpper: 1 }],
   },
 
   voiceRange: {
@@ -192,11 +167,11 @@ export const melodyExamples: Record<string, StaffExampleDef> = {
     badge: { en: 'Physical limit', ja: '物理的制約' },
     title: { en: 'Note outside the declared range', ja: '宣言音域の外に出た音' },
     diagnosis: {
-      en: 'The red note exceeds the upper bound of the voice\'s declared MIDI range.',
+      en: "The red note exceeds the upper bound of the voice's declared MIDI range.",
       ja: '赤い音が、この声部に宣言された MIDI 音域の上限を超えています。',
     },
     caption: {
-      en: 'Every voice declares an inclusive MIDI range `[lo, hi]` in its texture plan — a soprano compass, an organ pedal compass, a cello\'s strings. This is a physical rule, not a stylistic one: a single note outside the bounds fails the voice, however good the counterpoint around it is.',
+      en: "Every voice declares an inclusive MIDI range `[lo, hi]` in its texture plan — a soprano compass, an organ pedal compass, a cello's strings. This is a physical rule, not a stylistic one: a single note outside the bounds fails the voice, however good the counterpoint around it is.",
       ja: 'すべての声部は、テクスチュアプランの中で MIDI 音域 `[lo, hi]` を宣言します——ソプラノの声域、オルガンペダルの音域、チェロの弦の範囲。これは様式ではなく物理の規則です。周りの対位法がどれほど良くても、範囲外の音が一つあればその声部は失敗します。',
     },
     time: '4/4',
@@ -209,12 +184,7 @@ export const melodyExamples: Record<string, StaffExampleDef> = {
       { key: 'c/6', annotation: '> hi', color: RED, issue: true },
       { key: 'g/5', color: GREEN },
     ],
-    lower: [
-      { key: 'c/3' },
-      { key: 'e/3' },
-      { key: 'g/3' },
-      { key: 'c/3' },
-    ],
+    lower: [{ key: 'c/3' }, { key: 'e/3' }, { key: 'g/3' }, { key: 'c/3' }],
     issues: [
       { kind: 'note', label: 'outside [lo, hi]', upperIndex: 2 },
       { kind: 'bracket', label: 'declared compass', fromUpper: 0, toUpper: 3, color: GREEN },
