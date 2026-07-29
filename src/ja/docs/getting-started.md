@@ -14,7 +14,7 @@ MIDI Sketch Bach は、バロック音楽理論と対位法の規則に基づい
 ## インストール
 
 ::: warning アルファ版 — npm では未公開
-このパッケージはアルファ版であり、**まだ npm レジストリに公開されていません**。以下のコマンドは最初の公開リリースまで動作しません。それまでは本サイトの[ライブデモ](/ja/)でお試しください。
+このパッケージはアルファ版であり、**まだ npm レジストリに公開されていません**。以下の npm コマンドは最初の公開リリースまで動作しません。それまでは本サイトの[ライブデモ](/ja/)で JavaScript/WASM ライブラリを試せます。
 :::
 
 ::: code-group
@@ -75,17 +75,20 @@ generator.destroy()
 コマンドラインから直接 MIDI ファイルを生成できます。
 
 ```bash
-npx @libraz/midi-sketch-bach --form fugue --key d_minor -o output.mid
+git clone https://github.com/libraz/midi-sketch-bach.git
+cd midi-sketch-bach
+make build
+./build/bin/bach_cli --form fugue --key d_minor -o output.mid
 ```
 
 ニ短調のトッカータとフーガを生成する例：
 
 ```bash
-npx @libraz/midi-sketch-bach --form toccata_and_fugue --key d_minor -o toccata.mid
+./build/bin/bach_cli --form toccata_and_fugue --key d_minor -o toccata.mid
 ```
 
-::: tip JavaScript API と CLI で既定が異なります
-`bpm` 省略時、JavaScript API の既定は 100、CLI の既定は 72 です。また CLI ではフーガで `--scale` を省略した場合のみ `medium` になります（JavaScript API の既定は常に `short`）。CLI の既定一覧は [CLI 参照](/ja/docs/cli) を参照してください。
+::: tip 共通の既定値
+JavaScript API と CLI は、どちらも 100 BPM と `short` スケールが既定です。オプションの一覧は [CLI 参照](/ja/docs/cli)を参照してください。
 :::
 
 ## 生成できる楽曲

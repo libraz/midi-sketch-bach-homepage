@@ -11,7 +11,7 @@ The previous chapters apply to every generated piece. This chapter covers the co
 
 <CounterpointStaff example="groundBass" locale="en" />
 
-Passacaglia and chaconne are **ground-bass forms**: a short bass theme repeats unchanged for the entire piece while the upper texture varies cycle by cycle. Two rules — `ground_bass_immutable` (chaconne, modeled on the BWV 1004 Chaconne) and `passacaglia_ground_immutable` (the organ passacaglia's 8-bar ground, modeled on BWV 582) — verify byte-exact replay of the ground on every cycle via **provenance bits**: the per-note origin tags the engine carries alongside each note, the same machinery that exports `source: "material" | "compose" | "ornament"` in the event JSON. They are `StructuralFail`s: a changed ground is not bad counterpoint, it is a different piece.
+Passacaglia and chaconne are **ground-bass forms**: a short bass theme repeats unchanged for the entire piece while the upper texture varies cycle by cycle. Two rules — `ground_bass_immutable` (chaconne, modeled on the BWV 1004 Chaconne) and `passacaglia_ground_immutable` (the organ passacaglia's 8-bar ground, modeled on BWV 582) — verify byte-exact replay of the ground on every cycle via **provenance bits**, the origin tags carried beside each note. The `provenance.v1` sidecar serializes them as `source: "Material" | "Compose" | "Ornament"`; `generated.v1` deliberately contains notes only and has no source field. These violations are `StructuralFail`s: a changed ground is not bad counterpoint, it is a different piece.
 
 ::: info BWV numbers
 **BWV** (Bach-Werke-Verzeichnis) is the standard catalogue of Bach's works — BWV 582 is the C minor Passacaglia for organ, BWV 1004 the violin partita whose final movement is the Chaconne. When a rule says it is "modeled on" a BWV number, the engine's form template encodes the proportions of that specific piece.
@@ -63,7 +63,7 @@ The extracted streams are then held to the same standards as real voices. The tw
 
 | Rule | Contract |
 |------|----------|
-| `implicit_voice_counterpoint` | Between consecutive cells, the implied bass and top streams obey the melodic-leap rules from chapter 4 — the same forbidden-leap predicate that judges the organ's Compose voices. |
+| `implicit_voice_counterpoint` | Between consecutive cells, the implied bass and top streams obey the melodic-leap rules from chapter 4 — the same forbidden-leap predicate used for scored Compose notes. |
 | `arpeggio_no_parallel_perfect` | Consecutive cells must not frame the same perfect interval (fifth or octave) with both streams moving in the same direction. Oblique, contrary, and static motion are permitted — exactly the escape hatches real voices get in chapter 2. |
 
 The physical side of solo-string writing — each instrument's playable range — lives in [Instruments](/docs/physical-models).
@@ -80,7 +80,7 @@ Bach's dance movements live on this gesture — the Courante of the first cello 
 
 | Rule | Contract |
 |------|----------|
-| `phrase_periodicity_4_or_8_bar` | Consecutive declared phrase starts are exactly 4 or 8 bars apart — the dance-derived regularity underneath most Baroque movements. |
+| `phrase_periodicity_4_or_8_bar` | Consecutive declared phrase starts are 3 through 8 whole bars apart. The stable rule ID keeps its older, narrower name, but every integer bar gap in that inclusive range passes. |
 | `anacrusis_consistent` | If the piece declares an upbeat (anacrusis), every upbeat fragment begins exactly that distance before a phrase start; if not declared, no stray upbeat material exists. |
 
 ## Texture and instrument contracts

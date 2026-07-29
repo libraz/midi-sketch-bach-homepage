@@ -5,19 +5,17 @@ description: How MIDI Sketch Bach handles instruments - General MIDI program, pl
 
 # Instruments
 
-::: warning Per-instrument physical modeling was removed
-Earlier versions included detailed physical performer models (bow direction, hand spans, fret positions, fatigue, harmonics, and so on) that scored how playable each note was. The composer engine does **not** use these. Instrument handling is now intentionally simpler: a General MIDI program, a playable range, and an ornament-density profile. This page describes what the engine actually does today.
-:::
+The engine represents an instrument with a General MIDI program, a playable range, and an ornament-density profile. It does not simulate performer ergonomics such as bow direction, hand span, fret position, or fatigue.
 
 ## What an Instrument Selects
 
 Choosing an `instrument` affects three things:
 
 1. **General MIDI program** — the sound written into the MIDI file.
-2. **Playable range** — the pitch window the candidate search keeps the generated lines within, and the compass the finished score is fitted to. Notes are folded back into range rather than modeled for ergonomic difficulty; a score that sits outside the compass is displaced by whole octaves instead of having individual notes clamped.
-3. **Ornament density** — how heavily the opt-in ornament pass decorates the line (combined with the `character`).
+2. **Playable range** — the output compass used after composition. Once the requested key is applied, the engine fits the authored score with a whole-score octave displacement instead of clamping individual notes.
+3. **Ornament density** — how heavily the ornament pass decorates the line (combined with the `character`).
 
-The voice count, meter, and structure come from the `form`, not from the instrument. Because the range feeds back into the composition itself, each form accepts only the instrument it was written for — see [Default Instrument per Form](#default-instrument-per-form).
+The voice count, meter, and structure come from the `form`, not from the instrument. Each form has an explicit set of compatible instruments — see [Default Instrument per Form](#default-instrument-per-form).
 
 ::: info Instrument vs voice
 An **instrument** is the playback sound and range profile. A **voice** is the musical line being generated. A single instrument, such as organ, can carry several voices.

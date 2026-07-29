@@ -13,7 +13,9 @@ Roman numerals describe chords relative to the key. In C major, **I** is C major
 
 ## Cadences are voice-leading contracts
 
-A cadence is more specific than "the harmony is V then I". Each declared cadence type promises particular **outer-voice** behavior — the highest and lowest lines, the two the listener tracks most easily — at the cadence tick, and `cadence_voice_leading` verifies it. The engine knows seven types.
+A cadence is more specific than "the harmony is V then I". In polyphonic music, each declared type promises particular **outer-voice** behavior — the highest and lowest sounding lines at the cadence. In a monophonic form, `cadence_voice_leading` checks the single line as a melodic cadence instead of requiring a separate bass. The engine knows seven types.
+
+The two approaches are sampled differently. The upper line is read at `cadence.tick - 1`, immediately before the arrival, so a diminished run inside the final beat is preserved. The bass remains structural and is read one quarter-note beat earlier.
 
 ### Authentic: the period
 
@@ -104,7 +106,7 @@ To modulate convincingly, Baroque practice routes through a **pivot chord** — 
 
 | Rule | FailKind | Check |
 |------|----------|-------|
-| `cadence_voice_leading` | StructuralFail / MusicalFail | Outer voices match the declared cadence type at the cadence tick (approach = one beat earlier). A malformed cadence layout (fewer than 2 voices, no distinct bass) is StructuralFail; the voice-leading mismatch itself is reported as MusicalFail. |
+| `cadence_voice_leading` | StructuralFail / MusicalFail | At the cadence tick, polyphonic outer voices or the single monophonic line match the declared cadence type. The upper approach is sampled one tick before arrival; a distinct bass is sampled one beat before. A missing cadence voice or a cadence earlier than one beat is StructuralFail; a voice-leading mismatch is MusicalFail. |
 | `doubling_no_leading_tone` | MusicalFail | The leading-tone pitch class sounds in at most one voice when the chord contains it (V, vii°, V7, vii°7). |
 | `doubling_no_seventh` | MusicalFail | A seventh-quality chord's seventh is not doubled. |
 | `cross_relation` | MusicalFail | No chromatic pitch-class conflict between voices within a beat window. Both-material pairs exempt. |

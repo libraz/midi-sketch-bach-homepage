@@ -8,32 +8,32 @@ description: Complete reference tables for all forms, instruments, characters, s
 Complete reference for all configurable presets in MIDI Sketch Bach.
 
 ::: info Reading these tables
-`ID` and `String` are API values. **Voices**, **meter**, **natural bars**, **key**, and **character** are musical structure choices. If those terms are new, keep the [Music Primer for Engineers](/docs/music-primer) open while reading this page.
+`ID` and `String` are API values. **Voices**, **meter**, **raw natural bars**, **key**, and **character** are musical structure choices. If those terms are new, keep the [Music Primer for Engineers](/docs/music-primer) open while reading this page.
 :::
 
 ## Forms Reference
 
 ### All 10 Forms
 
-| ID | Name | String | Category | Default Instrument | Voices | Meter | Natural Bars |
-|----|------|--------|----------|-------------------|--------|-------|--------------|
-| 0 | Fugue | `"fugue"` | Organ | Organ | 3 | 4/4 | 42 |
-| 1 | Prelude and Fugue | `"prelude_and_fugue"` | Organ | Organ | 3 | 4/4 | 24 |
-| 2 | Trio Sonata | `"trio_sonata"` | Organ | Organ | 3 | 4/4 | 16 |
-| 3 | Chorale Prelude | `"chorale_prelude"` | Organ | Organ | 2 | 4/4 | 16 |
-| 4 | Toccata and Fugue | `"toccata_and_fugue"` | Organ | Organ | 3 | 4/4 | 32 |
-| 5 | Passacaglia | `"passacaglia"` | Organ | Organ | 2 | 3/4 | 24 |
-| 6 | Fantasia and Fugue | `"fantasia_and_fugue"` | Organ | Organ | 3 | 4/4 | 32 |
-| 7 | Cello Prelude | `"cello_prelude"` | Solo | Cello | 1 | 4/4 | 8 |
-| 8 | Chaconne | `"chaconne"` | Solo | Violin | 2 | 3/4 | 16 |
-| 9 | Goldberg Variations | `"goldberg_variations"` | Variation | Harpsichord | 3 | 4/4 | 20 |
+| ID | Name | String | Category | Default Instrument | Voices | Meter | Raw Natural Bars | Short Output Bars |
+|----|------|--------|----------|--------------------|--------|-------|------------------|-------------------|
+| 0 | Fugue | `"fugue"` | Organ | Organ | 3 | 4/4 | 42 | 44 |
+| 1 | Prelude and Fugue | `"prelude_and_fugue"` | Organ | Organ | 3 | 4/4 | 24 | 24 |
+| 2 | Trio Sonata | `"trio_sonata"` | Organ | Organ | 3 | 4/4 | 16 | 16 |
+| 3 | Chorale Prelude | `"chorale_prelude"` | Organ | Organ | 3 | 4/4 | 16 | 16 |
+| 4 | Toccata and Fugue | `"toccata_and_fugue"` | Organ | Organ | 3 | 4/4 | 32 | 32 |
+| 5 | Passacaglia | `"passacaglia"` | Organ | Organ | 3 | 3/4 | 24 | 24 |
+| 6 | Fantasia and Fugue | `"fantasia_and_fugue"` | Organ | Organ | 3 | 4/4 | 32 | 32 |
+| 7 | Cello Prelude | `"cello_prelude"` | Solo | Cello | 1 | 4/4 | 8 | 8 |
+| 8 | Chaconne | `"chaconne"` | Solo | Violin | 2 | 3/4 | 16 | 16 |
+| 9 | Goldberg Variations | `"goldberg_variations"` | Variation | Harpsichord | 3 | 4/4 | 20 | 20 |
 
 ::: info Bar counts
-"Natural Bars" is the length when `scale: "short"`. The `scale` option multiplies it (~1x/2x/3x/4x), and `targetBars` overrides it. Every form caps at 128 bars.
+"Raw Natural Bars" is the form's base length before snapping. `scale` multiplies that value (~1x/2x/3x/4x), then the result snaps to the form's bar grid. Fugue's raw 42 bars therefore produce 44 bars with `scale: "short"`. `targetBars` overrides `scale`, and every form caps at 128 output bars.
 :::
 
 ::: tip Natural bars are not seconds
-A bar count is musical length, not wall-clock duration. Playback time also depends on `bpm` and meter. A 42-bar fugue at 80 BPM lasts longer than the same 42 bars at 140 BPM.
+A bar count is musical length, not wall-clock duration. Playback time also depends on `bpm` and meter. A 44-bar fugue at 80 BPM lasts longer than the same 44 bars at 140 BPM.
 :::
 
 ### Form Selection Flowchart
@@ -55,7 +55,7 @@ graph TD
 ```
 
 ::: info Organ System (Forms 0--6)
-The seven organ forms cover the major genres of Bach's organ repertoire. All default to organ registration and typically use 2--3 voices. These forms feature the most sophisticated counterpoint, as the organ's sustained tones make every voice-leading detail audible.
+The seven organ forms cover the major genres of Bach's organ repertoire. All default to organ registration and use three voices.
 :::
 
 ::: info Solo Instrument System (Forms 7--8)
@@ -159,14 +159,14 @@ All keys work with both `isMinor: false` (major) and `isMinor: true` (minor).
 
 Cross-reference of form defaults (voices and meter are fixed by the form; BPM defaults to 100 unless you set it):
 
-| Form | Instrument | Voices | Meter | Natural Bars |
-|------|-----------|--------|-------|--------------|
-| Fugue | Organ (0) | 3 | 4/4 | 42 |
+| Form | Instrument | Voices | Meter | Short Output Bars |
+|------|-----------|--------|-------|-------------------|
+| Fugue | Organ (0) | 3 | 4/4 | 44 |
 | Prelude and Fugue | Organ (0) | 3 | 4/4 | 24 |
 | Trio Sonata | Organ (0) | 3 | 4/4 | 16 |
-| Chorale Prelude | Organ (0) | 2 | 4/4 | 16 |
+| Chorale Prelude | Organ (0) | 3 | 4/4 | 16 |
 | Toccata and Fugue | Organ (0) | 3 | 4/4 | 32 |
-| Passacaglia | Organ (0) | 2 | 3/4 | 24 |
+| Passacaglia | Organ (0) | 3 | 3/4 | 24 |
 | Fantasia and Fugue | Organ (0) | 3 | 4/4 | 32 |
 | Cello Prelude | Cello (4) | 1 | 4/4 | 8 |
 | Chaconne | Violin (3) | 2 | 3/4 | 16 |
@@ -178,13 +178,17 @@ Use the preset enumeration functions to access these values at runtime:
 
 ```js
 import {
+  init,
   getForms,
   getInstruments,
   getCharacters,
+  getDefaultInstrumentForForm,
   getKeys,
   getScales,
   getVersion
 } from '@libraz/midi-sketch-bach'
+
+await init()
 
 // List all forms
 const forms = getForms()
@@ -209,8 +213,14 @@ const instruments = getInstruments()
 // List all keys
 const keys = getKeys()
 // [{ id: 0, name: "C" }, { id: 1, name: "C#" }, ...]
+
+// Look up a form's default instrument ID
+const celloPreludeInstrument = getDefaultInstrumentForForm(7)
+// 4 (cello)
 ```
 
 ::: tip
 These functions are useful for building UI components like dropdowns or form selectors. The demo on this site uses them to populate the form selection interface.
 :::
+
+`getDefaultInstrumentForForm(formId: number): number` accepts form IDs 0--9. Invalid or out-of-range values return `0` (organ).

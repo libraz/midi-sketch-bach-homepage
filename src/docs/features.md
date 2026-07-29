@@ -14,11 +14,11 @@ If terms such as **voice**, **bar**, **chord**, **fifth**, **cadence**, or **fug
 MIDI Sketch Bach generates compositions in ten distinct Baroque instrumental forms, organized into three systems. Each form fixes its own voice count, meter, and natural length — there is no voice-count option.
 
 ::: info Form, voice, meter, natural length
-A **form** is a composition plan such as fugue or passacaglia. A **voice** is one independent melodic line. **Meter** is the beat pattern, such as `4/4` or `3/4`. **Natural length** is the form's default bar count before `scale` or `targetBars` changes it.
+A **form** is a composition plan such as fugue or passacaglia. A **voice** is one independent melodic line. **Meter** is the beat pattern, such as `4/4` or `3/4`. **Natural length** is the reference bar count used before `scale` or `targetBars`; the result is then snapped to the form's bar grid. For example, the fugue's reference length is 42 bars and its default resolved output is 44.
 :::
 
 ::: tip Quick chooser
-Choose `fugue` to hear strict line-against-line writing, `prelude_and_fugue` for a balanced default, `chorale_prelude` for slower hymn-based material, `passacaglia` or `chaconne` for variation over a repeating bass, and `cello_prelude` for a single flowing solo line.
+Choose `fugue` to hear strict line-against-line writing, `prelude_and_fugue` for a flowing prelude followed by a fugue, `chorale_prelude` for slower hymn-based material, `passacaglia` or `chaconne` for variation over a repeating bass, and `cello_prelude` for a single flowing solo line. If you omit `form`, the default is `fugue`.
 :::
 
 ### Organ System (Forms 0--6)
@@ -28,9 +28,9 @@ Choose `fugue` to hear strict line-against-line writing, `prelude_and_fugue` for
 | 0 | Fugue | 3 | Pure contrapuntal fugue with subject, answer, and episodes |
 | 1 | Prelude and Fugue | 3 | Flowing prelude paired with an elaborate fugue |
 | 2 | Trio Sonata | 3 | Three independent voices: two upper parts over a bass line |
-| 3 | Chorale Prelude | 2 | Hymn melody with a contrapuntal voice |
+| 3 | Chorale Prelude | 3 | Hymn melody with figuration and an independent bass |
 | 4 | Toccata and Fugue | 3 | Dramatic virtuosic toccata followed by a strict fugue |
-| 5 | Passacaglia | 2 | Continuous variations over a repeating ground bass (3/4) |
+| 5 | Passacaglia | 3 | Variations and a counterline over a repeating ground bass (3/4) |
 | 6 | Fantasia and Fugue | 3 | Free-form fantasia paired with a structured fugue |
 
 ### Solo Instrument System (Forms 7--8)
@@ -80,7 +80,7 @@ Six instrument presets shape the MIDI output, each accepted by the forms written
 | Cello | Cello Prelude |
 | Guitar | -- |
 
-Each instrument maps to a General MIDI program number and a playable range, and shapes how densely the ornament pass decorates the line. Because the range feeds back into the composition, the Goldberg Variations is the only form offering a choice — everything else is fixed to the instrument it was written for.
+Each instrument maps to a General MIDI program number and a playable range, and shapes how densely the ornament pass decorates the line. The range is used to fit the completed output by whole-octave displacement. Instrument compatibility is defined per form: the Goldberg Variations is the only form offering a choice.
 
 ## Subject Characters
 
@@ -134,17 +134,17 @@ Get detailed event data including track information, note events, and metadata:
 ```js
 const events = generator.getEvents()
 // events.form             - "fugue"
-// events.key              - pitch class (events JSON stays in C)
+// events.key              - "C_major" (the selected output key)
 // events.bpm              - 100 (starting tempo)
-// events.total_bars       - 42
+// events.total_bars       - 44 (42-bar reference length, snapped to 4 bars)
 // events.tempos           - tempo map, including the closing ritardando
 // events.time_signatures  - meter map
-// events.tracks           - Array of TrackData; each note carries a "source" tag
+// events.tracks           - output-key pitches; each note carries a "source" tag
 ```
 
-Each note's `source` records its provenance: `"material"` (subjects, grounds, cantus firmus), `"compose"` (candidate search), or `"ornament"` (the ornament pass).
+Each note's `source` records its provenance: `"material"` (subjects, grounds, cantus firmus), `"compose"` (candidate search, currently used by the opt-in Passacaglia free-counterpoint path), or `"ornament"` (the ornament pass). Default form generation replays authored carrier material rather than emitting `"compose"` notes.
 
-For scoring and analysis rather than playback, `getGenerated()` and `getProvenance()` return the flat `generated.v1` note list and the index-parallel `provenance.v1` record of how each note was chosen.
+For scoring and analysis rather than playback, `getGenerated()` and `getProvenance()` return the flat `generated.v1` note list and the index-parallel `provenance.v1` record of how each note was chosen. Unlike `getEvents()`, `generated.v1` keeps the composer's internal C pitches.
 
 ## Duration Control
 

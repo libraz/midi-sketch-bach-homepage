@@ -8,7 +8,7 @@ description: How MIDI Sketch Bach configuration options interact - dependencies,
 MIDI Sketch Bach's configuration options interact with each other in specific ways. Understanding these relationships helps you craft configurations that produce the results you want.
 
 ::: info Two layers of options
-Some options choose musical structure (`form`, `key`, `isMinor`, `character`), while others choose rendering or reproducibility (`instrument`, `bpm`, `seed`). The [Music Primer for Engineers](/docs/music-primer) explains the musical terms used here.
+`form`, `isMinor`, and `character` affect the internal composition. `key` transposes that result for output, while `instrument`, `bpm`, and `seed` control rendering or reproducibility. The [Music Primer for Engineers](/docs/music-primer) explains the musical terms used here.
 :::
 
 ## Dependency Overview
@@ -23,8 +23,10 @@ graph TD
     P --> G["Output Length"]
     H["targetBars"] -->|"overrides"| F
     I["seed"] -->|"initializes"| J["RNG"]
-    K["key"] --> L["Pitch Center (applied at MIDI output)"]
-    M["isMinor"] --> L
+    K["key"] -->|"transposes"| L["MIDI and getEvents pitches"]
+    K -->|"labels"| Q["Output-key metadata"]
+    M["isMinor"] -->|"selects"| R["Internal C major/minor plan"]
+    M --> Q
     N["character"] -->|"shapes"| O["Subject/Theme"]
     A -->|"may forbid"| N
 ```
@@ -35,7 +37,7 @@ The `form` is the most influential option. It **fixes** the number of voices, th
 
 ```mermaid
 graph LR
-    A["form: 'fugue'"] --> B["3 voices · 4/4<br>42 bars · organ"]
+    A["form: 'fugue'"] --> B["3 voices · 4/4<br>42 reference → 44 output · organ"]
     C["form: 'cello_prelude'"] --> D["1 voice · 4/4<br>8 bars · cello"]
     E["form: 'chaconne'"] --> F["2 voices · 3/4<br>16 bars · violin"]
 ```
@@ -63,7 +65,8 @@ generator.generate({ form: 'fugue', key: 2, isMinor: true })
 //   character: 'severe',  ← default
 //   scale: 'short',       ← default (≈ natural length)
 // }
-// Voice count (3), meter (4/4), and natural length (42 bars) come from the form.
+// Voice count (3), meter (4/4), and reference length (42 bars) come from the form.
+// The 4-bar grid resolves the default output to 44 bars.
 ```
 
 Any field you explicitly set overrides the default:
@@ -90,7 +93,7 @@ Each form is written for a specific instrument, and the engine accepts only what
 | `chaconne` | Violin | -- |
 | `goldberg_variations` | Harpsichord | Piano |
 
-The `instrument` choice affects the General MIDI program, the playable range used during generation, and the ornament density of the post-pass. Because the range feeds back into the composition, a form cannot simply be re-voiced onto another instrument: requesting one the form does not accept throws, as does an unknown instrument string.
+The `instrument` choice affects the General MIDI program, the playable range used to fit the completed output, and the ornament density of the post-pass. Each form has an explicit set of compatible instruments; requesting one outside that set throws, as does an unknown instrument string.
 
 ::: tip
 The Goldberg Variations is the one form with a real choice. `harpsichord` gives the crisp attack that keeps the variation texture transparent; `piano` gives a warmer, more sustained reading of the same material.
@@ -117,7 +120,7 @@ The scale multipliers are approximately `short` ≈ 1x, `medium` ≈ 2x, `long` 
 
 ```js
 // Length as a multiple of the form's natural length
-generator.generate({ form: 'fugue', scale: 'long' })   // ≈ 3 × 42 bars
+generator.generate({ form: 'fugue', scale: 'long' })   // 42 × 3 = 126, snapped to 128 bars
 
 // Specific length (snapped and clamped)
 generator.generate({ form: 'fugue', targetBars: 48 })
@@ -154,16 +157,16 @@ generator.generate({ form: 'fugue', seed: 0 })
 // Always produces the same result
 generator.generate({ form: 'fugue', key: 2, isMinor: true, seed: 42 })
 
-// Different key = different output even with same seed
+// Different key = transposed MIDI/getEvents output; internal generated.v1 is unchanged
 generator.generate({ form: 'fugue', key: 0, isMinor: true, seed: 42 })
 ```
 
 ## Key and Mode
 
-The `key` and `isMinor` parameters work together to define the tonal center:
+The engine composes internally in C. `isMinor` selects the internal C-major or C-minor harmonic plan; `key` does not alter that plan. Instead, `key` transposes the finished MIDI and `getEvents()` note pitches and labels their output-key metadata.
 
 ::: info Tonal center
-The **tonal center** is the pitch that feels like home. `key` chooses the pitch class, and `isMinor` chooses whether the surrounding mode is major or minor.
+The **tonal center** is the pitch that feels like home in the output. `key` chooses its pitch class, while `isMinor` chooses whether the internally composed plan and the output-key label are major or minor.
 :::
 
 ```js
@@ -182,10 +185,7 @@ generator.generate({ key: 'D', isMinor: true })
 
 Names are matched exactly — `"g"` and `"Db"` both throw. Use `getKeys()` to enumerate the accepted spellings.
 
-The key affects:
-- The pitch center and scale of the composition
-- The harmonic vocabulary available to the engine
-- Modulation targets (related keys)
+Changing only `key` changes the output transposition and key metadata. It does not change the harmonic vocabulary or modulation plan, so `getGenerated()` keeps the same internal-C pitches for the same form, mode, character, and seed. `getEvents()` exposes the transposed/output-key pitches instead.
 
 ## Character and Form
 

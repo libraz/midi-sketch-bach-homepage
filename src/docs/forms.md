@@ -8,25 +8,25 @@ description: Detailed descriptions of all 10 musical forms available in MIDI Ske
 MIDI Sketch Bach generates compositions in ten Baroque instrumental forms. Each form follows specific compositional rules and produces distinct musical structures.
 
 ::: info If the form names are unfamiliar
-Read a form name as a **composition template**, not just a style label. The form decides the number of voices, the meter, the default length, and which musical materials are fixed or generated. For vocabulary such as subject, ground bass, and cantus firmus, see the [Music Primer for Engineers](/docs/music-primer).
+Read a form name as a **composition template**, not just a style label. The form decides the number of voices, the meter, the reference length, and which musical materials are fixed or generated. For vocabulary such as subject, ground bass, and cantus firmus, see the [Music Primer for Engineers](/docs/music-primer).
 :::
 
 ::: info The form decides the voice count
-Each form fixes its own number of voices, meter, and natural length. There is no `numVoices` option — choose the form to choose the texture. The `scale` and `targetBars` options stretch the length; the maximum for every form is 128 bars. See [Option Relationships](/docs/option-relationships) for details.
+Each form fixes its own number of voices, meter, and natural/reference length. The engine applies `scale` or `targetBars`, then snaps the result to the form's bar grid. This makes the fugue's 42-bar reference resolve to 44 bars by default. There is no `numVoices` option — choose the form to choose the texture. Every form has a maximum of 128 bars. See [Option Relationships](/docs/option-relationships) for details.
 :::
 
-| Form | Voices | Meter | Natural Length | Default Instrument |
-|------|--------|-------|----------------|--------------------|
-| `fugue` | 3 | 4/4 | 42 bars | Organ |
-| `prelude_and_fugue` | 3 | 4/4 | 24 bars | Organ |
-| `trio_sonata` | 3 | 4/4 | 16 bars | Organ |
-| `chorale_prelude` | 2 | 4/4 | 16 bars | Organ |
-| `toccata_and_fugue` | 3 | 4/4 | 32 bars | Organ |
-| `passacaglia` | 2 | 3/4 | 24 bars | Organ |
-| `fantasia_and_fugue` | 3 | 4/4 | 32 bars | Organ |
-| `cello_prelude` | 1 | 4/4 | 8 bars | Cello |
-| `chaconne` | 2 | 3/4 | 16 bars | Violin |
-| `goldberg_variations` | 3 | 4/4 | 20 bars | Harpsichord |
+| Form | Voices | Meter | Reference Length | Default Output | Default Instrument |
+|------|--------|-------|------------------|----------------|--------------------|
+| `fugue` | 3 | 4/4 | 42 bars | 44 bars | Organ |
+| `prelude_and_fugue` | 3 | 4/4 | 24 bars | 24 bars | Organ |
+| `trio_sonata` | 3 | 4/4 | 16 bars | 16 bars | Organ |
+| `chorale_prelude` | 3 | 4/4 | 16 bars | 16 bars | Organ |
+| `toccata_and_fugue` | 3 | 4/4 | 32 bars | 32 bars | Organ |
+| `passacaglia` | 3 | 3/4 | 24 bars | 24 bars | Organ |
+| `fantasia_and_fugue` | 3 | 4/4 | 32 bars | 32 bars | Organ |
+| `cello_prelude` | 1 | 4/4 | 8 bars | 8 bars | Cello |
+| `chaconne` | 2 | 3/4 | 16 bars | 16 bars | Violin |
+| `goldberg_variations` | 3 | 4/4 | 20 bars | 20 bars | Harpsichord |
 
 ## Organ System (Forms 0--6)
 
@@ -45,7 +45,8 @@ The **subject** is the main theme. The **answer** is the same idea entering in a
 - **Default instrument**: Organ
 - **Voices**: 3
 - **Meter**: 4/4
-- **Natural length**: 42 bars
+- **Natural/reference length**: 42 bars
+- **Default resolved output**: 44 bars
 - **Character**: Intellectual, architecturally rigorous
 
 ::: info Bach's Fugues
@@ -120,17 +121,17 @@ generator.generate({
 
 A setting of a hymn melody (chorale) with contrapuntal accompaniment.
 
-**Structure**: A cantus firmus (the chorale melody) appears in one voice, typically the soprano, in long notes. The other voices weave around it with independent contrapuntal lines that embellish and harmonize the chorale. The result is a meditative, richly textured piece.
+**Structure**: A cantus firmus (the chorale melody) appears in long notes. A running figuration voice moves above it while an independent bass supports it below.
 
 ::: info Cantus firmus
 A **cantus firmus** is a fixed melody in long notes. The engine treats it as source material: supporting voices can be generated around it, but the fixed line itself is not freely rewritten.
 :::
 
 - **Default instrument**: Organ
-- **Voices**: 2
+- **Voices**: 3
 - **Meter**: 4/4
 - **Natural length**: 16 bars
-- **Character**: Devotional, meditative; cantus firmus plus one contrapuntal voice
+- **Character**: Devotional, meditative; cantus firmus, figuration, and bass
 
 ::: warning Character restriction
 `playful` and `restless` characters are rejected for the chorale prelude — generation throws. Use `severe` or `noble` for this devotional form.
@@ -188,10 +189,10 @@ generator.generate({
 
 A variation form built over a repeating bass theme (ostinato).
 
-**Structure**: Opens with a bass theme statement. Successive variations layer new melodic and rhythmic material over the repeating ground bass, growing in complexity and building toward a climax near the end. The ground bass is immutable across all variations.
+**Structure**: Opens with a bass theme statement. Successive variations add a principal variation line and a middle counterline over the repeating ground bass, growing in complexity toward a climax. The ground bass is immutable across all variations.
 
 - **Default instrument**: Organ
-- **Voices**: 2
+- **Voices**: 3
 - **Meter**: 3/4
 - **Natural length**: 24 bars
 - **Character**: Building intensity, monumental

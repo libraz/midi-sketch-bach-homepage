@@ -8,7 +8,7 @@ description: Complete rule ID reference for the MIDI Sketch Bach validator, with
 This page is the flat index of all 57 validator rules. Use the [Counterpoint Course](/docs/counterpoint) to learn the musical ideas; use this page when you see a rule ID in an error, log, or event-debugging session and need to jump straight to its explanation.
 
 ::: info How to read a rule ID
-A rule ID names a specific musical contract that failed in the current validation pass. The same bad musical passage may violate several contracts at once; each violation is reported with the span it blames, so start from the first failure in the report.
+A rule ID names a specific musical contract that failed in the current validation pass. The same passage may violate several contracts at once. The validator accumulates those failures instead of stopping at the first one, and reports each with the span it blames.
 :::
 
 ## Rule layers
@@ -30,7 +30,7 @@ The validator protects different layers of the composition. A local note rule an
 Every failure also carries a `FailKind`: `MusicalFail` (counterpoint/harmony contract, the default), `StructuralFail` (the form's structural promise — immutable carriers and malformed cadence layouts), or `ConfigFail` (invalid request, reported before composition).
 
 ::: info Blocking failures vs informational findings
-The final-score pass audits the emitted notes, authored material included. When every note involved in a violation is immutable authored material, the composer has nothing left to repair, so the finding is recorded as informational evidence instead of blocking the run. If any generated or ornamented note is involved, it stays a blocking failure with an actionable span. `getDiagnostic()` reports the blocking failures.
+The final-score pass audits the emitted notes, authored material included. When every note involved in a violation is immutable authored material, the finding is recorded as informational evidence instead of blocking the run. If any searched or ornamented note is involved, it stays a blocking failure with an actionable span. The current public generation path aborts on blocking failures; it does not repair the score or retry generation. `getDiagnostic()` reports the blocking failures.
 :::
 
 ## Voice motion and independence
@@ -100,7 +100,7 @@ The final-score pass audits the emitted notes, authored material included. When 
 
 | Rule ID | Course chapter | How to read it |
 |---------|----------------|----------------|
-| `phrase_periodicity_4_or_8_bar` | [7. Form](/docs/counterpoint/form-constraints) | Declared phrase starts are not 4 or 8 bars apart. |
+| `phrase_periodicity_4_or_8_bar` | [7. Form](/docs/counterpoint/form-constraints) | Declared phrase starts are not a whole number of bars from 3 through 8 apart. The stable rule ID retains its older 4-or-8 wording. |
 | `anacrusis_consistent` | [7. Form](/docs/counterpoint/form-constraints) | Upbeat metadata and phrase-start metadata disagree. |
 | `pedal_range_soft_penalty` | [7. Form](/docs/counterpoint/form-constraints) | An organ pedal note leaves the playable compass (MIDI 12–62). |
 | `voice_independence_threshold` | [7. Form](/docs/counterpoint/form-constraints) | Trio-sonata voices score below 0.6 pairwise independence. |
@@ -141,5 +141,5 @@ These run only in the final-score pass, and check the emitted score against the 
 5. If the rule is musical rather than API-level, read the linked course chapter.
 
 ::: tip Useful mental model
-The form director declares what kind of musical object is being built. Candidate search fills editable spans. Material carriers replay fixed spans. The validator rejects results that break the declared musical contract.
+The form director declares what kind of musical object is being built. By default, material carriers replay every authored span; the scored branch is used only by opt-in free counterpoint. The validator reports every detected breach of the declared musical contract, and the public generation path aborts on blocking failures.
 :::

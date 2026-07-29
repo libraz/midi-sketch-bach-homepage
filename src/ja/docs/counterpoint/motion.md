@@ -70,7 +70,7 @@ description: 4種類の相対運動、並行・隠伏完全音程が禁じられ
 | `hidden_parallel_octave` | 完全音程以外から同方向の運動でユニゾン・オクターヴに着地。適用範囲と免除は5度と同じ——全声部ペア・全拍で検査し、終止セルと両 Material のペアは免除。 |
 
 ::: info この章で使う二つの適用範囲
-**強拍**は小節の1拍目のことで、エンジンのモデルは二値の `start_tick % ticks_per_bar == 0` です（[入門](/ja/docs/music-primer#強拍と弱拍)）。**上声部ペア**は、最低声部を含まない隣接声部の組——三声なら上の二声——を指します。バスが除外されるのは、これらの検査が後で上下を入れ替えて再利用される素材のためにあり（下記参照）、バスの線はその入れ替えに参加しないからです。
+**構造的アクセント**は拍子上の Strong または Medium の位置です。小節頭、4/4 の3拍目、複合拍子の各付点拍、サラバンドの2拍目が含まれます（[入門](/ja/docs/music-primer#強拍と弱拍)）。**上声部ペア**は、最低声部を含まない隣接声部の組——三声なら上の二声——を指します。`invertible_at_octave` がバスを除外するのは、あとで上下を交換する上声部の素材を守る検査だからです。
 :::
 
 ## 声部交差と間隔
@@ -108,14 +108,15 @@ description: 4種類の相対運動、並行・隠伏完全音程が禁じられ
 
 <CounterpointStaff example="bachInvertible" locale="ja" />
 
-上声部ペアの転回可能性を守るのが、次の二つの適用範囲付きルールです。
-
-<CounterpointStaff example="fourthWeakBeat" locale="ja" />
+上声部ペアの交換を守るのが、次の適用範囲付きルールです。
 
 | ルール | 防ぐもの |
 |--------|----------|
-| `invertible_at_octave` | 上声部ペアの強拍での並行8度。転回すると並行*ユニゾン*——最も極端な声部の融合——になってしまう。斜行と弱拍は免除。 |
-| `fourth_only_on_weak_beat` | 上声部ペアの強拍に置かれた完全4度。転回すると強拍の5度になる。弱拍の4度は経過的な響きとして通る。 |
+| `invertible_at_octave` | 上声部ペアが構造的アクセント上で作る並行8度。転回すると並行*ユニゾン*——最も極端な声部の融合——になる。斜行と弱い位置は免除。 |
+
+上声部ペアの4度は、それ自体では違反ではありません。垂直検査は実際に鳴っている最低音を探します。そのバス上の4度は、宣言された掛留または終止6/4がない限り不協和です。一方、上声部間の4度は、両方の音がバスに対して協和するなら合法です。
+
+<CounterpointStaff example="bassSensitiveFourth" locale="ja" />
 
 ## 検証器はこの章をどう見るか
 
@@ -126,7 +127,6 @@ description: 4種類の相対運動、並行・隠伏完全音程が禁じられ
 | `hidden_parallel_octave` | MusicalFail | 終止セル、両 Material |
 | `voice_crossing` | MusicalFail | なし |
 | `spacing_adjacent_voices_within_octave` | MusicalFail | 最下ペアは超過可。三声以上のみ |
-| `invertible_at_octave` | MusicalFail | 斜行、弱拍、両 Material |
-| `fourth_only_on_weak_beat` | MusicalFail | 弱拍、両 Material |
+| `invertible_at_octave` | MusicalFail | 斜行、弱い位置、両 Material |
 
 [第3章 不協和音の扱い](/ja/docs/counterpoint/dissonance)へ進んでください。

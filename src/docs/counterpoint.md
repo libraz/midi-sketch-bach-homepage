@@ -5,10 +5,10 @@ description: A staff-notation course on the Baroque counterpoint rules enforced 
 
 # Counterpoint Course
 
-MIDI Sketch Bach does not treat counterpoint as decorative theory text. The composer builds material, searches for playable candidate notes, then validates the result against explicit musical constraints — 47 named rules in the current validator. This course teaches those constraints the way the engine sees them: as small, checkable contracts, each shown on staff notation you can also listen to.
+MIDI Sketch Bach does not treat counterpoint as decorative theory text. Each form builder authors the musical lines, the composer replays those lines through material carriers, and the validator checks the result against 57 named rule IDs. Scored note search is separate and off by default; `--free-counterpoint` enables it only for the Passacaglia counterline. This course teaches the constraints as small, checkable contracts, each shown on staff notation you can also listen to.
 
 ::: tip Start here if the words are new
-The course defines each rule locally, but it assumes the basic nouns **voice**, **bar**, **chord**, **interval**, **fifth**, **cadence**, and **strong beat**. The short foundation — including how to read the staff figures and why beat 1 of a bar is special — is [Music Primer for Engineers](/docs/music-primer).
+The course defines each rule locally, but it assumes the basic nouns **voice**, **bar**, **chord**, **interval**, **fifth**, **cadence**, and **metric accent**. The short foundation — including how to read the staff figures and how meter assigns strong, medium, and weak positions — is [Music Primer for Engineers](/docs/music-primer).
 :::
 
 ## Why a course, not a rule list
@@ -18,8 +18,8 @@ A rule ID such as `parallel_fifth` is the *end* of a chain of musical reasoning.
 | Chapter | What you learn | Rules covered |
 |---------|----------------|---------------|
 | [1. Intervals & Consonance](/docs/counterpoint/intervals) | How two simultaneous notes are classified: perfect, imperfect, dissonant, and the ambivalent fourth | foundation for all vertical rules |
-| [2. Motion & Forbidden Parallels](/docs/counterpoint/motion) | The four types of relative motion; why parallel and hidden perfects are banned; crossing, spacing, invertible counterpoint | `parallel_fifth`, `parallel_octave`, `hidden_parallel_fifth`, `hidden_parallel_octave`, `voice_crossing`, `spacing_adjacent_voices_within_octave`, `invertible_at_octave`, `fourth_only_on_weak_beat` |
-| [3. Dissonance Treatment](/docs/counterpoint/dissonance) | Strong beats demand chord tones; weak beats tolerate passing and neighbor tones; the four suspension figures | `strong_beat_dissonance`, `vertical_dissonance`, `unprepared_dissonance`, `suspension_preparation`, `suspension_resolution_step_down`, `suspension_seventh_sixth` |
+| [2. Motion & Forbidden Parallels](/docs/counterpoint/motion) | The four types of relative motion; why parallel and hidden perfects are banned; crossing, spacing, invertible counterpoint | `parallel_fifth`, `parallel_octave`, `hidden_parallel_fifth`, `hidden_parallel_octave`, `voice_crossing`, `spacing_adjacent_voices_within_octave`, `invertible_at_octave` |
+| [3. Dissonance Treatment](/docs/counterpoint/dissonance) | Structural accents demand chord tones; weak positions tolerate passing and neighbor tones; the four suspension figures | `strong_beat_dissonance`, `vertical_dissonance`, `unprepared_dissonance`, `suspension_preparation`, `suspension_resolution_step_down`, `suspension_seventh_sixth` |
 | [4. Melodic Writing](/docs/counterpoint/melody) | Each voice judged as a line: forbidden leaps, leap recovery, the leading tone's obligation | `augmented_melodic`, `diminished_melodic`, `tritone_melodic`, `consecutive_leaps`, `leading_tone_resolution`, `voice_range_integrity` |
 | [5. Tonal Grammar](/docs/counterpoint/tonality) | The seven cadence types, tendency-tone doubling, cross relations, applied dominants, pivot modulation | `cadence_voice_leading`, `doubling_no_leading_tone`, `doubling_no_seventh`, `cross_relation`, `secondary_dominant_resolution`, `modulation_pivot_chord_required` |
 | [6. Fugal Devices](/docs/counterpoint/fugue) | Subject and answer, countersubject, episodes and sequences, imitation, stretto, pedal points | `tonal_answer_dominant_mapping`, `countersubject_continuous`, `episode_motif_derived`, `sequence_pattern_consistency`, `imitation_entry_match`, `middle_entry_in_related_key`, `stretto_overlap_valid`, `pedal_point_tonic_or_dominant` |
@@ -53,13 +53,13 @@ The validator separates local sonority from source ownership:
 
 | Term | Meaning in the engine |
 |------|-----------------------|
-| Compose note | A note chosen by candidate search and therefore fixable by the composer. |
-| Material note | A predeclared subject, answer, ground bass, cantus firmus, variation, or other carrier payload. |
+| Compose note | A note produced by scored search. No default form uses this path; `--free-counterpoint` routes only the Passacaglia counterline through it. |
+| Material note | An authored subject, answer, ground bass, cantus firmus, variation, or other carrier payload replayed verbatim. This is the default generation path. |
 | Immutable carrier | Ground bass, passacaglia ground, or cantus firmus. These voices are exempt from the ornament pass so the structural line stays recognizable. |
-| Strong beat | The downbeat of a bar — literally `start_tick % ticks_per_bar == 0`. The engine checks chord membership more strictly here ([primer](/docs/music-primer#strong-and-weak-beats)). |
-| Weak beat | A non-downbeat position where prepared non-chord tones can function as passing or ornamental tones. |
+| Structural accent | The downbeat plus meter-specific medium accents: beat 3 in 4/4, dotted pulses in compound meter, beat 2 in a Sarabande, and the midpoint of longer even simple meters ([primer](/docs/music-primer#strong-and-weak-beats)). |
+| Weak position | A position outside that accent grid, where prepared non-chord tones can function as passing or ornamental tones. |
 
-Several checks are skipped when **both** notes of a pair are immutable material, because the composer cannot rewrite fixed inputs. If either side is a generated Compose note, the problem is considered fixable and the rule fires, blaming the Compose side.
+Several checks are skipped when **both** notes of a pair are fixed Material notes, because the composer cannot rewrite carrier inputs. If either side is a generated Compose note, the problem is considered fixable and the rule fires, blaming the Compose side.
 
 ## Failure kinds
 
@@ -72,14 +72,14 @@ Every reported failure carries a `FailKind` that tells you which layer broke:
 | `ConfigFail` | The request itself was invalid (reported before composition). | configuration validation, not counterpoint rules |
 
 ::: tip Practical mental model
-The form director declares what kind of musical object is being built. Candidate search fills editable spans. Material carriers replay fixed spans. The validator rejects results that break the declared musical contract.
+The form builder authors the musical object and material carriers replay it verbatim. The validator then accepts or rejects that assembled result. Scored search enters only when `--free-counterpoint` reroutes the Passacaglia's inner counterline.
 :::
 
 ## Reading a validation report
 
-In normal operation you never see the validator fail: a `FailedSpan` report sends the composer back to re-generate that span, and only when every retry and back-jump is exhausted does the run abort as `FailedSeed` — no fallback note is ever emitted. So a report reaches you in two shapes: the hard-failure message when a run aborts, and the per-note audit trail that ships with every successful piece.
+Validation runs after carrier assembly. A violation aborts generation; the composer does not repair the span or emit a fallback note. Diagnostics therefore come in two shapes: the failed-run report, and the per-note provenance audit trail for a successful piece.
 
-**1. The failure lines.** A hard failure prints one line per violation (native CLI, exit code 1):
+**1. The failure lines.** A hard failure prints one line per violation (native CLI, exit code 3):
 
 ```
 Composer validation failed: 2 rule violations
@@ -91,24 +91,24 @@ Each line is a rule ID — the tokens this course teaches, indexed in the [Valid
 
 **2. What a span is.** A span is one voice's slice of one time region. Span boundaries follow the harmonic plan: cadence anchors, subject entries, and phrase joins all start a new span. So "span 17" is not an abstract counter — it names *this voice, these bars*.
 
-**3. From span to bars.** Generating with `--generated-json` writes two index-parallel files: `<name>.json` (`generated.v1` — tick, pitch, voice, velocity per note) and `<name>.provenance.json` (`provenance.v1` — span, source, scores per note). Two queries connect them:
+**3. From span to bars.** With `--generated-json -o piece.mid`, the CLI writes two index-parallel files: `piece.generated.json` (`generated.v1` — tick, pitch, voice, velocity per note) and `piece.provenance.json` (`provenance.v1` — span, source, scores per note). Two queries connect them:
 
 ```bash
 # which note indexes belong to span 17?
 jq '[.notes[] | select(.span_id == 17) | .index]' piece.provenance.json
 
 # where does note 42 sit on the timeline?
-jq '.notes[42] | {start_tick, pitch, voice}' piece.json
+jq '.notes[42] | {start_tick, pitch, voice}' piece.generated.json
 ```
 
-With 480 ticks per quarter (the file's `ticks_per_beat` field) and four beats to the bar, `start_tick / 1920` is the zero-based bar number: a note at tick 26880 opens bar 15 — and `26880 % 1920 == 0` makes it a strong beat, exactly the scope where `strong_beat_dissonance` looks (chapter 3).
+With 480 ticks per quarter (the file's `ticks_per_beat` field) and four beats to the bar, `start_tick / 1920` is the zero-based bar number: a note at tick 26880 opens bar 15. It is a structural accent because it is the downbeat; in 4/4, beat 3 is another structural accent checked by `strong_beat_dissonance` (chapter 3).
 
-**4. Read the chain backwards.** From here the course is the decoder. `parallel_fifth` (chapter 2): compare the flagged pair with the *previous* pair — both voices moved and both vertical intervals were perfect fifths — then check the exemptions (oblique motion? cadence cell? both notes Material?). `strong_beat_dissonance` (chapter 3): is the downbeat note a chord tone of the declared harmony? Every chapter ends with the same table — rule, FailKind, exemptions — for precisely this lookup.
+**4. Read the chain backwards.** From here the course is the decoder. `parallel_fifth` (chapter 2): compare the flagged pair with the *previous* pair — both voices moved and both vertical intervals were perfect fifths — then check the exemptions (oblique motion? cadence cell? both notes Material?). `strong_beat_dissonance` (chapter 3): is the note at that structural accent a chord tone of the declared harmony? Every chapter ends with the same table — rule, FailKind, exemptions — for precisely this lookup.
 
-**5. The audit trail on success.** Even when nothing fails, every note's provenance row records how it was won: `source` (Material / Compose / Ornament), `candidate_score`, `rejected_alternatives` (how many candidates the search discarded before settling on this note), and `satisfied_rules`, a bitmask of the rules the chosen note satisfied. The chapter-2 exemption "skipped when both notes are Material" becomes visible here: two adjacent `"source": "Material"` rows are the explanation for a pair no parallel rule will ever flag.
+**5. The audit trail on success.** Every note's provenance row records `source` (Material / Compose / Ornament), scoring fields, and `satisfied_rules`, the rule-bit mask stamped on the note. Default carrier replay produces Material rows; candidate scores and rejected alternatives describe scored selection only on the opt-in Passacaglia counterline. The chapter-2 exemption "skipped when both notes are Material" becomes visible here: two adjacent `"source": "Material"` rows explain why generation-time pair checks cannot ask the composer to rewrite that fixed pair.
 
 ::: info The web demo and the full trail
-The demo on this site runs the same engine compiled to WASM, but its API surfaces only the event JSON (`getEvents`). The failure lines and `provenance.v1` come from the native CLI build of `../midi-sketch-bach`.
+The JavaScript/WASM library exposes `getDiagnostic()`, `getGenerated()`, and `getProvenance()` in addition to `getEvents()`. This homepage's UI wrapper currently consumes only events. Use the library methods for failed-run diagnostics and the two index-parallel audit objects, or use the native CLI sidecars shown above.
 :::
 
 Continue with [Chapter 1 — Intervals & Consonance](/docs/counterpoint/intervals).

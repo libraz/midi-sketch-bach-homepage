@@ -27,7 +27,7 @@ description: 主唱と応唱、対主題の連続性、嬉遊部とゼクエン�
 
 <CounterpointStaff example="countersubjectContinuous" locale="ja" />
 
-対主題は、実際に寄り添っていてこそ意味があります。`countersubject_continuous` は応唱の区間を4分音符単位でサンプリングし、各位置で対主題の声部が鳴っていることを要求します。（このペアは上下を入れ替えて再利用される前提で書かれるため、第2章の転回対位法ルール——`invertible_at_octave`・`fourth_only_on_weak_beat`——も同じパッセージを見張っています。）
+対主題は、実際に寄り添っていてこそ意味があります。`countersubject_continuous` は応唱の区間を4分音符単位でサンプリングし、各位置で対主題の声部が鳴っていることを要求します。このペアは上下を入れ替えて再利用される前提で書かれるため、`invertible_at_octave` も構造的アクセント上で同じパッセージを検査します。4度は `vertical_dissonance` が実際のバスを基準に判定します。
 
 同じハ短調フーガでは、応唱が入った瞬間に対主題も入り——その下で一度も鳴り止みません。
 

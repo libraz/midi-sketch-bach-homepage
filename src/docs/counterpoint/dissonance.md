@@ -1,6 +1,6 @@
 ---
 title: "Counterpoint 3: Dissonance Treatment"
-description: Strong-beat consonance, passing and neighbor tones, and the four suspension figures the engine validates.
+description: Structural-accent consonance, passing and neighbor tones, and the four suspension figures the engine validates.
 ---
 
 # 3. Dissonance Treatment
@@ -17,9 +17,9 @@ The engine distinguishes three questions:
 A **chord tone** is part of the active harmony. In a C major triad, C, E, and G are chord tones. A note such as D or F can still be musical, but it needs a function such as passing between stable notes — hence "non-chord tone" (NCT).
 :::
 
-## Strong beats demand chord tones
+## Structural accents demand chord tones
 
-The downbeat of a bar is a structural anchor. The engine's definition of "strong beat" is exactly that and nothing more: a position where `start_tick % ticks_per_bar == 0` ([primer](/docs/music-primer#strong-and-weak-beats)). The engine requires generated notes there to belong to the active **triad** — the chord's root, third, and fifth ([primer](/docs/music-primer#chord-and-harmony)) — and simultaneous voice pairs on strong beats to form consonant intervals.
+The downbeat is always a structural anchor, and meter adds medium-strength anchors: beat 3 in 4/4, dotted pulses in compound meter, beat 2 in a Sarabande, and the midpoint of longer even simple meters ([primer](/docs/music-primer#strong-and-weak-beats)). The engine requires generated notes at every such accent to belong to the active **triad** — the chord's root, third, and fifth ([primer](/docs/music-primer#chord-and-harmony)) — and simultaneous voice pairs there to be consonant against the actual bass.
 
 <CounterpointStaff example="strongBeatDissonance" locale="en" />
 
@@ -27,12 +27,12 @@ The downbeat of a bar is a structural anchor. The engine's definition of "strong
 
 | Rule | Fires when |
 |------|------------|
-| `strong_beat_dissonance` | A Compose-source note on beat 1 of a bar is not the root, third, or fifth of the active chord at that tick. |
-| `vertical_dissonance` | A voice pair sounding together on a strong beat forms an interval outside the consonant set `{0, 3, 4, 5, 7, 8, 9}`. Both-material pairs are exempt; blame falls on the Compose side. |
+| `strong_beat_dissonance` | A Compose-source note at a structural accent is not the root, third, or fifth of the active chord at that tick. |
+| `vertical_dissonance` | A voice pair sounding together at a structural accent is dissonant. The base consonant set is `{0, 3, 4, 5, 7, 8, 9}`, but a fourth above the actual bass is dissonant unless a declared suspension or cadential 6/4 licenses it; a fourth between upper voices can be legal. Both-material pairs are exempt, and blame falls on the Compose side. |
 
-## Weak beats tolerate legible dissonance
+## Weak positions tolerate legible dissonance
 
-Between downbeats, a dissonant non-chord tone is acceptable when the line makes its function audible — approached and left by [step](/docs/music-primer#steps-and-leaps) (motion to the adjacent scale note, at most 2 semitones). The two classic shapes:
+Between structural accents, a dissonant non-chord tone is acceptable when the line makes its function audible — approached and left by [step](/docs/music-primer#steps-and-leaps) (motion to the adjacent scale note, at most 2 semitones). The two classic shapes:
 
 <CounterpointStaff example="passingTone" locale="en" />
 
@@ -50,7 +50,7 @@ The same dissonance without that frame fails:
 
 | Rule | Fires when |
 |------|------------|
-| `unprepared_dissonance` | A weak-beat non-chord tone is approached or left by more than 2 semitones — it neither passes nor neighbors. Compose-source notes only. A voice's very first and last notes are exempt: with no neighbor on one side, "approached by step" cannot even be evaluated. |
+| `unprepared_dissonance` | A weak-position non-chord tone is approached or left by more than 2 semitones — it neither passes nor neighbors. Compose-source notes only. A voice's very first and last notes are exempt: with no neighbor on one side, "approached by step" cannot even be evaluated. |
 
 ## Suspensions: dissonance by appointment
 
@@ -93,9 +93,9 @@ Bach opens the B minor prelude that closes WTC I with exactly this texture — e
 
 | Rule | FailKind | Check |
 |------|----------|-------|
-| `strong_beat_dissonance` | MusicalFail | Downbeat pitch class must be in the active triad. Compose notes only. |
-| `vertical_dissonance` | MusicalFail | Strong-beat simultaneities must be consonant. Both-material pairs exempt. |
-| `unprepared_dissonance` | MusicalFail | Weak-beat NCTs must be approached and left by step (≤2 semitones). |
+| `strong_beat_dissonance` | MusicalFail | A structural-accent pitch class must be in the active triad. Compose notes only. |
+| `vertical_dissonance` | MusicalFail | Structural-accent simultaneities must be bass-sensitively consonant or carry a valid suspension/cadential 6/4 license. Both-material pairs exempt. |
+| `unprepared_dissonance` | MusicalFail | Weak-position NCTs must be approached and left by step (≤2 semitones). |
 | `suspension_preparation` | MusicalFail | The preparation pitch is consonant against the lowest sounding voice and ties (same pitch) into the suspension. |
 | `suspension_resolution_step_down` | MusicalFail | The resolution is a 1–2 semitone step in the prescribed direction: down for 4-3 / 7-6 / 9-8, up for 2-3. |
 | `suspension_seventh_sixth` | MusicalFail | A declared 7-6 figure must form a genuine seventh over the lowest sounding voice and resolve to a genuine sixth (verified via provenance bits, so the rule is inert where no suspension carrier shipped). |

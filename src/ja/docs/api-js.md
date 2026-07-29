@@ -94,20 +94,20 @@ const midi = generator.getMidi()
 ```js
 const events = generator.getEvents()
 console.log(events.form)             // "fugue"
-console.log(events.key)              // "D minor"
+console.log(events.key)              // "D_minor"
 console.log(events.bpm)              // 80
-console.log(events.total_bars)       // 42
-console.log(events.tempos)           // 終結のリタルダンドを含むテンポマップ
+console.log(events.total_bars)       // 44
+console.log(events.tempos)           // テンポマップ
 console.log(events.time_signatures)  // 拍子マップ
 console.log(events.tracks)           // TrackDataの配列
 ```
 
-::: info ピッチは C で生成される
-エンジンは内部的に C で作曲し、指定された `key` はMIDI ファイル書き出し時に適用されます。そのためイベント JSON のピッチは C のまま報告され、`getMidi()` が返す `.mid` ファイルは選択した調に移調されます。
+::: info イベントのピッチは MIDI 出力と一致する
+エンジンは内部的に C で作曲した後、指定された調と楽器の音域に合わせたオクターブシフトを `getEvents()` のピッチと `getMidi()` の `.mid` ファイルに適用します。内部 C のピッチが必要な場合は `getGenerated()` を使ってください。
 :::
 
 ::: warning `bpm` だけでは時刻を決められない
-`events.bpm` は開始テンポにすぎません。どの曲も終結でリタルダンドし、prelude・toccata・fantasia 系の形式ではフーガ入りでもう一度テンポが変わります。`ticks / 480 * 60 / bpm` という一定テンポの換算では数パーセントずれるため、[テンポマップ](#ティックを秒に変換する)をたどってください。
+`events.bpm` は開始テンポです。多くの形式は終結でリタルダンドしますが、トリオ・ソナタにはありません。前奏曲とフーガ、トッカータとフーガ、幻想曲とフーガでは、フーガに入る位置でもテンポが変わります。一定テンポを仮定せず、[テンポマップ](#ティックを秒に変換する)をたどってください。
 :::
 
 **戻り値**: [EventData](#eventdata)
@@ -116,12 +116,14 @@ console.log(events.tracks)           // TrackDataの配列
 
 `generated.v1` ドキュメントを返します。再生用ではなく、採点や解析に使うためのインデックス参照可能なフラットなノート列です。
 
+`getEvents()` とは異なり、ノートのピッチは出力用の移調前にエンジン内部の C で記録されます。
+
 ```js
 const generated = generator.getGenerated()
 console.log(generated.schema_version)  // "generated.v1"
 console.log(generated.ticks_per_beat)  // 480
 console.log(generated.notes[0])
-// { index: 0, start_tick: 0, duration: 60, pitch: 72, voice: 0, velocity: 80 }
+// { index: 0, start_tick: 0, duration: 60, pitch: 82, voice: 0, velocity: 80 }
 ```
 
 **戻り値**: `GeneratedData`。生成が一度も成功していない場合は例外を投げます。
@@ -268,6 +270,8 @@ generator.destroy()
 | `2` | `"long"` | 基準長の約3倍 |
 | `3` | `"full"` | 基準長の約4倍 |
 
+基準長は形式が持つスナップ前の小節数です。出力前に形式ごとの小節単位へスナップされます。フーガの基準長は42小節ですが、`"short"` の出力は44小節に解決されます。
+
 ---
 
 ## レスポンス型
@@ -277,7 +281,7 @@ generator.destroy()
 ```ts
 interface EventData {
   form: string          // 形式名（例: "fugue"）
-  key: string           // 指定された調名（例: "D minor"）
+  key: string           // 指定された調名（例: "D_minor"）
   bpm: number           // 開始テンポ
   seed: number          // 生成に使用された解決済みシード
   total_ticks: number   // MIDIティック単位の総時間
@@ -304,13 +308,13 @@ interface TrackData {
 }
 ```
 
-`control_changes` は演奏プロファイルの強弱の輪郭を、重複を統合済みの点列として持ちます。現在使われるのは CC 7（チャンネルボリューム）です。
+`control_changes` は演奏プロファイルの強弱変化を、重複を統合済みの点列として持ちます。オルガンとチェンバロは CC 7（チャンネルボリューム）、ピアノ、ヴァイオリン、チェロは CC 11（エクスプレッション）を使います。
 
 ### NoteEvent
 
 ```ts
 interface NoteEvent {
-  pitch: number         // MIDI ノート番号（0-127）、C で生成
+  pitch: number         // MIDI ノート番号（0-127）、出力調と音域へ移調済み
   velocity: number      // ノートベロシティ（0-127）
   start_tick: number    // MIDIティック単位の開始時間
   duration: number      // MIDIティック単位の長さ
@@ -434,6 +438,21 @@ import { getScales } from '@libraz/midi-sketch-bach'
 const scales = getScales()
 // [{ id: 0, name: "short" }, ...]
 ```
+
+### `getDefaultInstrumentForForm(formId: number): number`
+
+楽曲形式 ID の既定楽器 ID を返します。
+
+```js
+import { getDefaultInstrumentForForm } from '@libraz/midi-sketch-bach'
+
+const instrumentId = getDefaultInstrumentForForm(7)
+// 4（チェロ）
+```
+
+**引数**: `formId: number`
+
+**戻り値**: `number`。有効な楽曲形式 ID は 0--9 です。無効または範囲外の値には `0`（オルガン）を返します。
 
 ### `getVersion()`
 

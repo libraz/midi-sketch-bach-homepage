@@ -5,10 +5,10 @@ description: MIDI Sketch Bach の検証器が実装するバロック対位法�
 
 # 対位法コース
 
-MIDI Sketch Bach では、対位法は雰囲気づくりの説明文ではありません。コンポーザは素材を組み立て、演奏可能な候補音を探索し、その結果を明示的な音楽上の制約——現行検証器では 47 の名前付きルール——で検証します。このコースでは、その制約をエンジンが見ているとおりの形で学びます。一つひとつが検証可能な小さな契約であり、すべて五線譜の譜例で示され、音でも確かめられます。
+MIDI Sketch Bach では、対位法は雰囲気づくりの説明文ではありません。形式ごとのビルダーが旋律を作り、コンポーザが素材キャリアを通してその旋律を再生し、検証器が 57 個の名前付きルール ID で結果を検査します。音を採点して選ぶ探索は別経路で、既定では無効です。`--free-counterpoint` を指定したときだけ、パッサカリアの対旋律に使われます。このコースでは、各制約を五線譜と音で確認できる小さな契約として学びます。
 
 ::: tip 用語が初めてなら
-本文中でも各規則はその場で説明しますが、基本語として **声部**、**小節**、**和音**、**音程**、**5度**、**終止**、**強拍** が出てきます。最初の土台——五線譜の読み方と、なぜ小節の1拍目が特別なのか——は[エンジニアのための音楽用語入門](/ja/docs/music-primer)にまとめています。
+本文中でも各規則はその場で説明しますが、基本語として **声部**、**小節**、**和音**、**音程**、**5度**、**終止**、**拍節アクセント**が出てきます。最初の土台——五線譜の読み方と、拍子が強・中・弱の位置をどう決めるか——は[エンジニアのための音楽用語入門](/ja/docs/music-primer)にまとめています。
 :::
 
 ## なぜルール一覧ではなくコースなのか
@@ -18,8 +18,8 @@ MIDI Sketch Bach では、対位法は雰囲気づくりの説明文ではあり
 | 章 | 学ぶこと | 扱うルール |
 |----|----------|------------|
 | [1. 音程と協和](/ja/docs/counterpoint/intervals) | 同時に鳴る2音の分類——完全協和・不完全協和・不協和、そして両義的な4度 | すべての垂直ルールの土台 |
-| [2. 声部の運動と並行禁則](/ja/docs/counterpoint/motion) | 4種類の相対運動。並行・隠伏の完全音程が禁じられる理由。声部交差・間隔・転回対位法 | `parallel_fifth`, `parallel_octave`, `hidden_parallel_fifth`, `hidden_parallel_octave`, `voice_crossing`, `spacing_adjacent_voices_within_octave`, `invertible_at_octave`, `fourth_only_on_weak_beat` |
-| [3. 不協和音の扱い](/ja/docs/counterpoint/dissonance) | 強拍は和声音を要求し、弱拍は経過音・刺繍音を許す。4種類の掛留 | `strong_beat_dissonance`, `vertical_dissonance`, `unprepared_dissonance`, `suspension_preparation`, `suspension_resolution_step_down`, `suspension_seventh_sixth` |
+| [2. 声部の運動と並行禁則](/ja/docs/counterpoint/motion) | 4種類の相対運動。並行・隠伏の完全音程が禁じられる理由。声部交差・間隔・転回対位法 | `parallel_fifth`, `parallel_octave`, `hidden_parallel_fifth`, `hidden_parallel_octave`, `voice_crossing`, `spacing_adjacent_voices_within_octave`, `invertible_at_octave` |
+| [3. 不協和音の扱い](/ja/docs/counterpoint/dissonance) | 構造的アクセントは和声音を要求し、弱い位置は経過音・刺繍音を許す。4種類の掛留 | `strong_beat_dissonance`, `vertical_dissonance`, `unprepared_dissonance`, `suspension_preparation`, `suspension_resolution_step_down`, `suspension_seventh_sixth` |
 | [4. 旋律の書法](/ja/docs/counterpoint/melody) | 各声部を一本の旋律として評価する。禁止される跳躍、跳躍の回復、導音の義務 | `augmented_melodic`, `diminished_melodic`, `tritone_melodic`, `consecutive_leaps`, `leading_tone_resolution`, `voice_range_integrity` |
 | [5. 調性の文法](/ja/docs/counterpoint/tonality) | 7種類の終止、傾向音の重複禁止、対斜、副次ドミナント、ピボット転調 | `cadence_voice_leading`, `doubling_no_leading_tone`, `doubling_no_seventh`, `cross_relation`, `secondary_dominant_resolution`, `modulation_pivot_chord_required` |
 | [6. フーガの技法](/ja/docs/counterpoint/fugue) | 主唱と応唱、対主題、嬉遊部とゼクエンツ、模倣、ストレッタ、保続音 | `tonal_answer_dominant_mapping`, `countersubject_continuous`, `episode_motif_derived`, `sequence_pattern_consistency`, `imitation_entry_match`, `middle_entry_in_related_key`, `stretto_overlap_valid`, `pedal_point_tonic_or_dominant` |
@@ -53,13 +53,13 @@ MIDI Sketch Bach では、対位法は雰囲気づくりの説明文ではあり
 
 | 用語 | エンジン内での意味 |
 |------|--------------------|
-| Compose 音 | 候補探索が選んだ音。Composer が作り直せる対象です。 |
-| Material 音 | 主題、応唱、固執低音、定旋律、変奏など、あらかじめ宣言された素材の音です。 |
+| Compose 音 | 採点探索が生成した音。既定の形式はこの経路を使わず、`--free-counterpoint` を指定したパッサカリアの対旋律だけが対象です。 |
+| Material 音 | 主題、応唱、固執低音、定旋律、変奏など、ビルダーが作ってキャリアがそのまま再生する音です。これが既定の生成経路です。 |
 | 不変キャリア | 固執低音、パッサカリアの低音主題、定旋律。構造線が聴き取れるよう、装飾処理から除外されます。 |
-| 強拍 | 小節頭。実装はそのまま `start_tick % ticks_per_bar == 0` です。和音への帰属をより厳しく見ます（[入門](/ja/docs/music-primer#強拍と弱拍)）。 |
-| 弱拍 | 小節頭以外の位置。準備と解決が明確なら、経過音や装飾音として不協和を扱えます。 |
+| 構造的アクセント | 小節頭と、拍子固有の中強位置。4/4 の3拍目、複合拍子の付点拍、サラバンドの2拍目、より長い偶数単純拍子の中央が含まれます（[入門](/ja/docs/music-primer#強拍と弱拍)）。 |
+| 弱い位置 | アクセントのグリッド外にあり、準備と解決が明確なら経過音や装飾音として不協和を扱える位置。 |
 
-ペアの**両方**が不変の Material 音である場合、いくつかの検査はスキップされます。固定された入力はコンポーザに書き換えられないからです。どちらか一方でも生成された Compose 音であれば、問題は修正可能とみなされてルールが発火し、Compose 側が指摘されます。
+ペアの**両方**が固定された Material 音である場合、いくつかの検査はスキップされます。キャリア入力はコンポーザに書き換えられないからです。どちらか一方でも生成された Compose 音であれば、問題は修正可能とみなされてルールが発火し、Compose 側が指摘されます。
 
 ## 失敗の種類
 
@@ -72,14 +72,14 @@ MIDI Sketch Bach では、対位法は雰囲気づくりの説明文ではあり
 | `ConfigFail` | リクエスト自体が不正（作曲前に報告される）。 | 設定の検証。対位法ルールではない |
 
 ::: tip 実用的なメンタルモデル
-フォームディレクタが「どんな音楽的オブジェクトを作るか」を宣言する。候補探索が編集可能なスパンを埋める。素材キャリアが固定スパンを再生する。検証器は宣言された音楽的契約を破った結果を拒否する。
+形式ビルダーが音楽的オブジェクトを作り、素材キャリアがそれをそのまま再生する。検証器は、組み上がった結果を合格または不合格にする。採点探索が入るのは、`--free-counterpoint` がパッサカリアの内声対旋律を探索経路へ振り替えた場合だけです。
 :::
 
 ## 検証レポートの読み方
 
-通常の生成で、検証器の失敗をユーザーが目にすることはありません。`FailedSpan` の報告は Composer をそのスパンの再生成へ送り返し、再試行もバックジャンプも尽きたときにだけ実行が `FailedSeed` として中止されます——代わりの音が黙って置かれることはありません。したがってレポートがあなたに届く形は二つです。実行が中止されたときのハード失敗メッセージと、成功したすべての曲に付いてくる音符ごとの監査記録です。
+検証はキャリアの組み立て後に走ります。違反があれば生成を中断し、コンポーザがそのスパンを修復したり、代替音を出力したりすることはありません。診断は二つの形で届きます。失敗した生成のレポートと、成功した曲の音符ごとのプロビナンス監査記録です。
 
-**1. 失敗の行。** ハード失敗では、ネイティブ CLI が違反1件につき1行を出力します（終了コード 1）。
+**1. 失敗の行。** ハード失敗では、ネイティブ CLI が違反1件につき1行を出力します（終了コード 3）。
 
 ```
 Composer validation failed: 2 rule violations
@@ -91,24 +91,24 @@ Composer validation failed: 2 rule violations
 
 **2. スパンとは何か。** スパンは「一つの声部 × 一つの時間領域」の切片です。スパンの境界は和声プランに従います。終止のアンカー、主題の入り、フレーズの継ぎ目は、すべて新しいスパンの始まりです。つまり「span 17」は抽象的な連番ではなく、*この声部のこの数小節*を名指ししています。
 
-**3. スパンから小節へ。** `--generated-json` 付きで生成すると、インデックスが対応した2つのファイルが書き出されます。`<名前>.json`（`generated.v1`——音符ごとの tick・音高・声部・ベロシティ）と `<名前>.provenance.json`（`provenance.v1`——音符ごとのスパン・出自・スコア）です。この2つを往復します。
+**3. スパンから小節へ。** `--generated-json -o piece.mid` で生成すると、インデックスが対応した2つのファイルが書き出されます。`piece.generated.json`（`generated.v1`——音符ごとの tick・音高・声部・ベロシティ）と `piece.provenance.json`（`provenance.v1`——音符ごとのスパン・出自・スコア）です。この2つを往復します。
 
 ```bash
 # span 17 に属する音符の index は?
 jq '[.notes[] | select(.span_id == 17) | .index]' piece.provenance.json
 
 # 音符 42 はタイムラインのどこ?
-jq '.notes[42] | {start_tick, pitch, voice}' piece.json
+jq '.notes[42] | {start_tick, pitch, voice}' piece.generated.json
 ```
 
-4分音符 480 tick（ファイルの `ticks_per_beat` フィールド）、1小節4拍なら、`start_tick / 1920` が0始まりの小節番号です。tick 26880 の音は第15小節の頭に乗っています——そして `26880 % 1920 == 0` なので強拍。まさに `strong_beat_dissonance`（第3章）が見る場所です。
+4分音符 480 tick（ファイルの `ticks_per_beat` フィールド）、1小節4拍なら、`start_tick / 1920` が0始まりの小節番号です。tick 26880 の音は第15小節の頭に乗るため、構造的アクセントです。4/4 では3拍目も `strong_beat_dissonance`（第3章）が検査する構造的アクセントになります。
 
-**4. 鎖を逆向きに読む。** ここから先はコースがデコーダになります。`parallel_fifth`（第2章）なら、印の付いた音の組を*直前の*組と比べます——両声部が動き、縦の音程がどちらも完全5度だったはずです——そして免除を確認します（斜行では?終止セルでは?両方 Material では?）。`strong_beat_dissonance`（第3章）なら、強拍の音は宣言された和声の和音構成音か?各章末に同じ形で置いてある表——ルール・FailKind・免除——は、まさにこの逆引きのためにあります。
+**4. 鎖を逆向きに読む。** ここから先はコースがデコーダになります。`parallel_fifth`（第2章）なら、印の付いた音の組を*直前の*組と比べます——両声部が動き、縦の音程がどちらも完全5度だったはずです——そして免除を確認します（斜行では?終止セルでは?両方 Material では?）。`strong_beat_dissonance`（第3章）なら、その構造的アクセントの音は宣言された和声の和音構成音か?各章末に同じ形で置いてある表——ルール・FailKind・免除——は、まさにこの逆引きのためにあります。
 
-**5. 成功時の監査記録。** 何も失敗しなくても、すべての音符の provenance 行には、その音がどう勝ち残ったかが記録されています。`source`（Material / Compose / Ornament）、`candidate_score`、`rejected_alternatives`（この音に決まるまでに探索が捨てた候補の数）、そして選ばれた音が満たしたルールのビットマスクである `satisfied_rules`。第2章の免除「両方の音が Material ならスキップ」はここで目に見える形になります。`"source": "Material"` の行が隣り合って二つ並んでいれば、それが、その組をどの並行ルールも指摘しない理由の説明です。
+**5. 成功時の監査記録。** すべての音符の provenance 行には、`source`（Material / Compose / Ornament）、採点用フィールド、音に刻まれたルールビットマスク `satisfied_rules` が記録されます。既定のキャリア再生は Material 行を作ります。候補スコアと棄却候補数が採点選択を表すのは、パッサカリアの対旋律を探索するオプトイン経路だけです。第2章の「両方の音が Material ならスキップ」という免除もここで確認できます。隣り合う二行が `"source": "Material"` なら、生成時のペア検査はその固定ペアをコンポーザに書き直させられません。
 
 ::: info ウェブデモと完全な記録
-このサイトのデモは同じエンジンを WASM にコンパイルしたものですが、API が返すのはイベント JSON（`getEvents`）だけです。失敗の行と `provenance.v1` は `../midi-sketch-bach` のネイティブ CLI ビルドから得られます。
+JavaScript/WASM ライブラリは `getEvents()` に加えて、`getDiagnostic()`、`getGenerated()`、`getProvenance()` を公開しています。このホームページの UI ラッパーが現在使うのはイベントだけです。失敗時の診断と二つのインデックス対応監査オブジェクトはライブラリの各メソッドから取得でき、上記のネイティブ CLI サイドカーでも確認できます。
 :::
 
 [第1章 音程と協和](/ja/docs/counterpoint/intervals)へ進んでください。

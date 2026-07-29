@@ -6,7 +6,7 @@ description: Installation methods for MIDI Sketch Bach - npm, CLI, and browser u
 # Installation
 
 ::: warning Alpha — not yet published to npm
-This package is in alpha and has **not been published to the npm registry yet**. The commands on this page will not work until the first public release. Until then, try it in the [live demo](/) on this site.
+This package is in alpha and has **not been published to the npm registry yet**. The npm package commands on this page will not work until the first public release. Until then, try the JavaScript/WASM library in the [live demo](/) on this site.
 :::
 
 ## npm Package
@@ -42,18 +42,15 @@ await init()
 const generator = new BachGenerator()
 ```
 
-## CLI (Global Install)
+## Native CLI
 
-Install globally to use the `@libraz/midi-sketch-bach` command anywhere:
-
-```bash
-npm install -g @libraz/midi-sketch-bach
-```
-
-Or run directly without installing:
+The npm package does not expose a command-line executable. Build the native CLI from source:
 
 ```bash
-npx @libraz/midi-sketch-bach --form fugue -o fugue.mid
+git clone https://github.com/libraz/midi-sketch-bach.git
+cd midi-sketch-bach
+make build
+./build/bin/bach_cli --form fugue -o fugue.mid
 ```
 
 ## Browser Usage
@@ -110,6 +107,7 @@ module.exports = {
 
 ## System Requirements
 
-- **Node.js**: 18.0 or later
+- **Node.js**: 16.0 or later
+- **Native CLI build**: Make, CMake, and a C++17 compiler
 - **Browser**: Any modern browser with WebAssembly support (Chrome, Firefox, Safari, Edge)
-- **No native dependencies**: The package is pure JavaScript + WebAssembly
+- **JavaScript/WASM package**: No native runtime dependencies

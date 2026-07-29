@@ -27,10 +27,10 @@ graph TD
     end
     subgraph CORE["Composer Engine — C++ → WASM"]
         C["Form Director"]
-        D["Candidate Search"]
-        E["Rule Validator"]
-        F["Renderer + Ornament/Expression"]
-        G["MIDI Writer"]
+        D["Carrier Replay<br>+ Opt-in Search"]
+        E["Generation Validation<br>+ Initial Render"]
+        F["Ornament + Final Validation<br>+ Expression"]
+        G["MIDI + Event Export"]
         C --> D --> E --> F --> G
     end
     JS --> EM --> CORE
@@ -38,21 +38,23 @@ graph TD
 
 ## The Composer Engine
 
-A single composer subsystem handles every form. Rather than separate generators per genre, the engine expresses each form as a **layout of voice intents** over a harmonic plan, then fills, validates, and renders that layout. The form decides the texture (voice count, meter, natural length); there is no voice-count option.
+A single composer subsystem handles every form through dedicated per-form builders. Each builder expresses its form as a **layout of voice intents** over a harmonic plan, then the composer assembles, validates, and renders that layout. The form decides the texture (voice count, meter, natural length); there is no voice-count option.
 
 ::: info Voice intent and harmonic plan
-A **voice intent** is the role assigned to one melodic stream over a span of bars: subject, answer, ground bass, figuration, and so on. A **harmonic plan** is the chord roadmap the candidate search must fit into.
+A **voice intent** is the role assigned to one melodic stream over a span of bars: subject, answer, ground bass, figuration, and so on. A **harmonic plan** is the chord roadmap used when building and validating that material.
 :::
 
 The pipeline is:
 
 1. **Compose Request** — resolve and validate the config; resolve the seed; fix voice count / meter / length from the form.
 2. **Form Director** — assign per-form voice intents (subjects, grounds, cantus firmus, figuration, variations) to bar spans.
-3. **Candidate Search** — per-beat, chord-tone-anchored note selection against the harmonic plan.
-4. **Rule Validator** — counterpoint and structure checks, fail-fast.
-5. **Renderer** — voices to tracks.
-6. **Ornament & Expression** — deterministic post-passes, kept outside `Composer::run()` and invoked by the public generation path.
-7. **MIDI Writer** — key transposition and Standard MIDI File output.
+3. **Candidate Search** — dispatch each span; all default shipped spans replay authored carrier material verbatim.
+4. **Generation Validation & Renderer** — accumulate counterpoint and structure failures, then render the assembled voices to tracks.
+5. **Ornament & Final Validation** — apply deterministic ornaments, then validate the complete score.
+6. **Velocity, CC & Tempo** — apply velocity and re-render; add CC 7/CC 11 and tempo events.
+7. **MIDI & Event Export** — transpose pitches into the output key and emit the Standard MIDI File and public event data.
+
+The scored search branch is off by default and contributes no notes to default output. `--free-counterpoint` reroutes only `passacaglia` V1 (`voice == 1`); other forms report that free counterpoint is unavailable.
 
 See the [Generation Pipeline](/docs/generation-pipeline) for a step-by-step breakdown.
 
@@ -69,16 +71,16 @@ Structure follows a fixed design arc — **establish → develop → climax (at 
 The form director handles several layout families:
 
 - **Fugal** (`fugue`, `prelude_and_fugue`, `toccata_and_fugue`, `fantasia_and_fugue`) — subject/answer entries with episodes.
-- **Ground-bass variation** (`passacaglia`, `chaconne`, `goldberg_variations`) — an immutable bass with successive variation cycles; `goldberg_variations` builds an aria plus thirty variations including canons at widening intervals, and `passacaglia`/`chaconne` run their cycles in 3/4.
-- **Cantus firmus** (`chorale_prelude`) — a fixed chorale line plus a contrapuntal voice.
+- **Ground-bass variation** (`passacaglia`, `chaconne`, `goldberg_variations`) — an immutable bass with successive variation cycles; the natural 20-bar Goldberg layout contains the aria and four variations, while the full 128-bar layout contains the aria, all thirty variations, and the aria da capo. `passacaglia`/`chaconne` run their cycles in 3/4.
+- **Cantus firmus** (`chorale_prelude`) — a fixed chorale line with a figuration voice and independent bass.
 - **Linear / figural** (`trio_sonata`, `cello_prelude`) — interacting or continuous figuration.
 
 ## Determinism
 
-The engine is fully deterministic: the same config and seed produce byte-identical output. Composition runs internally in C; the requested key is applied only by the MIDI writer, so the events JSON always reports pitches in C while the `.mid` file is transposed.
+The engine is fully deterministic: the same config and seed produce byte-identical output. Composition and validation run internally in C. Output serialization applies the requested key and any output-octave shift to both the MIDI file and the pitches returned by `getEvents()`. The lower-level `generated.v1` artifact retains the internal C pitches.
 
-::: info Why events stay in C
-Keeping internal event data in C makes validator behavior easier to compare across keys: the same form and seed can be inspected before the final output transposition. The MIDI file is still written in the requested key.
+::: info Two event representations
+Use `getEvents()` when you need the notes as they sound in the selected output key. Use `generated.v1` for internal diagnostics whose pitches must stay comparable across keys.
 :::
 
 ## WASM Integration

@@ -21,15 +21,15 @@ MIDI ファイルでは DAWが扱えるようにトラックを使います。�
 
 | 形式 | 声部数 |
 |------|--------|
-| `fugue`、`prelude_and_fugue`、`trio_sonata`、`toccata_and_fugue`、`fantasia_and_fugue`、`goldberg_variations` | 3 |
-| `chorale_prelude`、`passacaglia`、`chaconne` | 2 |
+| `fugue`、`prelude_and_fugue`、`trio_sonata`、`chorale_prelude`、`toccata_and_fugue`、`passacaglia`、`fantasia_and_fugue`、`goldberg_variations` | 3 |
+| `chaconne` | 2 |
 | `cello_prelude` | 1 |
 
 `numVoices`/`num_voices` の指定は後方互換のため受理されますが無視されます。拍子と基準長を含む完全な表は[楽曲形式](/ja/docs/forms)を参照してください。
 
 ## ボイスインテント
 
-形式ディレクターは、楽曲の小節スパンにわたって各声部に**ボイスインテント**を割り当てます — 各時点でその声部が果たす役割です。エンジンには30種類の名前付きインテントが定義されており（`voice_intent.h`）、いくつかの系統にまとまります。
+形式ディレクターは、楽曲の小節スパンにわたって各声部に**ボイスインテント**を割り当てます。これは各時点でその声部が果たす役割です。エンジンには、ゴルトベルク専用の3キャリアを含む33種類の名前付きインテントが定義されており（`voice_intent.h`）、いくつかの系統にまとまります。
 
 | 系統 | 代表的なインテント | 役割 |
 |------|--------------------|------|
@@ -38,10 +38,10 @@ MIDI ファイルでは DAWが扱えるようにトラックを使います。�
 | 嬉遊部 | `Episode`, `FortspinnungSpan` | 主題の動機から導かれる、調から調へ移動するゼクエンツ素材 |
 | 固定線 | `GroundCarrier`, `PassacagliaGround`, `CantusFirmusCarrier` | 不変の反復バスとコラール旋律 |
 | 音型 | `FigurationCarrier`, `ArpeggioFlow`, `ToccataCarrier`, `FantasiaCarrier` | 連続する固有の音型と、セクション構成の独奏書法 |
-| 変奏 | `VariationCarrier` と役割別の変種 | 固定バス上で再創造される上声部素材 |
-| テクスチュア | `RhythmCarrier`, `NctCarrier`, 自由対位法 | 弱起・ヘミオラのリズム型、宣言された非和声音の音型、候補探索が選ぶ伴奏線 |
+| 変奏 | `VariationCarrier`, `GoldbergBassCarrier`, `GoldbergVariationCarrier`, `GoldbergInnerVoiceCarrier` | 作譜済みの変奏素材と、役割を分けたゴルトベルクの3声部 |
+| テクスチュア | `RhythmCarrier`, `NctCarrier`, `TrioVoiceCarrier` | 弱起・ヘミオラのリズム型、宣言された非和声音の音型、作譜済みのトリオ/対旋律 |
 
-素材を担うインテント（主題、グラウンド、定旋律）は固定され、残りの線は[候補探索](/ja/docs/generation-pipeline#ステップ3-候補探索)によって埋められます。
+出荷時の既定形式はすべてキャリア組み立てを使います。候補探索はスパンを振り分けますが、作譜済み素材をそのまま再生するため、採点付き探索が通常の出力に加える音は0です。任意の `--free-counterpoint` が `TrioVoiceCarrier` から `SequentialCounterline` へ切り替えるのはパッサカリア V1（`voice == 1`）だけで、ほかの形式では利用できません。詳しくは[候補探索](/ja/docs/generation-pipeline#ステップ3-候補探索)を参照してください。
 
 ::: info 主題、応答、グラウンド、定旋律
 **主題**はフーガの中心になる旋律です。**応答**は、別の声部に入る主題で、多くの場合は属調側へ移されます。**グラウンドバス**は反復する低音パターンです。**定旋律**は長い音符で置かれる固定旋律です。
@@ -61,7 +61,7 @@ MIDI ファイルでは DAWが扱えるようにトラックを使います。�
 
 ### 音域の差別化
 
-声部は明確に異なる音域を保ちます。声部交差は最小化され、声部が互いに接近すると離れる傾向があります。候補探索は各拍を和声音に固定し、声部が独立を保ちながら和声を明瞭にします。
+声部は明確に異なる音域を保ちます。声部交差は最小化され、声部が互いに接近すると離れる傾向があります。形式ビルダーは和声プランに沿ってキャリア線を作譜し、検証器が音域、和声、独立性を検査します。
 
 ::: info 音域と声部交差
 **音域**は音の高さの範囲です。バスは低く、ソプラノ的な線は高い、という区別です。**声部交差**は、本来低い声部が高い声部を追い越したり、高い声部が低い声部の下に入ったりすることです。線の追跡が難しくなるため制限されます。

@@ -17,8 +17,8 @@ Think of a composition as several time-aligned streams. A **voice** is one strea
 |------------|---------------------|------------------|
 | Voice | A time-ordered stream | One MIDI track in `events.tracks` |
 | Bar | A fixed-size time window | `total_bars`, `targetBars` |
-| Beat | A smaller clock tick inside a bar | Validator checks strong and weak positions |
-| Strong beat | The window boundary — checked strictly | `strong_beat_dissonance`, `vertical_dissonance` |
+| Beat | A pulse inside a bar | Meter-specific strong, medium, and weak positions |
+| Structural accent | A strong or medium metric position — checked strictly | `strong_beat_dissonance`, `vertical_dissonance` |
 | Chord | A vertical state at a time point | Harmonic plan and chord-tone checks |
 | Form | A template or state machine | `form`, voice count, meter, natural length |
 | Material | Immutable or semi-fixed source data | `source: "material"` |
@@ -55,26 +55,32 @@ A **beat** is the regular pulse inside the music. A **bar** or **measure** group
 
 ## Strong and Weak Beats
 
-Beats inside a bar are not equal. The first beat of each bar — the **downbeat** — feels structurally stronger than the rest: listeners hear it as a checkpoint where the harmony should be stable. Play this and count along:
+Beats inside a bar are not equal. The first beat of each bar — the **downbeat** — is strongest, but meter can assign secondary accents elsewhere. Play this 4/4 example and count along:
 
 <CounterpointStaff example="beatHierarchy" locale="en" />
 
-The validator's model is deliberately binary, and it is one line of arithmetic:
+The validator assigns three levels: **Strong**, **Medium**, and **Weak**. A **structural accent** is any position that is not Weak. The grid comes from the time signature and, for a Sarabande, the form's meter profile:
+
+| Meter | Strong | Medium | Weak |
+|-------|--------|--------|------|
+| 4/4 | beat 1 | beat 3 | beats 2 and 4, plus subdivisions |
+| Compound meter (6/8, 9/8, 12/8) | first dotted pulse | later dotted pulses | the intervening eighth-note subdivisions |
+| Sarabande 3/4 | beat 1 | beat 2 | beat 3 and subdivisions |
+| Longer even simple meter | beat 1 | midpoint of the bar | other beats and subdivisions |
+
+The implementation reduces that hierarchy to one predicate for the rules:
 
 ```cpp
-// rule_helpers.cpp — the predicate every strong-beat rule consults
-bool isStrongBeat(Tick tick, Tick ticks_per_bar) {
-  return (tick % ticks_per_bar) == 0;
+bool isStructuralAccent(const HarmonicPlan& plan, Tick tick) {
+  return metricalStrengthAt(plan, tick) != MetricalStrength::Weak;
 }
 ```
 
-A tick at the start of a bar is **strong**; every other position — beats 2, 3, 4 and everything between beats — is **weak**. (Performers feel a finer hierarchy, such as a secondary accent on beat 3 in 4/4, but the validator does not need it.)
-
 Why the rules care:
 
-- **Strong beats demand stability.** Generated notes on a downbeat must belong to the active chord, and simultaneous voice pairs there must form consonant intervals (chapter 3).
-- **Weak beats tolerate passing tension.** A dissonance between two downbeats can be heard as motion from one stable point to the next — that is what passing and neighbor tones are.
-- **Some rules only fire on strong beats.** `fourth_only_on_weak_beat` and `invertible_at_octave` check the checkpoint and ignore the corridor between them.
+- **Structural accents demand stability.** Generated notes there must belong to the active chord, and simultaneous voice pairs must form consonant intervals (chapter 3).
+- **Weak positions tolerate passing tension.** A dissonance between accents can sound like motion from one stable point to the next — that is what passing and neighbor tones are.
+- **Some rules only fire on structural accents.** `invertible_at_octave` checks those checkpoints and ignores weak positions.
 
 ## Voice
 

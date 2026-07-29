@@ -21,15 +21,15 @@ Voice count is fixed per form. Picking the form picks the texture:
 
 | Form | Voices |
 |------|--------|
-| `fugue`, `prelude_and_fugue`, `trio_sonata`, `toccata_and_fugue`, `fantasia_and_fugue`, `goldberg_variations` | 3 |
-| `chorale_prelude`, `passacaglia`, `chaconne` | 2 |
+| `fugue`, `prelude_and_fugue`, `trio_sonata`, `chorale_prelude`, `toccata_and_fugue`, `passacaglia`, `fantasia_and_fugue`, `goldberg_variations` | 3 |
+| `chaconne` | 2 |
 | `cello_prelude` | 1 |
 
 Passing `numVoices`/`num_voices` is accepted and ignored for backward compatibility. See [Forms](/docs/forms) for the full table including meter and natural length.
 
 ## Voice Intents
 
-The form director assigns each voice a **voice intent** over the bar spans of the piece — the role that voice plays at each point. The engine defines 30 named intents (`voice_intent.h`); they group into a handful of families:
+The form director assigns each voice a **voice intent** over the bar spans of the piece — the role that voice plays at each point. The engine defines 33 named intents (`voice_intent.h`), including three dedicated Goldberg carriers; they group into a handful of families:
 
 | Family | Representative intents | Role |
 |--------|------------------------|------|
@@ -38,10 +38,10 @@ The form director assigns each voice a **voice intent** over the bar spans of th
 | Episodes | `Episode`, `FortspinnungSpan` | Sequential travel material derived from subject motifs |
 | Fixed lines | `GroundCarrier`, `PassacagliaGround`, `CantusFirmusCarrier` | Immutable repeating basses and chorale melodies |
 | Figural | `FigurationCarrier`, `ArpeggioFlow`, `ToccataCarrier`, `FantasiaCarrier` | Continuous idiomatic figuration and sectional solo writing |
-| Variation | `VariationCarrier` and role-specific variants | Reinvented upper material over a fixed bass |
-| Texture | `RhythmCarrier`, `NctCarrier`, free counterpoint | Anacrusis/hemiola rhythm shapes, declared non-chord-tone figures, and accompaniment selected by the candidate search |
+| Variation | `VariationCarrier`, `GoldbergBassCarrier`, `GoldbergVariationCarrier`, `GoldbergInnerVoiceCarrier` | Authored variation material and the three distinct Goldberg lines |
+| Texture | `RhythmCarrier`, `NctCarrier`, `TrioVoiceCarrier` | Anacrusis/hemiola rhythm shapes, declared non-chord-tone figures, and authored trio/counterlines |
 
-Material-bearing intents (subjects, grounds, cantus firmus) are fixed; the remaining lines are filled in by the [candidate search](/docs/generation-pipeline#step-3-candidate-search).
+All default shipped forms use carrier assembly: candidate search dispatches the spans but replays the authored material verbatim, so scored search contributes no default notes. The opt-in `--free-counterpoint` path reroutes only Passacaglia V1 (`voice == 1`) from `TrioVoiceCarrier` to `SequentialCounterline`; it is unavailable for other forms. See [Candidate Search](/docs/generation-pipeline#step-3-candidate-search).
 
 ::: info Subject, answer, ground, cantus firmus
 A **subject** is the main fugue theme. An **answer** is that theme restated in another voice, usually shifted toward the dominant. A **ground bass** is a repeating low pattern. A **cantus firmus** is a fixed long-note melody.
@@ -61,7 +61,7 @@ Each voice has its own intervallic profile and directional tendencies, and devel
 
 ### Register Differentiation
 
-Voices keep to distinct registers. Voice crossing is minimized; when voices approach each other, they tend to move apart. The candidate search anchors each beat to chord tones, keeping the harmony clear while voices stay independent.
+Voices keep to distinct registers. Voice crossing is minimized; when voices approach each other, they tend to move apart. The form builders author the carrier lines against the harmonic plan, and the validator checks their register, harmony, and independence.
 
 ::: info Register and voice crossing
 **Register** means pitch range: bass is low, soprano-like writing is high. **Voice crossing** happens when a lower voice moves above a higher voice, or a higher voice moves below a lower one. That makes the streams harder to follow.

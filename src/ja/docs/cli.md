@@ -11,21 +11,20 @@ MIDI Sketch Bachには、ターミナルから直接バッハ風のMIDI ファ�
 `--form`、`--key`、`--character`、`--scale`、`--bars` は音楽構造に関する選択です。用語が曖昧な場合は、先に[エンジニアのための音楽用語入門](/ja/docs/music-primer)を読むと理解しやすくなります。
 :::
 
-## インストール
+## ビルド
 
 ```bash
-# インストールせずに実行
-npx @libraz/midi-sketch-bach [options]
-
-# グローバルインストール
-npm install -g @libraz/midi-sketch-bach
-@libraz/midi-sketch-bach [options]
+git clone https://github.com/libraz/midi-sketch-bach.git
+cd midi-sketch-bach
+make build
 ```
+
+npm パッケージは未公開で、CLI 実行ファイルも提供しません。ソースツリーからネイティブバイナリを実行します。
 
 ## 使い方
 
 ```
-@libraz/midi-sketch-bach [options]
+./build/bin/bach_cli [options]
 ```
 
 ## オプション
@@ -99,121 +98,116 @@ npm install -g @libraz/midi-sketch-bach
 既定の楽曲（ハ長調のフーガ）を生成：
 
 ```bash
-@libraz/midi-sketch-bach -o fugue.mid
+./build/bin/bach_cli -o fugue.mid
 ```
 
 ### ニ短調のフーガ
 
 ```bash
-@libraz/midi-sketch-bach --form fugue --key d_minor --character severe --bpm 76 -o fugue-dm.mid
+./build/bin/bach_cli --form fugue --key d_minor --character severe --bpm 76 -o fugue-dm.mid
 ```
 
 ### ハ長調の前奏曲とフーガ
 
 ```bash
-@libraz/midi-sketch-bach --form prelude_and_fugue --key c_major -o prelude-fugue.mid
+./build/bin/bach_cli --form prelude_and_fugue --key c_major -o prelude-fugue.mid
 ```
 
 ### ヘ長調のトリオ・ソナタ
 
 ```bash
-@libraz/midi-sketch-bach --form trio_sonata --key f_major --bpm 90 -o trio-sonata.mid
+./build/bin/bach_cli --form trio_sonata --key f_major --bpm 90 -o trio-sonata.mid
 ```
 
 ### イ長調のコラール前奏曲
 
 ```bash
-@libraz/midi-sketch-bach --form chorale_prelude --key a_major --character noble --bpm 66 -o chorale.mid
+./build/bin/bach_cli --form chorale_prelude --key a_major --character noble --bpm 66 -o chorale.mid
 ```
 
 ### ニ短調のトッカータとフーガ
 
 ```bash
-@libraz/midi-sketch-bach --form toccata_and_fugue --key d_minor --character restless -o toccata-fugue.mid
+./build/bin/bach_cli --form toccata_and_fugue --key d_minor --character restless -o toccata-fugue.mid
 ```
 
 ### ハ短調のパッサカリア
 
 ```bash
-@libraz/midi-sketch-bach --form passacaglia --key c_minor --scale long -o passacaglia.mid
+./build/bin/bach_cli --form passacaglia --key c_minor --scale long -o passacaglia.mid
 ```
 
 ### ト短調の幻想曲とフーガ
 
 ```bash
-@libraz/midi-sketch-bach --form fantasia_and_fugue --key g_minor -o fantasia-fugue.mid
+./build/bin/bach_cli --form fantasia_and_fugue --key g_minor -o fantasia-fugue.mid
 ```
 
 ### ト長調のチェロ前奏曲
 
 ```bash
-@libraz/midi-sketch-bach --form cello_prelude --key g_major --instrument cello -o cello-prelude.mid
+./build/bin/bach_cli --form cello_prelude --key g_major --instrument cello -o cello-prelude.mid
 ```
 
 ### ニ短調のシャコンヌ
 
 ```bash
-@libraz/midi-sketch-bach --form chaconne --key d_minor --instrument violin -o chaconne.mid
+./build/bin/bach_cli --form chaconne --key d_minor --instrument violin -o chaconne.mid
 ```
 
 ### ト長調のゴルトベルク変奏曲
 
 ```bash
-@libraz/midi-sketch-bach --form goldberg_variations --key g_major --instrument harpsichord -o goldberg.mid
+./build/bin/bach_cli --form goldberg_variations --key g_major --instrument harpsichord -o goldberg.mid
 ```
 
 ### シードによる決定論的出力
 
 ```bash
-@libraz/midi-sketch-bach --form fugue --key g_minor --seed 42 -o fugue-seed42.mid
+./build/bin/bach_cli --form fugue --key g_minor --seed 42 -o fugue-seed42.mid
 ```
 
 ### フルスケールのパッサカリア
 
 ```bash
-@libraz/midi-sketch-bach --form passacaglia --key d_minor --scale full -o passacaglia-full.mid
+./build/bin/bach_cli --form passacaglia --key d_minor --scale full -o passacaglia-full.mid
 ```
 
 ### 特定の小節数を目標にする
 
 ```bash
-@libraz/midi-sketch-bach --form fugue --key c_major --bars 24 -o fugue-24bars.mid
+./build/bin/bach_cli --form fugue --key c_major --bars 24 -o fugue-24bars.mid
 ```
 
 ### JSONイベントデータの出力
 
 ```bash
-@libraz/midi-sketch-bach --form fugue --key d_minor --json -o fugue.mid
+./build/bin/bach_cli --form fugue --key d_minor --json -o fugue.mid
 ```
 
 この例では `fugue.mid` と `fugue.json` が書き出されます。`--generated-json` を付けると `fugue.generated.json` と `fugue.provenance.json` が追加されます。`-o` が既に `.json` で終わっている場合、サイドカーは拡張子を置き換えるのではなく末尾に付け足されるため、出力ファイル自身がサイドカーで上書きされることはありません。
-
-### npxで実行
-
-インストール不要で実行できます。
-
-```bash
-npx @libraz/midi-sketch-bach --form fugue --key d_minor -o fugue.mid
-```
 
 ## JSON出力形式
 
 `--json` を使用した場合、MIDI ファイルと同じ場所に書き出される JSON は [EventData](/ja/docs/api-js#eventdata) の構造に従います。
 
-イベント JSON はピッチを C で報告し（指定された調は `.mid` ファイルにのみ適用）、各ノートは `source` 由来タグ（`"material"`、`"compose"`、`"ornament"`）を持ちます。
+イベント JSON のピッチは `.mid` ファイルと同じ出力調へ移調され、楽器の音域に合わせたオクターブシフトも反映されます。`generated.v1` サイドカーのピッチはエンジン内部の C のままです。イベント JSON の各ノートは `source` 由来タグ（`"material"`、`"compose"`、`"ornament"`）も持ちます。
 
 ```json
 {
   "form": "fugue",
-  "key": "D minor",
+  "key": "D_minor",
   "bpm": 80,
   "seed": 12345,
-  "total_ticks": 80640,
-  "total_bars": 42,
-  "description": "Fugue, 3 voices",
+  "total_ticks": 84480,
+  "total_bars": 44,
+  "description": "Fugue in D_minor",
   "tempos": [
     { "tick": 0, "bpm": 80 },
-    { "tick": 80640, "bpm": 78 }
+    { "tick": 80640, "bpm": 78 },
+    { "tick": 81600, "bpm": 76 },
+    { "tick": 82560, "bpm": 74 },
+    { "tick": 83520, "bpm": 72 }
   ],
   "time_signatures": [
     { "tick": 0, "numerator": 4, "denominator": 4 }
@@ -229,10 +223,10 @@ npx @libraz/midi-sketch-bach --form fugue --key d_minor -o fugue.mid
       ],
       "notes": [
         {
-          "pitch": 72,
+          "pitch": 74,
           "velocity": 80,
           "start_tick": 0,
-          "duration": 480,
+          "duration": 240,
           "voice": 0,
           "source": "material"
         }
@@ -249,8 +243,8 @@ npx @libraz/midi-sketch-bach --form fugue --key d_minor -o fugue.mid
 | コード | 意味 |
 |--------|------|
 | `0` | 成功 |
-| `2` | 使用方法のエラー — 未知のオプション、値の欠落、併用できないオプションの組み合わせ |
-| `3` | 生成エラー — 無効な設定、非互換な性格や楽器、作曲検証の失敗 |
+| `2` | 解析・設定エラー — 未知または無効なオプション、値の欠落や範囲外、併用できないオプションの組み合わせ |
+| `3` | 生成エラー — 非互換な性格や楽器、利用できない自由対位法、作曲検証の失敗 |
 | `4` | 出力エラー — MIDI ファイルまたは JSON サイドカーを書き出せなかった |
 
 `--generated-json` を指定した状態で作曲検証に失敗した場合は、終了コード `3` で終わる前に `.diagnostic.json` サイドカーが出力先の隣に書き出されます。

@@ -23,7 +23,7 @@ An interval is **augmented** when it is one semitone wider than its perfect or m
 
 <CounterpointStaff example="augmentedSecond" locale="en" />
 
-The augmented second deserves its own example because it arises so naturally in minor keys: harmonic minor raises the seventh degree (the leading tone), leaving a three-semitone gap from the natural sixth. Bach's lines avoid it by choosing the melodic-minor forms on the way up and down; the candidate search reaches the same outcome because the validator rejects the interval.
+The augmented second deserves its own example because it arises so naturally in minor keys: harmonic minor raises the seventh degree (the leading tone), leaving a three-semitone gap from the natural sixth. Bach's lines avoid it by choosing the melodic-minor forms on the way up and down. MIDI Sketch Bach's form builders author the same choice into their carrier material, and the validator rejects a forbidden leap if one reaches the final score.
 
 ::: info The three flavors of minor
 A minor key has one chord vocabulary but three melodic spellings of its scale: **natural** minor (no raised notes), **harmonic** minor (7th degree raised a semitone — this manufactures the leading tone that cadences need), and **melodic** minor (6th *and* 7th raised on the way up, natural on the way down). The raised 7th of harmonic minor is what opens the augmented-second trap between degrees 6 and 7; the melodic form exists precisely to walk around it.
@@ -57,7 +57,7 @@ Even consonant leaps are rationed. A **step** moves to the adjacent scale note; 
 
 <CounterpointStaff example="melodicArch" locale="en" />
 
-No single rule enforces the arch — it emerges from the candidate search scoring, which rewards stepwise motion and chord-tone arrivals. But it is worth knowing the target shape when you read generated voices: a line that rises to one clear high point and settles is the engine behaving well.
+No single rule enforces the arch. In the default path, the contour comes from the line authored by the form builder and replayed by its carrier. Scored search is not responsible for default melodic shape; it is available only for the opt-in Passacaglia counterline. The arch is still useful when reading a generated voice: a line that rises to one clear high point and settles has a coherent phrase shape.
 
 Bach wrote the reference implementation. The subject of the "Little" G minor organ fugue spends its one leap immediately, touches its peak once, and walks the rest of the way home by step:
 

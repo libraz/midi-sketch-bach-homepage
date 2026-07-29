@@ -8,7 +8,7 @@ description: MIDI Sketch Bach の設定オプションの相互作用 - 依存�
 MIDI Sketch Bach の設定オプションは特定の方法で相互に作用します。これらの関係を理解することで、望む結果を生む設定を作成する助けになります。
 
 ::: info オプションには二つの層があります
-`form`、`key`、`isMinor`、`character` は音楽構造を選びます。`instrument`、`bpm`、`seed` はレンダリングや再現性に関わります。このページで使う音楽用語は[エンジニアのための音楽用語入門](/ja/docs/music-primer)で説明しています。
+`form`、`isMinor`、`character` は内部の作曲結果に影響します。`key` はその結果を出力時に移調し、`instrument`、`bpm`、`seed` はレンダリングや再現性に関わります。このページで使う音楽用語は[エンジニアのための音楽用語入門](/ja/docs/music-primer)で説明しています。
 :::
 
 ## 依存関係の概要
@@ -23,8 +23,10 @@ graph TD
     P --> G["出力の長さ"]
     H["targetBars"] -->|"上書き"| F
     I["seed"] -->|"初期化"| J["RNG"]
-    K["key"] --> L["ピッチセンター（MIDI 出力時に適用）"]
-    M["isMinor"] --> L
+    K["key"] -->|"移調"| L["MIDI と getEvents のピッチ"]
+    K -->|"表示"| Q["出力調のメタデータ"]
+    M["isMinor"] -->|"選択"| R["内部の C 長調/短調プラン"]
+    M --> Q
     N["character"] -->|"形作る"| O["主題/テーマ"]
     A -->|"禁止する場合あり"| N
 ```
@@ -35,7 +37,7 @@ graph TD
 
 ```mermaid
 graph LR
-    A["form: 'fugue'"] --> B["3声 · 4/4<br>42小節 · オルガン"]
+    A["form: 'fugue'"] --> B["3声 · 4/4<br>基準42 → 出力44小節 · オルガン"]
     C["form: 'cello_prelude'"] --> D["1声 · 4/4<br>8小節 · チェロ"]
     E["form: 'chaconne'"] --> F["2声 · 3/4<br>16小節 · ヴァイオリン"]
 ```
@@ -64,6 +66,7 @@ generator.generate({ form: 'fugue', key: 2, isMinor: true })
 //   scale: 'short',       ← 既定（≒ 基準長）
 // }
 // 声部数（3）、拍子（4/4）、基準長（42小節）は形式から決まります。
+// 4小節刻みにスナップされ、既定の出力は44小節になります。
 ```
 
 明示的に設定したフィールドは既定を上書きします。
@@ -90,7 +93,7 @@ generator.generate({
 | `chaconne` | ヴァイオリン | -- |
 | `goldberg_variations` | チェンバロ | ピアノ |
 
-`instrument` の選択は、General MIDI プログラム、生成時に使う演奏可能音域、装飾処理の装飾密度に影響します。音域は作曲そのものに反映されるため、同じ曲を別の楽器へ移し替えることはできません。その形式が受け付けない楽器を指定すると例外になり、不明な楽器文字列も同様です。
+`instrument` の選択は、General MIDI プログラム、完成した出力を収める演奏可能音域、装飾処理の装飾密度に影響します。各形式には互換楽器が明示的に定義されています。その範囲外の楽器を指定すると例外になり、不明な楽器文字列も同様です。
 
 ::: tip
 実際に選択肢があるのはゴルトベルク変奏曲だけです。`harpsichord` は歯切れのよい発音で変奏のテクスチュアを見通しよく保ち、`piano` は同じ素材をより暖かく持続的に響かせます。
@@ -117,7 +120,7 @@ generator.generate({
 
 ```js
 // 形式の基準長の倍率で長さを指定
-generator.generate({ form: 'fugue', scale: 'long' })   // ≒ 3 × 42小節
+generator.generate({ form: 'fugue', scale: 'long' })   // 42 × 3 = 126、128小節へスナップ
 
 // 特定の長さ（スナップ・丸め込みあり）
 generator.generate({ form: 'fugue', targetBars: 48 })
@@ -154,16 +157,16 @@ generator.generate({ form: 'fugue', seed: 0 })
 // 常に同じ結果
 generator.generate({ form: 'fugue', key: 2, isMinor: true, seed: 42 })
 
-// 調が異なれば同じシードでも出力は異なる
+// key を変えると MIDI/getEvents は移調されるが、内部の generated.v1 は同じ
 generator.generate({ form: 'fugue', key: 0, isMinor: true, seed: 42 })
 ```
 
 ## 調と旋法
 
-`key` と `isMinor` パラメータは連携して調中心を定義します。
+エンジンは内部で C を基準に作曲します。`isMinor` は内部の C 長調または C 短調の和声プランを選びますが、`key` はそのプランを変更しません。`key` は完成した MIDI と `getEvents()` のノートピッチを移調し、出力調のメタデータを設定します。
 
 ::: info 調中心
-**調中心**は、音楽上「帰る場所」のように聞こえる音です。`key` が C や D のようなピッチクラスを選び、`isMinor` が長調か短調かを選びます。
+**調中心**は、出力を聴いたときに「帰る場所」のように聞こえる音です。`key` がそのピッチクラスを選び、`isMinor` が内部の作曲プランと出力調の表記を長調にするか短調にするかを選びます。
 :::
 
 ```js
@@ -182,10 +185,7 @@ generator.generate({ key: 'D', isMinor: true })
 
 名前は完全一致で照合されるため、`"g"` と `"Db"` はどちらも例外になります。受け付ける綴りは `getKeys()` で列挙できます。
 
-調は以下に影響します：
-- 楽曲のピッチセンターと音階
-- エンジンが利用できる和声語彙
-- 転調の目標（関連調）
+`key` だけを変えると、出力の移調と調のメタデータが変わります。和声語彙や転調プランは変わらないため、形式・旋法・性格・シードが同じなら、`getGenerated()` は同じ内部 C のピッチを返します。`getEvents()` は移調後の出力調のピッチを返します。
 
 ## 性格と形式
 

@@ -70,7 +70,7 @@ In a hidden fifth, the first vertical interval is not a fifth. The problem appea
 | `hidden_parallel_octave` | Similar motion lands on a unison or octave from a non-perfect interval. Same scope and exemptions as the fifth: every voice pair, any beat; cadence cells and both-material pairs are exempt. |
 
 ::: info Two scoping terms used in this chapter
-A **strong beat** is the first beat of a bar — the engine's model is the binary `start_tick % ticks_per_bar == 0` ([primer](/docs/music-primer#strong-and-weak-beats)). An **upper-voice pair** is a pair of adjacent voices that does not include the lowest voice: in a three-voice texture, the top two. The bass is excluded because these checks exist for material that will later be inverted (see below), and the bass line is not part of that swap.
+A **structural accent** is a Strong or Medium position in the meter: the downbeat, beat 3 in 4/4, each dotted pulse in compound meter, or beat 2 in a Sarabande ([primer](/docs/music-primer#strong-and-weak-beats)). An **upper-voice pair** is a pair of adjacent voices that does not include the lowest voice: in a three-voice texture, the top two. The bass is excluded from `invertible_at_octave` because that check protects material whose upper voices may later exchange registers.
 :::
 
 ## Voice crossing and spacing
@@ -108,14 +108,15 @@ Bach cashes in on the benign cases constantly. In the C minor fugue of WTC I, th
 
 <CounterpointStaff example="bachInvertible" locale="en" />
 
-Two scoped rules keep upper-voice pairs invertible:
-
-<CounterpointStaff example="fourthWeakBeat" locale="en" />
+One scoped rule protects that exchange:
 
 | Rule | What it prevents |
 |------|------------------|
-| `invertible_at_octave` | Parallel octaves in an upper-voice pair on strong beats — after inversion they would become parallel *unisons*, the most extreme fusion possible. Oblique motion and weak beats are exempt. |
-| `fourth_only_on_weak_beat` | A strong-beat perfect fourth in an upper-voice pair — after inversion it becomes a strong-beat fifth. Weak-beat fourths pass as transitional sonorities. |
+| `invertible_at_octave` | Parallel octaves in an upper-voice pair at structural accents — after inversion they would become parallel *unisons*, the most extreme fusion possible. Oblique motion and weak positions are exempt. |
+
+A fourth is not intrinsically illegal in an upper-voice pair. The vertical validator finds the actual lowest sounding pitch: a fourth above that bass is dissonant unless a declared suspension or cadential 6/4 licenses it, while a fourth between upper voices is legal when both notes are consonant above the bass.
+
+<CounterpointStaff example="bassSensitiveFourth" locale="en" />
 
 ## How the validator sees this chapter
 
@@ -126,7 +127,6 @@ Two scoped rules keep upper-voice pairs invertible:
 | `hidden_parallel_octave` | MusicalFail | cadence cells, both-material pairs |
 | `voice_crossing` | MusicalFail | none |
 | `spacing_adjacent_voices_within_octave` | MusicalFail | bottom pair may exceed an octave; ≥3 voices only |
-| `invertible_at_octave` | MusicalFail | oblique motion, weak beats, both-material pairs |
-| `fourth_only_on_weak_beat` | MusicalFail | weak beats, both-material pairs |
+| `invertible_at_octave` | MusicalFail | oblique motion, weak positions, both-material pairs |
 
 Continue with [Chapter 3 — Dissonance Treatment](/docs/counterpoint/dissonance).

@@ -14,7 +14,7 @@ You do not need to read staff notation to use the library. If terms such as **vo
 ## Install
 
 ::: warning Alpha — not yet published to npm
-This package is in alpha and has **not been published to the npm registry yet**. The commands below will not work until the first public release. Until then, try it in the [live demo](/) on this site.
+This package is in alpha and has **not been published to the npm registry yet**. The npm commands below will not work until the first public release. Until then, try the JavaScript/WASM library in the [live demo](/) on this site.
 :::
 
 ::: code-group
@@ -75,17 +75,20 @@ generator.destroy()
 Generate a MIDI file directly from the command line:
 
 ```bash
-npx @libraz/midi-sketch-bach --form fugue --key d_minor -o output.mid
+git clone https://github.com/libraz/midi-sketch-bach.git
+cd midi-sketch-bach
+make build
+./build/bin/bach_cli --form fugue --key d_minor -o output.mid
 ```
 
 Generate a Toccata and Fugue in D minor:
 
 ```bash
-npx @libraz/midi-sketch-bach --form toccata_and_fugue --key d_minor -o toccata.mid
+./build/bin/bach_cli --form toccata_and_fugue --key d_minor -o toccata.mid
 ```
 
-::: tip Defaults differ between the JS API and the CLI
-When `bpm` is omitted, the JS API defaults to 100 while the CLI defaults to 72. The CLI also falls back to `--scale medium` for fugue when `--scale` is omitted (the JS API default is always `short`). See the [CLI reference](/docs/cli) for the full list of CLI defaults.
+::: tip Shared defaults
+The JavaScript API and CLI both default to 100 BPM and the `short` scale. See the [CLI reference](/docs/cli) for the full list of options.
 :::
 
 ## What You Can Generate

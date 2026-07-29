@@ -20,7 +20,7 @@ Baroque practice sorts intervals into three families, and the engine encodes exa
 | Perfect consonance | unison, 5th, octave | 0, 7 | Stable pillars — but repeating them by parallel motion is forbidden (chapter 2). |
 | Imperfect consonance | 3rds, 6ths | 3, 4, 8, 9 | The everyday contrapuntal sound; may move in parallel freely. |
 | Dissonance | 2nds, 7ths, tritone | 1, 2, 6, 10, 11 | Needs a declared or recognizable job: passing motion, suspension, pedal context (chapter 3). |
-| Special case | perfect 4th | 5 | In the consonant set, but a scoped rule rejects strong-beat fourths in upper-voice pairs. |
+| Special case | perfect 4th | 5 | Bass-sensitive: dissonant above the actual bass, but legal between upper voices when both are consonant above that bass. |
 
 The staff figures label intervals with the standard shorthand — `P5` (perfect fifth), `M3` (major third), `m10` (minor tenth), `A4` (augmented fourth, the tritone). If the letters are new, the [interval name legend](/docs/music-primer#interval-names-and-qualities) in the primer decodes them all.
 
@@ -58,8 +58,8 @@ And one bar of the C minor prelude shows the two families dividing the labor —
 
 The perfect fourth has been argued about for centuries, and the engine's treatment mirrors the historical compromise:
 
-- **Against the bass**, a fourth behaves as a dissonance — it wants to resolve down to a third (this is the skeleton of the 4-3 suspension in chapter 3).
-- **Between upper voices** over a supporting bass, a fourth is acceptable — but the scoped rule `fourth_only_on_weak_beat` still rejects it as a pillar on a [strong beat](/docs/music-primer#strong-and-weak-beats) (the bar's downbeat) in upper-voice pairs, because in invertible counterpoint a fourth flips into a fifth (chapter 2).
+- **Against the actual lowest sounding voice**, a fourth is dissonant at a [structural accent](/docs/music-primer#strong-and-weak-beats). `vertical_dissonance` rejects it unless a fully declared 4-3 suspension or cadential 6/4 supplies the required preparation and resolution.
+- **Between upper voices** over a supporting bass, a fourth is legal when each upper note is consonant above that bass. It is not rejected merely because octave inversion would turn it into a fifth (chapter 2).
 
 ## How the validator sees this chapter
 
@@ -67,8 +67,8 @@ The interval families are not a rule themselves; they are the lookup table that 
 
 | Concept | Where it is enforced |
 |---------|----------------------|
-| Consonant interval-class set `{0, 3, 4, 5, 7, 8, 9}` | `vertical_dissonance` (chapter 3), suspension preparation checks |
+| Consonant interval-class set `{0, 3, 4, 5, 7, 8, 9}` plus bass-sensitive treatment of class 5 | `vertical_dissonance` (chapter 3), suspension preparation checks |
 | Perfect intervals (0, 7 mod 12) | parallel and hidden-parallel rules (chapter 2) |
-| The scoped fourth | `fourth_only_on_weak_beat` (chapter 2) |
+| Fourth above the actual bass | `vertical_dissonance`, with declared suspension and cadential 6/4 licenses (chapter 3) |
 
 Continue with [Chapter 2 — Motion & Forbidden Parallels](/docs/counterpoint/motion).

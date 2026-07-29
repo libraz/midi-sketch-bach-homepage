@@ -27,7 +27,7 @@ Here is the textbook case in Bach's own hand — the opening of the C minor fugu
 
 <CounterpointStaff example="countersubjectContinuous" locale="en" />
 
-A countersubject is only useful if it actually accompanies. `countersubject_continuous` samples every quarter-beat of the answer's window and requires a sounding note from the countersubject voice at each one. (Since the pair is designed to be reused with voices swapped, the invertible-counterpoint rules from chapter 2 — `invertible_at_octave`, `fourth_only_on_weak_beat` — police the same passage.)
+A countersubject is only useful if it actually accompanies. `countersubject_continuous` samples every quarter-beat of the answer's window and requires a sounding note from the countersubject voice at each one. Since the pair is designed to be reused with voices swapped, `invertible_at_octave` also checks it at structural accents; fourths are judged against the actual bass by `vertical_dissonance`.
 
 In the same C minor fugue, the countersubject enters the moment the answer does — and never stops sounding under it:
 

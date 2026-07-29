@@ -8,19 +8,20 @@ description: How the composer engine turns a config into a Bach-style compositio
 When you call `generator.generate(config)`, the composer engine runs a fixed pipeline that turns the request into a complete, deterministic composition.
 
 ::: info Musical vocabulary in this pipeline
-The pipeline treats music as structured data: forms allocate voices, harmony supplies chord targets, candidate search chooses notes, and validation rejects illegal voice interactions. The compact glossary is in [Music Primer for Engineers](/docs/music-primer).
+The pipeline treats music as structured data: forms allocate voices and authored note carriers, harmony supplies chord targets, and validation rejects illegal voice interactions. The compact glossary is in [Music Primer for Engineers](/docs/music-primer).
 :::
 
 ```mermaid
 graph TD
     A["BachConfig"] --> B["1. Compose Request<br>(resolve & validate)"]
     B --> C["2. Form Director<br>(per-form layout)"]
-    C --> D["3. Candidate Search<br>(chord-tone selection)"]
-    D --> E["4. Rule Validator<br>(fail-fast)"]
-    E --> F["5. Renderer<br>(tracks)"]
-    F --> G["6. Ornament & Expression<br>(post-passes)"]
-    G --> H["7. MIDI Writer<br>(key transposition)"]
-    H --> I["Standard MIDI File<br>+ Event Data"]
+    C --> D["3. Candidate Search<br>(carrier replay by default)"]
+    D --> E["4. Generation Validation<br>(accumulate failures)"]
+    E --> F["5. Initial Renderer<br>(tracks)"]
+    F --> G["6. Ornament Pass"]
+    G --> H["FinalScore Validation"]
+    H --> I["Velocity + Re-render<br>CC + Tempo"]
+    I --> J["7. MIDI + Event Export<br>(output-key pitches)"]
 ```
 
 The whole pipeline is deterministic: the same config and seed always yield byte-identical output.
@@ -36,7 +37,7 @@ Validation is strict: unknown `form`/`character`/`instrument`/`scale` values and
 The form director lays out the piece. For the chosen form it assigns **voice intents** to bar spans — subjects and answers, ground basses, cantus firmus, figuration, variation material — across the resolved length.
 
 ::: info Bar span and material
-A **bar span** is a range of measures. **Material** is predeclared musical content, such as a fugue subject or repeating ground bass, that the candidate search should respect instead of freely replacing.
+A **bar span** is a range of measures. **Material** is authored musical content, such as a fugue subject, a counterline, or a repeating ground bass, that a carrier replays verbatim.
 :::
 
 ```mermaid
@@ -44,7 +45,7 @@ graph TD
     A["Form Type"] --> B{{"Layout"}}
     B -->|"Fugal"| C["Subject / answer entries<br>+ episodes"]
     B -->|"Ground-bass"| D["Immutable bass<br>+ variation cycles"]
-    B -->|"Cantus firmus"| E["Fixed chorale line<br>+ contrapuntal voice"]
+    B -->|"Cantus firmus"| E["Fixed chorale line<br>+ figuration + bass"]
     B -->|"Linear / figural"| F["Continuous figuration"]
 ```
 
@@ -52,7 +53,9 @@ The layout follows a **design-value arc** — establish, develop, climax at roug
 
 ## Step 3: Candidate Search
 
-Against a harmonic plan (chords, modulation, cadences), the candidate search selects notes for each non-fixed voice. Selection is **per-beat and chord-tone anchored**: at each beat the search prefers pitches that are consonant with the harmony and with the other voices, falling back through ranked alternatives when the first choice violates a constraint. Material assigned by the form director (subjects, grounds, cantus firmus) is fixed and is not re-selected here.
+Candidate search dispatches every voice-intent span. In all default shipped forms, those spans are carriers: they replay the notes assembled by the form builder verbatim. This carrier-assembly path produces every default note; the scored search branch contributes zero.
+
+The scored branch is an off-by-default diagnostic option. `bach_cli --free-counterpoint` reroutes only the Passacaglia V1 (`voice == 1`) counterline to per-beat, chord-tone-anchored search. The ground and principal variation remain carriers. No other form has an eligible span, so requesting free counterpoint for another form returns `FreeCounterpointUnavailable`.
 
 ::: info Chords, modulation, cadences
 **Chords** are the vertical targets at each point in time. **Modulation** means moving the tonal center to another key. A **cadence** is a phrase ending, usually a dominant-to-tonic arrival such as V to I.
@@ -60,26 +63,28 @@ Against a harmonic plan (chords, modulation, cadences), the candidate search sel
 
 ## Step 4: Rule Validator
 
-The validator checks the assembled voices against counterpoint and structure rules and fails fast on a violation. It reports failures with rule identifiers so the responsible span can be located. Learn the musical ideas in [Counterpoint Course](/docs/counterpoint), then use the [Validator Rule Reference](/docs/validator-rules) when you need to look up a specific rule ID.
+The validator checks the assembled voices against counterpoint and structure rules. It accumulates the failures found during the pass and reports each with a rule identifier so the responsible span can be located. Learn the musical ideas in [Counterpoint Course](/docs/counterpoint), then use the [Validator Rule Reference](/docs/validator-rules) when you need to look up a specific rule ID.
 
-::: info What fail-fast means here
-The engine does not keep a list of every possible musical problem in a bad candidate. It stops at the first violated rule for that pass, reports the rule identifier, and lets the search or caller handle the failed candidate.
+::: info What happens after a blocking failure
+The public generation path aborts and returns the validation report. It does not repair the score, retry the search, or choose a different candidate.
 :::
 
 ## Step 5: Renderer
 
-The validated voices are rendered into tracks — one track per voice — with channels, the instrument's General MIDI program, and note timings.
+As the final part of `Composer::run()`, the assembled voices are rendered into tracks — one track per voice — with channels and note timings. After final validation, the public generation path applies the instrument-specific velocity curve and renders the tracks again with the General MIDI program.
 
 ::: info Source tags survive rendering
-Rendered notes keep their provenance: `"material"` for fixed source material, `"compose"` for notes selected by candidate search, and `"ornament"` for notes added later. This is useful when debugging why a rule could or could not rewrite a note.
+Rendered notes keep their provenance: `"material"` for carrier material, `"compose"` for notes from the opt-in scored search, and `"ornament"` for notes added later. This is useful when locating the source of a validation finding.
 :::
 
 ## Step 6: Ornament & Expression (post-pass)
 
-Deterministic post-passes decorate the rendered tracks. At the C++ library level the ornament pass is a separate function (`applyOrnamentPass`) deliberately kept out of `Composer::run()`; the public generation path `bach_generate_from_json` — used by the JS API, CLI, and this demo — always invokes it after validation.
+The public generation path runs these operations in order after `Composer::run()`: apply ornaments, run `FinalScore` validation, apply the velocity curve and re-render, add controller events, then add tempo events. A blocking `FinalScore` failure aborts before velocity, controller, tempo, MIDI, or public event output.
 
 - **Ornaments** — trills, mordents, and Nachschlag, with density depending on character and instrument. Ground-bass and cantus-firmus lines are never ornamented.
-- **Expression** — a CC 7 / CC 11 registration curve following the form's energy arc, plus tempo events: the closing ritardando and, for the prelude, toccata and fantasia forms, a section tempo change at the fugue entry. The velocity curve is applied after final validation, so it never affects the notes the validator judged.
+- **Velocity** — an instrument-aware phrase curve applied after final validation; the tracks are re-rendered so MIDI and `getEvents()` expose the updated values.
+- **Expression** — CC 7 registration terraces for organ and harpsichord; CC 11 continuous expression for piano, violin, and cello.
+- **Tempo** — a form-dependent closing ritardando (none for the Trio Sonata) and, for the prelude, toccata, and fantasia forms, a section tempo change at the fugue entry.
 
 Notes added by these passes carry the `source: "ornament"` provenance tag (versus `"material"` and `"compose"`).
 
@@ -89,20 +94,20 @@ An **ornament** is a small decorative figure added around a structural note. It 
 
 ## Step 7: MIDI Writer
 
-The internal representation is composed entirely in C. The MIDI writer is the **only** place where the requested `key` is applied — pitches are transposed on the way out, time signatures are written (3/4 for passacaglia and chaconne, 4/4 otherwise), and the result is a Type 1 Standard MIDI File.
+The internal representation is composed and validated in C. The output writers apply the requested `key` and any output-octave shift. The MIDI writer also writes time signatures (3/4 for passacaglia and chaconne, 4/4 otherwise) and produces a Type 1 Standard MIDI File. The public event writer applies the same pitch transformation.
 
 ```js
 const midi = generator.getMidi()       // Uint8Array (transposed to your key)
-const events = generator.getEvents()   // Event data (pitches stay in C)
+const events = generator.getEvents()   // Event data (pitches in the output key)
 ```
 
 ::: tip
-The events JSON from `getEvents()` reports pitches in C and tags every note with its `source`. See the [JavaScript API](/docs/api-js#eventdata) for the full type definitions.
+`getEvents()` reports output-key pitches and tags every note with its `source`. The lower-level `generated.v1` diagnostic artifact keeps internal C pitches. See the [JavaScript API](/docs/api-js#eventdata) for the public event type definitions.
 :::
 
 ## Beyond the pipeline: how quality is measured
 
-The seven steps above are everything that happens at runtime. The pipeline never searches for a "more Bach-like" candidate while generating — the layout is fixed by design values, and the validator only rejects illegal results. So how do we know those design values actually produce Bach-like output?
+The seven steps above are everything that happens at runtime. By default, the pipeline never searches for a "more Bach-like" candidate while generating: the form builder authors the carrier material, and the validator rejects illegal results. So how do we know those design values actually produce Bach-like output?
 
 The answer is **development-side quality gates**. Whenever a form or figuration in the engine changes, the generated output is run through two families of automated checks. Both ship as public Python tooling in the engine repository (the `texture-gate` and `closure` commands of `bach_tools.py`).
 

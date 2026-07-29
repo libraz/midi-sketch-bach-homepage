@@ -94,20 +94,20 @@ Returns structured event data with metadata and individual note events.
 ```js
 const events = generator.getEvents()
 console.log(events.form)             // "fugue"
-console.log(events.key)              // "D minor"
+console.log(events.key)              // "D_minor"
 console.log(events.bpm)              // 80
-console.log(events.total_bars)       // 42
-console.log(events.tempos)           // Tempo map, including the closing ritardando
+console.log(events.total_bars)       // 44
+console.log(events.tempos)           // Tempo map
 console.log(events.time_signatures)  // Meter map
 console.log(events.tracks)           // Array of TrackData
 ```
 
-::: info Pitches are generated in C
-The engine composes internally in C; the requested `key` is applied when the MIDI file is written. The events JSON therefore reports pitches in C, while the `.mid` file from `getMidi()` is transposed to your chosen key.
+::: info Event pitches match the MIDI output
+The engine composes internally in C, then applies the requested key and any instrument-range octave shift to both `getEvents()` pitches and the `.mid` file from `getMidi()`. Use `getGenerated()` when you need the internal-C pitches.
 :::
 
 ::: warning `bpm` alone will not place a note on the clock
-`events.bpm` is only the starting tempo. Every piece ends with a ritardando, and the prelude/toccata/fantasia forms change tempo again at the fugue entry, so a flat `ticks / 480 * 60 / bpm` conversion drifts by several percent. Walk the [tempo map](#converting-ticks-to-seconds) instead.
+`events.bpm` is only the starting tempo. Most forms add a final ritardando, but Trio Sonata does not. Prelude and Fugue, Toccata and Fugue, and Fantasia and Fugue also change tempo at the fugue entry. Walk the [tempo map](#converting-ticks-to-seconds) instead of assuming a constant tempo.
 :::
 
 **Returns**: [EventData](#eventdata)
@@ -116,12 +116,14 @@ The engine composes internally in C; the requested `key` is applied when the MID
 
 Returns the `generated.v1` document: a flat, index-addressable note list intended for scoring and analysis rather than playback.
 
+Unlike `getEvents()`, its note pitches remain in the engine's internal C before output transposition.
+
 ```js
 const generated = generator.getGenerated()
 console.log(generated.schema_version)  // "generated.v1"
 console.log(generated.ticks_per_beat)  // 480
 console.log(generated.notes[0])
-// { index: 0, start_tick: 0, duration: 60, pitch: 72, voice: 0, velocity: 80 }
+// { index: 0, start_tick: 0, duration: 60, pitch: 82, voice: 0, velocity: 80 }
 ```
 
 **Returns**: `GeneratedData`. Throws when no successful generation has happened yet.
@@ -268,6 +270,8 @@ Each form is written for a specific instrument, and the engine rejects anything 
 | `2` | `"long"` | ~3x natural |
 | `3` | `"full"` | ~4x natural |
 
+The natural length is a raw form value that is snapped to the form's bar grid before output. Fugue has a raw natural length of 42 bars and resolves to 44 bars for `"short"`.
+
 ---
 
 ## Response Types
@@ -277,7 +281,7 @@ Each form is written for a specific instrument, and the engine rejects anything 
 ```ts
 interface EventData {
   form: string          // Form name (e.g., "fugue")
-  key: string           // Requested key name (e.g., "D minor")
+  key: string           // Requested key name (e.g., "D_minor")
   bpm: number           // Starting tempo
   seed: number          // Resolved seed used for generation
   total_ticks: number   // Total duration in MIDI ticks
@@ -304,13 +308,13 @@ interface TrackData {
 }
 ```
 
-`control_changes` carries the expression shape of the performance profile — currently CC 7 (channel volume) — as a sequence of already-merged, duplicate-free points.
+`control_changes` is an already-merged, duplicate-free performance curve. Organ and harpsichord tracks use CC 7 (channel volume); piano, violin, and cello tracks use CC 11 (expression).
 
 ### NoteEvent
 
 ```ts
 interface NoteEvent {
-  pitch: number         // MIDI note number (0-127), generated in C
+  pitch: number         // MIDI note number (0-127), transposed to the output key and range
   velocity: number      // Note velocity (0-127)
   start_tick: number    // Start time in MIDI ticks
   duration: number      // Duration in MIDI ticks
@@ -434,6 +438,21 @@ import { getScales } from '@libraz/midi-sketch-bach'
 const scales = getScales()
 // [{ id: 0, name: "short" }, ...]
 ```
+
+### `getDefaultInstrumentForForm(formId: number): number`
+
+Returns the default instrument ID for a form ID.
+
+```js
+import { getDefaultInstrumentForForm } from '@libraz/midi-sketch-bach'
+
+const instrumentId = getDefaultInstrumentForForm(7)
+// 4 (cello)
+```
+
+**Parameters**: `formId: number`
+
+**Returns**: `number`. Valid form IDs are 0--9. Invalid or out-of-range values return `0` (organ).
 
 ### `getVersion()`
 
