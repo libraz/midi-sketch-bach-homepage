@@ -69,7 +69,7 @@ const softwareApplicationJsonLd = {
     'Generate Bach-style instrumental MIDI using algorithmic composition. Based on music theory and Baroque compositional techniques, MIDI Sketch Bach outputs editable MIDI data featuring fugues, chorale preludes, passacaglias, and other Baroque forms that you can import into any DAW.',
   url: siteUrl,
   downloadUrl: githubUrl,
-  softwareVersion: '0.1.0',
+  softwareVersion: '0.4.0',
   author: {
     '@type': 'Person',
     name: 'libraz',
