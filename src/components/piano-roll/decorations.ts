@@ -2,11 +2,17 @@
  * Atmospheric piano-roll layers: the Gothic idle tracery shown before the
  * first generation, and the soft wave overlay drawn over the paused notes.
  */
-import { IDLE_BG, PIANO_KEY_WIDTH } from './constants'
+
 import { GOTHIC_VOICES } from './colors'
+import { IDLE_BG, PIANO_KEY_WIDTH } from './constants'
 
 /** Render the idle Gothic tracery (ribbed vault, arches, rose window). */
-export function drawIdleTracery(ctx: CanvasRenderingContext2D, width: number, height: number, time: number) {
+export function drawIdleTracery(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  time: number,
+) {
   // Background — cold dark
   ctx.fillStyle = IDLE_BG
   ctx.fillRect(0, 0, width, height)
@@ -18,7 +24,7 @@ export function drawIdleTracery(ctx: CanvasRenderingContext2D, width: number, he
   const vanishX = width / 2
   const vanishY = height + 20 // slightly below bottom edge
   for (let i = 0; i < ribCount; i++) {
-    const angle = (-0.55 + (i / (ribCount - 1)) * 1.1) // spread range in radians
+    const angle = -0.55 + (i / (ribCount - 1)) * 1.1 // spread range in radians
     const breath = 0.035 + Math.sin(t * 0.2 + i * 0.9) * 0.022
     ctx.strokeStyle = `rgba(140, 155, 190, ${breath})`
     ctx.lineWidth = 0.7
@@ -116,12 +122,17 @@ export function drawIdleTracery(ctx: CanvasRenderingContext2D, width: number, he
 }
 
 /** Soft, breathing wave lines drawn over the paused notes. */
-export function drawWaveOverlay(ctx: CanvasRenderingContext2D, width: number, height: number, time: number) {
+export function drawWaveOverlay(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  time: number,
+) {
   const t = time / 1000
   const waves = [
-    { r: 212, g: 166, b: 62,  amp: 14, freq: 0.005, speed: 0.35, yRatio: 0.2,  lw: 1.6 },
-    { r: 138, g: 46,  b: 62,  amp: 10, freq: 0.007, speed: 0.28, yRatio: 0.4,  lw: 1.4 },
-    { r: 74,  g: 139, b: 107, amp: 12, freq: 0.004, speed: 0.4,  yRatio: 0.55, lw: 1.4 },
+    { r: 212, g: 166, b: 62, amp: 14, freq: 0.005, speed: 0.35, yRatio: 0.2, lw: 1.6 },
+    { r: 138, g: 46, b: 62, amp: 10, freq: 0.007, speed: 0.28, yRatio: 0.4, lw: 1.4 },
+    { r: 74, g: 139, b: 107, amp: 12, freq: 0.004, speed: 0.4, yRatio: 0.55, lw: 1.4 },
     { r: 107, g: 123, b: 181, amp: 16, freq: 0.003, speed: 0.22, yRatio: 0.72, lw: 1.6 },
   ]
 
@@ -134,7 +145,8 @@ export function drawWaveOverlay(ctx: CanvasRenderingContext2D, width: number, he
     ctx.lineWidth = w.lw
 
     for (let x = PIANO_KEY_WIDTH; x <= width; x += 2) {
-      const y = baseY +
+      const y =
+        baseY +
         Math.sin(x * w.freq + t * w.speed) * w.amp +
         Math.sin(x * w.freq * 2.3 + t * w.speed * 0.7) * (w.amp * 0.2)
       if (x === PIANO_KEY_WIDTH) ctx.moveTo(x, y)

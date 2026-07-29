@@ -3,10 +3,12 @@
  * renders draw the same background lanes, bar grid and notes through these
  * functions, differing only in note opacity and the playhead style.
  */
-import type { NoteEvent } from '@/wasm/index'
+
 import { isBlackKey, midiToNoteName } from '@/utils/midiUtils'
-import { NOTE_CORNER_RADIUS, PIANO_KEY_WIDTH, PLAYHEAD_COLOR, PPQ } from './constants'
+import { barLinesInRange, type TimedEventData } from '@/utils/tempoMap'
+import type { NoteEvent } from '@/wasm/index'
 import { getVoiceColor, hexToRgb } from './colors'
+import { NOTE_CORNER_RADIUS, PIANO_KEY_WIDTH, PLAYHEAD_COLOR } from './constants'
 
 /** The visible window the scene is drawn into. */
 export interface SceneLayout {
@@ -32,8 +34,8 @@ export function createProjection(layout: SceneLayout): Projection {
   const pitchRange = layout.maxPitch - layout.minPitch + 1
   const noteHeight = layout.height / pitchRange
   return {
-    tickToX: (tick) => PIANO_KEY_WIDTH + ((tick - layout.startTick) / visibleTicks) * drawWidth,
-    pitchToY: (pitch) => layout.height - (pitch - layout.minPitch + 1) * noteHeight,
+    tickToX: tick => PIANO_KEY_WIDTH + ((tick - layout.startTick) / visibleTicks) * drawWidth,
+    pitchToY: pitch => layout.height - (pitch - layout.minPitch + 1) * noteHeight,
     noteHeight,
   }
 }
@@ -45,7 +47,11 @@ export function clearBackground(ctx: CanvasRenderingContext2D, width: number, he
 }
 
 /** Background semitone lanes (alternating shade for black keys). */
-export function drawBackgroundLanes(ctx: CanvasRenderingContext2D, layout: SceneLayout, proj: Projection) {
+export function drawBackgroundLanes(
+  ctx: CanvasRenderingContext2D,
+  layout: SceneLayout,
+  proj: Projection,
+) {
   const drawWidth = layout.width - PIANO_KEY_WIDTH
   for (let pitch = layout.minPitch; pitch <= layout.maxPitch; pitch++) {
     const y = proj.pitchToY(pitch)
@@ -64,17 +70,18 @@ export function drawBackgroundLanes(ctx: CanvasRenderingContext2D, layout: Scene
 }
 
 /** Bar lines plus their numbers across the visible window. */
-export function drawBarGrid(ctx: CanvasRenderingContext2D, layout: SceneLayout, proj: Projection) {
-  const ticksPerBar = PPQ * 4 // 4/4 time
-  const firstBar = Math.floor(layout.startTick / ticksPerBar)
-  const lastBar = Math.ceil(layout.endTick / ticksPerBar)
+export function drawBarGrid(
+  ctx: CanvasRenderingContext2D,
+  layout: SceneLayout,
+  proj: Projection,
+  events: TimedEventData,
+) {
+  const lines = barLinesInRange(layout.startTick, layout.endTick, events)
 
   ctx.strokeStyle = 'rgba(100, 120, 170, 0.12)'
   ctx.lineWidth = 0.5
-  for (let bar = firstBar; bar <= lastBar; bar++) {
-    const barTick = bar * ticksPerBar
-    if (barTick < layout.startTick || barTick > layout.endTick) continue
-    const x = proj.tickToX(barTick)
+  for (const line of lines) {
+    const x = proj.tickToX(line.tick)
     ctx.beginPath()
     ctx.moveTo(x, 0)
     ctx.lineTo(x, layout.height)
@@ -85,13 +92,10 @@ export function drawBarGrid(ctx: CanvasRenderingContext2D, layout: SceneLayout, 
   ctx.font = '9px "DM Sans", sans-serif'
   ctx.textAlign = 'left'
   ctx.textBaseline = 'top'
-  for (let bar = firstBar; bar <= lastBar; bar++) {
-    const barTick = bar * ticksPerBar
-    if (barTick < layout.startTick || barTick > layout.endTick) continue
-    if (bar < 1) continue
-    const x = proj.tickToX(barTick)
+  for (const line of lines) {
+    const x = proj.tickToX(line.tick)
     if (x > PIANO_KEY_WIDTH + 2) {
-      ctx.fillText(`${bar}`, x + 3, 4)
+      ctx.fillText(`${line.bar}`, x + 3, 4)
     }
   }
 }
@@ -140,7 +144,11 @@ export function drawNotes(
 }
 
 /** Draw the piano-key sidebar with C-note labels. */
-export function drawPianoKeys(ctx: CanvasRenderingContext2D, layout: SceneLayout, proj: Projection) {
+export function drawPianoKeys(
+  ctx: CanvasRenderingContext2D,
+  layout: SceneLayout,
+  proj: Projection,
+) {
   const { height, minPitch, maxPitch } = layout
   const noteHeight = proj.noteHeight
 

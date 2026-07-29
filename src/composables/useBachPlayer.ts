@@ -1,5 +1,6 @@
-import { ref, onUnmounted } from 'vue'
 import { Soundfont } from 'smplr'
+import { onUnmounted, ref } from 'vue'
+import { secondsAtTick, type TimedEventData, tickAtSeconds } from '@/utils/tempoMap'
 import { createAudioContext } from '@/utils/webAudio'
 
 interface NoteEvent {
@@ -17,7 +18,7 @@ interface TrackData {
   notes: NoteEvent[]
 }
 
-interface EventData {
+interface EventData extends TimedEventData {
   bpm: number
   total_ticks: number
   tracks: TrackData[]
@@ -34,13 +35,11 @@ const INSTRUMENT_MAP: Record<string, string> = {
 }
 
 let audioContext: AudioContext | null = null
-let instrumentCache = new Map<string, Soundfont>()
+const instrumentCache = new Map<string, Soundfont>()
 let initPromise: Promise<void> | null = null
 
 const globalIsLoading = ref(false)
 const globalIsReady = ref(false)
-
-const PPQ = 480
 
 export function useBachPlayer() {
   const isPlaying = ref(false)
@@ -51,7 +50,6 @@ export function useBachPlayer() {
   let animationFrame: number | null = null
   let startTime = 0
   let pausedTick = 0
-  let bpm = 100
   let stopTimeout: ReturnType<typeof setTimeout> | null = null
   let cachedEventData: EventData | null = null
   let currentInstrumentName = 'church_organ'
@@ -65,7 +63,11 @@ export function useBachPlayer() {
   /** Cancel all scheduled-but-not-yet-played notes and stop sounding ones. */
   function cancelScheduledNotes() {
     for (const stopNote of noteStops) {
-      try { stopNote() } catch { /* ignore */ }
+      try {
+        stopNote()
+      } catch {
+        /* ignore */
+      }
     }
     noteStops = []
   }
@@ -74,31 +76,26 @@ export function useBachPlayer() {
   // when play() is called while a previous play's updatePosition is running.
   let playGeneration = 0
 
-  function ticksToSeconds(ticks: number): number {
-    return (ticks / PPQ) * (60 / bpm)
-  }
-
-  function secondsToTicks(seconds: number): number {
-    return (seconds * bpm / 60) * PPQ
-  }
-
   async function loadInstrument(name: string): Promise<Soundfont> {
     if (!audioContext) {
       audioContext = createAudioContext()
     }
 
     const sfName = INSTRUMENT_MAP[name] || name
-    if (instrumentCache.has(sfName)) {
-      return instrumentCache.get(sfName)!
-    }
+    const cached = instrumentCache.get(sfName)
+    if (cached) return cached
 
-    const sf = await new Soundfont(audioContext, { instrument: sfName as any }).load
+    const sf = Soundfont(audioContext, { instrument: sfName })
+    await sf.ready
     instrumentCache.set(sfName, sf)
     return sf
   }
 
   async function init(instrumentName: string = 'organ') {
-    if (globalIsReady.value && instrumentCache.has(INSTRUMENT_MAP[instrumentName] || instrumentName)) {
+    if (
+      globalIsReady.value &&
+      instrumentCache.has(INSTRUMENT_MAP[instrumentName] || instrumentName)
+    ) {
       return
     }
 
@@ -163,7 +160,11 @@ export function useBachPlayer() {
     // Stop any lingering notes from the previous cycle
     cancelScheduledNotes()
     for (const [, instrument] of instrumentCache) {
-      try { instrument.stop() } catch { /* ignore */ }
+      try {
+        instrument.stop()
+      } catch {
+        /* ignore */
+      }
     }
 
     isPaused.value = false
@@ -207,33 +208,36 @@ export function useBachPlayer() {
     currentInstrumentName = instName
 
     cachedEventData = eventData
-    bpm = eventData.bpm || 100
 
-    const offsetSeconds = ticksToSeconds(fromTick)
+    const offsetSeconds = secondsAtTick(fromTick, eventData)
     startTime = audioContext.currentTime - offsetSeconds
 
-    // Schedule all notes
+    // Schedule all notes. Tick→second conversion runs through the tempo map,
+    // so section tempo changes and the closing ritardando stay in sync.
     for (const track of eventData.tracks) {
       for (const note of track.notes) {
         const endTick = note.start_tick + note.duration
 
         if (endTick <= fromTick) continue
 
-        const startSeconds = ticksToSeconds(note.start_tick)
-        const durationSeconds = ticksToSeconds(note.duration)
+        const startSeconds = secondsAtTick(note.start_tick, eventData)
+        const durationSeconds = secondsAtTick(endTick, eventData) - startSeconds
 
         const adjustedStartSeconds = Math.max(0, startSeconds - offsetSeconds)
-        const adjustedDuration = note.start_tick < fromTick
-          ? durationSeconds - (offsetSeconds - startSeconds)
-          : durationSeconds
+        const adjustedDuration =
+          note.start_tick < fromTick
+            ? durationSeconds - (offsetSeconds - startSeconds)
+            : durationSeconds
 
         if (adjustedDuration > 0 && instrument) {
-          noteStops.push(instrument.start({
-            note: note.pitch,
-            velocity: note.velocity,
-            time: audioContext.currentTime + adjustedStartSeconds,
-            duration: adjustedDuration,
-          }))
+          noteStops.push(
+            instrument.start({
+              note: note.pitch,
+              velocity: note.velocity,
+              time: audioContext.currentTime + adjustedStartSeconds,
+              duration: adjustedDuration,
+            }),
+          )
         }
       }
     }
@@ -242,21 +246,24 @@ export function useBachPlayer() {
     isPlaying.value = true
     currentTick.value = fromTick
 
-    const totalDurationSeconds = ticksToSeconds(eventData.total_ticks)
+    const totalDurationSeconds = secondsAtTick(eventData.total_ticks, eventData)
 
     // Auto-stop
     if (stopTimeout) clearTimeout(stopTimeout)
-    const remainingSeconds = ticksToSeconds(eventData.total_ticks - fromTick)
-    stopTimeout = setTimeout(() => {
-      stop()
-    }, remainingSeconds * 1000 + 500)
+    const remainingSeconds = totalDurationSeconds - offsetSeconds
+    stopTimeout = setTimeout(
+      () => {
+        stop()
+      },
+      remainingSeconds * 1000 + 500,
+    )
 
     // Position tracking — bound to this generation
     function updatePosition() {
       if (thisGen !== playGeneration || !isPlaying.value || !audioContext) return
 
       const elapsed = audioContext.currentTime - startTime
-      currentTick.value = secondsToTicks(elapsed)
+      currentTick.value = tickAtSeconds(elapsed, eventData)
 
       if (currentTick.value >= duration.value || elapsed >= totalDurationSeconds + 0.1) {
         stop()

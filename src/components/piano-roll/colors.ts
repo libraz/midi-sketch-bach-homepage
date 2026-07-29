@@ -12,10 +12,10 @@ export const VOICE_COLOR_DEFAULT = '#B57A4A'
 
 /** Gothic stained-glass voice tones for the idle tracery. */
 export const GOTHIC_VOICES = [
-  { r: 195, g: 155, b: 55 },  // Soprano — Amber
-  { r: 155, g: 35,  b: 53 },  // Alto    — Ruby
-  { r: 45,  g: 122, b: 95 },  // Tenor   — Emerald
-  { r: 58,  g: 91,  b: 160 }, // Bass    — Sapphire
+  { r: 195, g: 155, b: 55 }, // Soprano — Amber
+  { r: 155, g: 35, b: 53 }, // Alto    — Ruby
+  { r: 45, g: 122, b: 95 }, // Tenor   — Emerald
+  { r: 58, g: 91, b: 160 }, // Bass    — Sapphire
 ]
 
 /** Get the color for a voice index. */

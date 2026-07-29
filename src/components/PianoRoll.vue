@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { barBeatAtTick, totalBars } from '@/utils/tempoMap'
 import type { EventData } from '@/wasm/index'
-import { MINIMAP_HEIGHT, PIANO_KEY_WIDTH, PPQ, SEMITONE_PADDING } from './piano-roll/constants'
 import { createCanvasCache, ensureCanvasSize } from './piano-roll/canvas'
+import { MINIMAP_HEIGHT, PIANO_KEY_WIDTH, SEMITONE_PADDING } from './piano-roll/constants'
+import { drawIdleTracery, drawWaveOverlay } from './piano-roll/decorations'
+import { buildMinimapTexture, drawMinimap } from './piano-roll/minimap'
 import { collectAllNotes, getVisibleTickRange, pitchRange } from './piano-roll/notes'
 import {
-  type SceneLayout,
   clearBackground,
   createProjection,
   drawBackgroundLanes,
@@ -13,9 +15,8 @@ import {
   drawNotes,
   drawPianoKeys,
   drawPlayhead,
+  type SceneLayout,
 } from './piano-roll/scene'
-import { drawIdleTracery, drawWaveOverlay } from './piano-roll/decorations'
-import { buildMinimapTexture, drawMinimap } from './piano-roll/minimap'
 
 const props = defineProps<{
   eventData: EventData | null
@@ -55,13 +56,10 @@ const barLabel = computed(() => {
   if (!eventData) return ''
 
   const totalTicks = eventData.total_ticks || 1
-  const ticksPerBar = PPQ * 4
-  const totalBars = Math.ceil(totalTicks / ticksPerBar)
-
   const refTick = currentRefTick()
-  const currentBar = refTick > 0 ? Math.floor(refTick / ticksPerBar) + 1 : 1
+  const currentBar = refTick > 0 ? barBeatAtTick(refTick, eventData).bar : 1
 
-  return `${currentBar} / ${totalBars}`
+  return `${currentBar} / ${totalBars(eventData, totalTicks)}`
 })
 
 /** Render the minimap canvas */
@@ -171,18 +169,22 @@ function buildLayout(
   width: number,
   height: number,
   refTick: number,
-): { layout: SceneLayout; notes: ReturnType<typeof collectAllNotes> } | null {
+): { layout: SceneLayout; notes: ReturnType<typeof collectAllNotes>; events: EventData } | null {
   const eventData = props.eventData
-  if (!eventData || !eventData.tracks || eventData.tracks.length === 0) return null
+  if (!eventData?.tracks || eventData.tracks.length === 0) return null
 
   const allNotes = collectAllNotes(eventData)
   if (allNotes.length === 0) return null
 
   const { minPitch, maxPitch } = pitchRange(allNotes, SEMITONE_PADDING)
   const totalTicks = eventData.total_ticks || props.duration
-  const { startTick, endTick } = getVisibleTickRange(refTick, totalTicks)
+  const { startTick, endTick } = getVisibleTickRange(refTick, totalTicks, eventData)
 
-  return { layout: { width, height, startTick, endTick, minPitch, maxPitch }, notes: allNotes }
+  return {
+    layout: { width, height, startTick, endTick, minPitch, maxPitch },
+    notes: allNotes,
+    events: eventData,
+  }
 }
 
 // ── Main Note Render ─────────────────────────────────────────────────────────
@@ -207,11 +209,11 @@ function render() {
 
   const built = buildLayout(width, height, currentRefTick())
   if (!built) return
-  const { layout, notes } = built
+  const { layout, notes, events } = built
   const proj = createProjection(layout)
 
   drawBackgroundLanes(ctx, layout, proj)
-  drawBarGrid(ctx, layout, proj)
+  drawBarGrid(ctx, layout, proj, events)
   drawNotes(ctx, notes, layout, proj)
   drawPianoKeys(ctx, layout, proj)
   drawPlayhead(ctx, layout, proj, currentRefTick(), props.isPlaying)
@@ -256,11 +258,11 @@ function renderPaused(time: number) {
 
   const built = buildLayout(width, height, lastPlayTick)
   if (!built) return
-  const { layout, notes } = built
+  const { layout, notes, events } = built
   const proj = createProjection(layout)
 
   drawBackgroundLanes(ctx, layout, proj)
-  drawBarGrid(ctx, layout, proj)
+  drawBarGrid(ctx, layout, proj, events)
   drawNotes(ctx, notes, layout, proj, 0.25)
   drawWaveOverlay(ctx, width, height, time)
   drawPlayhead(ctx, layout, proj, lastPlayTick, false)
@@ -302,7 +304,7 @@ function rebuildMinimapTexture(data: EventData) {
 // Watch isPlaying to start/stop playback animation
 watch(
   () => props.isPlaying,
-  (playing) => {
+  playing => {
     if (playing) {
       stopPausedLoop()
       stopIdleLoop()
@@ -321,7 +323,7 @@ watch(
 // Watch eventData changes — rebuild minimap texture
 watch(
   () => props.eventData,
-  (data) => {
+  data => {
     if (data) {
       // Rebuild minimap texture when new data arrives
       rebuildMinimapTexture(data)
@@ -367,7 +369,9 @@ onMounted(() => {
       rebuildMinimapTexture(props.eventData)
     }
   })
-  resizeObserver.observe(canvas.parentElement!)
+  if (canvas.parentElement) {
+    resizeObserver.observe(canvas.parentElement)
+  }
 })
 
 onUnmounted(() => {

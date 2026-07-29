@@ -1,7 +1,5 @@
 /** Layout and palette constants shared by the piano-roll renderers. */
 
-/** MIDI pulses per quarter note the engine emits. */
-export const PPQ = 480
 /** Width of the piano-key sidebar in CSS pixels. */
 export const PIANO_KEY_WIDTH = 40
 /** Corner radius of a rendered note rectangle. */

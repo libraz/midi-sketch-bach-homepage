@@ -2,9 +2,11 @@
  * Minimap strip: a pre-rendered note-density texture plus the per-frame
  * overlay (bar label, bar dividers, viewport window and playhead).
  */
+
+import { barLinesInRange } from '@/utils/tempoMap'
 import type { EventData } from '@/wasm/index'
-import { PIANO_KEY_WIDTH, PLAYHEAD_COLOR, PPQ } from './constants'
 import { getVoiceColor, hexToRgb } from './colors'
+import { PIANO_KEY_WIDTH, PLAYHEAD_COLOR } from './constants'
 import { collectAllNotes, getVisibleTickRange, pitchRange } from './notes'
 
 /**
@@ -12,14 +14,19 @@ import { collectAllNotes, getVisibleTickRange, pitchRange } from './notes'
  * texture (blank when there are no notes), or null when the target size is
  * invalid — in which case the caller should keep its previous texture.
  */
-export function buildMinimapTexture(eventData: EventData, drawWidth: number, drawHeight: number): OffscreenCanvas | null {
+export function buildMinimapTexture(
+  eventData: EventData,
+  drawWidth: number,
+  drawHeight: number,
+): OffscreenCanvas | null {
   const dpr = window.devicePixelRatio || 1
   const pw = Math.round(drawWidth * dpr)
   const ph = Math.round(drawHeight * dpr)
   if (pw <= 0 || ph <= 0) return null
 
   const texture = new OffscreenCanvas(pw, ph)
-  const ctx = texture.getContext('2d')!
+  const ctx = texture.getContext('2d')
+  if (!ctx) return null
   ctx.scale(dpr, dpr)
 
   const allNotes = collectAllNotes(eventData)
@@ -63,7 +70,6 @@ export interface MinimapFrame {
 export function drawMinimap(ctx: CanvasRenderingContext2D, frame: MinimapFrame) {
   const { width, height, eventData, texture, barLabel, refTick, isPlaying } = frame
   const totalTicks = eventData.total_ticks || 1
-  const ticksPerBar = PPQ * 4
 
   // Left label area matching piano key sidebar
   const labelWidth = PIANO_KEY_WIDTH
@@ -106,14 +112,13 @@ export function drawMinimap(ctx: CanvasRenderingContext2D, frame: MinimapFrame) 
   }
 
   // ── Bar dividers ──
-  const totalBars = Math.ceil(totalTicks / ticksPerBar)
+  const barLines = barLinesInRange(0, totalTicks, eventData)
   // Only draw bar lines if there aren't too many (keep it readable)
-  if (totalBars <= 200) {
+  if (barLines.length <= 200) {
     ctx.strokeStyle = 'rgba(100, 120, 170, 0.08)'
     ctx.lineWidth = 0.5
-    for (let bar = 1; bar <= totalBars; bar++) {
-      const barTick = bar * ticksPerBar
-      const x = labelWidth + (barTick / totalTicks) * drawWidth
+    for (const line of barLines) {
+      const x = labelWidth + (line.tick / totalTicks) * drawWidth
       ctx.beginPath()
       ctx.moveTo(x, 0)
       ctx.lineTo(x, height)
@@ -122,7 +127,7 @@ export function drawMinimap(ctx: CanvasRenderingContext2D, frame: MinimapFrame) 
   }
 
   // ── Viewport window indicator ──
-  const { startTick, endTick } = getVisibleTickRange(refTick, totalTicks)
+  const { startTick, endTick } = getVisibleTickRange(refTick, totalTicks, eventData)
   const vpX = labelWidth + (startTick / totalTicks) * drawWidth
   const vpW = ((endTick - startTick) / totalTicks) * drawWidth
 
