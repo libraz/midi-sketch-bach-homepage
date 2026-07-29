@@ -242,7 +242,7 @@ export const motionBachExamples: Record<string, StaffExampleDef> = {
   },
 
   bachInvertible: {
-    ruleIds: ['invertible_at_octave', 'fourth_only_on_weak_beat'],
+    ruleIds: ['invertible_at_octave', 'vertical_dissonance'],
     badge: { en: 'From Bach', ja: 'バッハの実例' },
     title: {
       en: 'Bach: BWV 847 — the same pair, top and bottom',
@@ -253,8 +253,8 @@ export const motionBachExamples: Record<string, StaffExampleDef> = {
       ja: '第7小節では対主題（青）が主唱の上にあり、第20小節ではバッハが同じペアを裏返して、対主題が下を走る。それでも全ての音程が成立している。',
     },
     caption: {
-      en: 'The same subject and countersubject from the C minor fugue (WTC I, BWV 847), at two points in the piece. Toggle between them and follow the blue line: at bar 7 the countersubject sits above the subject; at bar 20 the pair is turned over and the same countersubject runs below — the two voices trade octaves note for note. It survives because the lines carry no strong-beat fourths and no octave-parallels — exactly what `invertible_at_octave` and `fourth_only_on_weak_beat` protect. (A third voice is dropped at each spot for clarity.)',
-      ja: 'ハ短調フーガ（平均律 I 巻、BWV 847）の、同じ主唱と対主題。曲中の二か所です。トグルで切り替えて青い線を目で追ってください。第7小節では対主題が主唱の上にあり、第20小節ではペアが裏返って同じ対主題が下を走ります——二つの声部が、音はそのままにオクターヴを交換します。耐えられるのは、線に強拍の4度も8度並行も含まれていないから。`invertible_at_octave` と `fourth_only_on_weak_beat` が守っているのは、まさにこれです。（各所で中声部は見やすさのため省略しています。）',
+      en: 'The same subject and countersubject from the C minor fugue (WTC I, BWV 847), at two points in the piece. Toggle between them and follow the blue line: at bar 7 the countersubject sits above the subject; at bar 20 the pair is turned over and the same countersubject runs below — the two voices trade octaves note for note. The engine checks parallel octaves with `invertible_at_octave`; `vertical_dissonance` judges any fourth against the actual bass of the complete texture. (A third voice is dropped at each spot for clarity.)',
+      ja: 'ハ短調フーガ（平均律 I 巻、BWV 847）の、同じ主唱と対主題。曲中の二か所です。トグルで切り替えて青い線を目で追ってください。第7小節では対主題が主唱の上にあり、第20小節ではペアが裏返って同じ対主題が下を走ります——二つの声部が、音はそのままにオクターヴを交換します。エンジンは8度並行を `invertible_at_octave` で検査し、4度は完全なテクスチュアで実際に鳴るバスを基準に `vertical_dissonance` で判定します。（各所で中声部は見やすさのため省略しています。）',
     },
     time: '4/4',
     bars: 2,

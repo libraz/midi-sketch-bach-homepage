@@ -63,8 +63,8 @@ export const melodyBachExamples: Record<string, StaffExampleDef> = {
       ja: '高い D への跳躍は一度きり。主唱の残りはすべて、順次進行で降りていきます。',
     },
     caption: {
-      en: 'The subject of the "Little" G minor organ fugue (BWV 578), one of the most singable themes Bach ever wrote — and a model of the leap economy. The line spends its entire melodic budget in the first two notes: a clean fifth up to D, the peak, touched once and never regained. Everything after is repayment — B♭-A, then G-B♭-A-G-F♯ stepping down through the octave, until the cadence figure A→D closes the curve where it began. One climax, stepwise recovery, a clear arch: the shape the candidate search\'s scoring rewards, written in 1700 or so.',
-      ja: '小フーガ ト短調（BWV 578）の主唱——バッハが書いた最も歌いやすい主題のひとつであり、跳躍の経済学の手本です。旋律の予算は最初の2音で使い切られます。D への完全5度の跳躍、それが頂点で、二度と取り戻されません。その後はすべて返済です。B♭-A、つづいて G-B♭-A-G-F♯ とオクターヴの中を順次に降り、終止音型の A→D が曲線を出発点で閉じます。頂点ひとつ、順次進行での回復、明確なアーチ——候補探索のスコアリングが評価するその形が、1700年頃にすでに書かれています。',
+      en: 'The subject of the "Little" G minor organ fugue (BWV 578), one of the most singable themes Bach ever wrote — and a model of the leap economy. The line spends its entire melodic budget in the first two notes: a clean fifth up to D, the peak, touched once and never regained. Everything after is repayment — B♭-A, then G-B♭-A-G-F♯ stepping down through the octave, until the cadence figure A→D closes the curve where it began. One climax, stepwise recovery, a clear arch: the shape the optional free-counterpoint scorer rewards, written in 1700 or so.',
+      ja: '小フーガ ト短調（BWV 578）の主唱——バッハが書いた最も歌いやすい主題のひとつであり、跳躍の経済学の手本です。旋律の予算は最初の2音で使い切られます。D への完全5度の跳躍、それが頂点で、二度と取り戻されません。その後はすべて返済です。B♭-A、つづいて G-B♭-A-G-F♯ とオクターヴの中を順次に降り、終止音型の A→D が曲線を出発点で閉じます。頂点ひとつ、順次進行での回復、明確なアーチ——オプションの自由対位法スコアラーが評価するその形が、1700年頃にすでに書かれています。',
     },
     time: '4/4',
     bars: 2,

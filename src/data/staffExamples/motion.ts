@@ -321,8 +321,8 @@ export const motionExamples: Record<string, StaffExampleDef> = {
       ja: '同じ二つの音が、下の音をオクターヴ上げると5度から4度に変わります。',
     },
     caption: {
-      en: 'Invertible counterpoint means two lines still work after swapping registers. Every interval maps to its complement: 5ths become 4ths, octaves become unisons. That is why the engine bans strong-beat fourths and parallel octaves in upper-voice pairs — after inversion they would become strong-beat fifths and parallel unisons.',
-      ja: '転回対位法とは、二つの旋律の上下を入れ替えても成立する書法のことです。転回するとすべての音程が補数に写ります。5度は4度に、オクターヴはユニゾンに変わります。エンジンが上声部ペアの強拍4度と並行8度を退けるのはこのためで、転回後にそれぞれ強拍5度・並行ユニゾンになってしまうからです。',
+      en: 'Invertible counterpoint means two lines still work after swapping registers. Every interval maps to its complement: 5ths become 4ths, octaves become unisons. The engine specifically rejects parallel octaves in upper-voice pairs at structural accents because inversion turns them into parallel unisons. A fourth is judged separately against the actual bass.',
+      ja: '転回対位法とは、二つの旋律の上下を入れ替えても成立する書法のことです。転回するとすべての音程が補数に写り、5度は4度、オクターヴはユニゾンになります。エンジンが構造的アクセント上の上声部ペアで並行8度を退けるのは、転回後に並行ユニゾンになるからです。4度は、実際のバスとの関係で別に判定されます。',
     },
     time: '2/4',
     width: 440,
@@ -389,27 +389,47 @@ export const motionExamples: Record<string, StaffExampleDef> = {
     ],
   },
 
-  fourthWeakBeat: {
-    ruleIds: ['fourth_only_on_weak_beat'],
-    badge: { en: 'Scoped rule', ja: '適用範囲あり' },
-    title: { en: 'Strong-beat fourth between upper voices', ja: '上声部間の強拍4度' },
+  bassSensitiveFourth: {
+    ruleIds: ['vertical_dissonance'],
+    badge: { en: 'Bass-sensitive consonance', ja: 'バス基準の協和判定' },
+    title: { en: 'An upper-voice fourth can be legal', ja: '上声部間の4度は許される' },
     diagnosis: {
-      en: 'The red fourth is on a strong beat in an upper-voice pair.',
-      ja: '赤い4度が、上声部ペアの強拍に置かれています。',
+      en: 'C and F form a fourth, but both are consonant above the actual bass A.',
+      ja: 'C と F は4度ですが、実際のバス A に対してはどちらも協和します。',
     },
     caption: {
-      en: 'A fourth can pass on a weak beat, but the scoped upper pair cannot use it as a strong-beat pillar.',
-      ja: '4度は経過的な響きとして扱えますが、上声部では強拍の柱としては拒否されます。',
+      en: 'The validator classifies the whole sonority from its lowest sounding pitch. A fourth above the bass is dissonant unless a declared suspension or cadential 6/4 licenses it. This fourth lies between upper voices, so the F-major first-inversion chord is legal even on a structural accent.',
+      ja: '検証器は、実際に鳴っている最低音を基準に響き全体を分類します。バス上の4度は、宣言された掛留または終止6/4でない限り不協和です。この4度は上声部間にあり、ヘ長調の第1転回形として構造的アクセント上でも合法です。',
     },
     time: '2/4',
     width: 440,
     upperClef: 'treble',
-    lowerClef: 'treble',
+    middleClef: 'treble',
+    lowerClef: 'bass',
+    upperLabel: { en: 'soprano', ja: 'ソプラノ' },
+    middleLabel: { en: 'alto', ja: 'アルト' },
+    lowerLabel: { en: 'bass', ja: 'バス' },
+    verdict: 'good',
     upper: [
-      { key: 'f/5', annotation: '4', color: AMBER, issue: true },
-      { key: 'e/5', annotation: '3' },
+      { key: 'f/5', annotation: 'P4', color: GREEN },
+      { key: 'e/5', color: GREEN },
     ],
-    lower: [{ key: 'c/5', color: AMBER, issue: true }, { key: 'c/5' }],
-    issues: [{ kind: 'vertical', label: 'strong-beat 4th', upperIndex: 0, lowerIndex: 0 }],
+    middle: [
+      { key: 'c/5', color: GREEN },
+      { key: 'c/5', color: GREEN },
+    ],
+    lower: [
+      { key: 'a/3', color: GREEN },
+      { key: 'g/3', color: GREEN },
+    ],
+    issues: [
+      {
+        kind: 'vertical',
+        label: 'legal upper-voice 4th',
+        upperIndex: 0,
+        middleIndex: 0,
+        color: GREEN,
+      },
+    ],
   },
 }

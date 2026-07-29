@@ -92,8 +92,8 @@ export const melodyExamples: Record<string, StaffExampleDef> = {
       ja: '6度の上行跳躍のあと、旋律が向きを変えて順次下行しています。',
     },
     caption: {
-      en: 'The classical recovery rule: a large leap spends melodic energy, and stepwise motion in the opposite direction pays it back. This is the shape the candidate search prefers when it builds free counterpoint.',
-      ja: '跳躍回復の古典的な原則です。大きな跳躍は旋律のエネルギーを使うので、逆方向の順次進行でそれを返済します。候補探索が自由対位声部を組むとき優先するのもこの形です。',
+      en: 'The classical recovery rule: a large leap spends melodic energy, and stepwise motion in the opposite direction pays it back. The opt-in Passacaglia free-counterpoint search prefers this shape when it builds its counterline; default form generation replays authored material.',
+      ja: '跳躍回復の古典的な原則です。大きな跳躍は旋律のエネルギーを使うので、逆方向の順次進行でそれを返済します。オプトインのパッサカリア自由対位法探索も、副次対旋律を組むときにこの形を優先します。既定の形式生成は作譜済み素材を再生します。',
     },
     time: '4/4',
     width: 560,
@@ -121,8 +121,8 @@ export const melodyExamples: Record<string, StaffExampleDef> = {
       ja: '旋律が一つの明確な頂点へ上り、そこから収まっていきます。',
     },
     caption: {
-      en: 'Good contrapuntal lines tend to have one climax per phrase. No single validator rule enforces this; it emerges from the candidate search scoring, which rewards stepwise motion and penalizes aimless zig-zag. Reading generated voices, you will usually find this arch.',
-      ja: 'よい対位法の旋律は、フレーズごとに頂点を一つ持つ傾向があります。これを直接強制する単一ルールはありませんが、順次進行を高く評価し無目的なジグザグを減点する候補探索のスコアリングから自然に現れます。生成された声部を読むと、たいていこのアーチが見つかります。',
+      en: 'Good contrapuntal lines tend to have one climax per phrase. No single validator rule enforces this. The opt-in Passacaglia free-counterpoint scorer rewards stepwise motion and penalizes aimless zig-zag; the default forms express the same principle in their authored material.',
+      ja: 'よい対位法の旋律は、フレーズごとに頂点を一つ持つ傾向があります。これを直接強制する単一ルールはありません。オプトインのパッサカリア自由対位法スコアラーは順次進行を高く評価し、無目的なジグザグを減点します。既定形式では、同じ原則を作譜済み素材に組み込んでいます。',
     },
     time: '4/4',
     width: 560,

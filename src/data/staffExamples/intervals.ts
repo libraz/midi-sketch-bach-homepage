@@ -91,7 +91,7 @@ export const intervalExamples: Record<string, StaffExampleDef> = {
   },
 
   fourthAmbivalent: {
-    ruleIds: ['fourth_only_on_weak_beat'],
+    ruleIds: ['vertical_dissonance'],
     badge: { en: 'Context-dependent', ja: '文脈依存' },
     title: { en: 'The perfect fourth: consonant or dissonant?', ja: '完全4度 — 協和か不協和か' },
     diagnosis: {
@@ -99,8 +99,8 @@ export const intervalExamples: Record<string, StaffExampleDef> = {
       ja: 'バス上の4度が、不協和音のように3度へ下行解決しています。',
     },
     caption: {
-      en: 'The fourth is the boundary case of interval theory. Between upper voices over a supporting bass it sounds consonant; directly against the bass it behaves as a dissonance and resolves to a third. The engine encodes this ambivalence: its interval-class table accepts the fourth, but a scoped rule rejects strong-beat fourths in upper-voice pairs.',
-      ja: '4度は音程理論の境界例です。支えとなるバスの上で上声部どうしが作る4度は協和的に響きますが、バスとの間に直接できる4度は不協和音として振る舞い、3度へ解決します。エンジンもこの両義性をそのまま実装しており、音程クラス表では4度を許容しつつ、上声部ペアの強拍4度だけを専用ルールで退けます。',
+      en: 'The fourth is the boundary case of interval theory. Between upper voices over a supporting bass it sounds consonant; directly against the bass it behaves as a dissonance and resolves to a third. The engine encodes this ambivalence in `vertical_dissonance`: it judges the whole sonority against the actual lowest sounding pitch, while allowing declared suspensions and cadential 6/4 chords.',
+      ja: '4度は音程理論の境界例です。支えとなるバスの上で上声部どうしが作る4度は協和的に響きますが、バスとの間に直接できる4度は不協和音として振る舞い、3度へ解決します。エンジンは `vertical_dissonance` でこの両義性を扱い、実際に鳴っている最低音を基準に和音全体を判定しつつ、宣言された掛留と終止6/4を許容します。',
     },
     time: '2/4',
     width: 440,
