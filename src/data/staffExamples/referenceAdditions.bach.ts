@@ -2,14 +2,14 @@ import type { StaffExampleDef } from './types'
 import { AMBER, GREEN } from './types'
 
 /**
- * Additional From Bach quotations selected through bach-mcp.
+ * Additional From Bach quotations.
  *
  * Each excerpt is a reduction. The source comments identify the corpus file,
  * voice, and beat window used for the transcription.
  */
 export const referenceAdditionBachExamples: Record<string, StaffExampleDef> = {
-  // Source: bach-mcp/data/reference/BWV578_fugue.json; v1 soprano beats 0–8,
-  // v2 alto beats 20–28; verified with bach_get_work and bach_subject_search.
+  // Source: reference corpus BWV578_fugue.json; v1 soprano beats 0–8,
+  // v2 alto beats 20–28.
   bachRealAnswer: {
     ruleIds: [],
     badge: { en: 'From Bach', ja: 'バッハの実例' },
@@ -63,8 +63,7 @@ export const referenceAdditionBachExamples: Record<string, StaffExampleDef> = {
     ],
   },
 
-  // Source: bach-mcp/data/reference/BWV582.json; v4 pedal beats 1–13 and
-  // 25–37; verified with bach_get_work and an exact bach_subject_search.
+  // Source: reference corpus BWV582.json; v4 pedal beats 1–13 and 25–37.
   bachPassacagliaReturn: {
     ruleIds: ['passacaglia_ground_immutable'],
     badge: { en: 'From Bach', ja: 'バッハの実例' },
@@ -114,8 +113,8 @@ export const referenceAdditionBachExamples: Record<string, StaffExampleDef> = {
     issues: [],
   },
 
-  // Source: bach-mcp/data/reference/BWV869_prelude.json; manual track m.3,
-  // beats 8–12; verified with bach_get_work as an alto/bass reduction.
+  // Source: reference corpus BWV869_prelude.json; manual track m.3,
+  // beats 8–12, as an alto/bass reduction.
   bachSuspensionNineEight: {
     ruleIds: ['suspension_preparation', 'suspension_resolution_step_down'],
     badge: { en: 'From Bach', ja: 'バッハの実例' },
@@ -163,8 +162,8 @@ export const referenceAdditionBachExamples: Record<string, StaffExampleDef> = {
     ],
   },
 
-  // Source: bach-mcp/data/reference/BWV857_fugue.json; manual track m.3,
-  // beats 8–12; verified with bach_get_work; subject voice only.
+  // Source: reference corpus BWV857_fugue.json; manual track m.3,
+  // beats 8–12, subject voice only.
   bachChromaticSubject: {
     ruleIds: [],
     badge: { en: 'From Bach', ja: 'バッハの実例' },

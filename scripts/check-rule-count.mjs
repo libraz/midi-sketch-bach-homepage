@@ -1,9 +1,9 @@
 // Verifies every stated validator-rule count against the rule index itself.
 //
 // The count is written out in four places — the README, and the description and
-// body of the rule index in both locales — and they drifted: the README said 47
-// while the pages said 57, with nothing to reconcile them. The table is the
-// artefact, so it is counted here and the prose is checked against it.
+// body of the rule index in both locales — with nothing to reconcile them. The
+// rule table is the artefact, so it is counted here and the prose is checked
+// against that count.
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
