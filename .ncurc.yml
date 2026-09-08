@@ -5,5 +5,17 @@
 # and fails to install it (ENOENT on lib/_tsc.js). Drop this entry once Yarn
 # ships a TypeScript 7 compatible patch and vue-tsc supports the native
 # compiler; bump the 6.x range by hand until then.
+#
+# markdown-it / @types/markdown-it: declared only to satisfy the peer range of
+# markdown-it-cjk-friendly; the instance the plugin actually runs against is the
+# markdown-it 14 that VitePress 1 bundles and passes to `markdown.config(md)`.
+# VitePress 1.6.4 inlines a frozen copy of the 14.1.2 typings into its own
+# `.d.ts`, so `md.use()` only typechecks against that exact surface: markdown-it
+# 15 brings its own conflicting definitions, and @types/markdown-it 14.2.0 adds
+# `utils.isPunctCharCode`, which the inlined copy lacks. @types/markdown-it is
+# therefore pinned exactly in package.json rather than by range. Drop both
+# entries once the site moves to a VitePress release built on markdown-it 15.
 reject:
   - typescript
+  - markdown-it
+  - '@types/markdown-it'
