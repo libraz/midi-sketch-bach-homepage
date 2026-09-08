@@ -2,6 +2,7 @@ import { fileURLToPath, URL } from 'node:url'
 import markdownItCjkFriendly from 'markdown-it-cjk-friendly'
 import { defineConfig } from 'vitepress'
 import wasmMeta from '../src/wasm/meta.json'
+import { inlineSvgPlugin } from './inlineSvg'
 import { generateLlmsTxt, type LlmsLocale, llmsDevPlugin, type NavNode } from './llms'
 
 const siteUrl = 'https://bach.midi-sketch.libraz.net'
@@ -385,6 +386,8 @@ export default defineConfig({
       // Make `**bold**` parse correctly when adjacent to CJK punctuation
       // (e.g. `**P1（ユニゾン）**は`), which CommonMark otherwise rejects.
       md.use(markdownItCjkFriendly)
+      // Inline the diagrams so they follow the site's theme toggle, not the OS setting.
+      md.use(inlineSvgPlugin)
     },
   },
 

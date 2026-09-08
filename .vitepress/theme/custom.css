@@ -218,6 +218,23 @@ html[lang="ja"] .VPNavBarTitle .title::after {
 }
 
 /* ==========================================================================
+   DOC DIAGRAMS
+   ========================================================================== */
+
+/* Diagrams are inlined by the inline-svg markdown plugin rather than referenced as
+   images, so their own `<style>` block lives in the page cascade and follows the
+   theme toggle. The palette ships inside each SVG, scoped to its root id. */
+.docs-figure {
+  margin: 24px 0;
+}
+
+.docs-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ==========================================================================
    RESPONSIVE DESIGN
    ========================================================================== */
 
