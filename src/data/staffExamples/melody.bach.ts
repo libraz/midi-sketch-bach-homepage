@@ -19,8 +19,8 @@ export const melodyBachExamples: Record<string, StaffExampleDef> = {
       ja: 'C へ向かう上行で第6音と第7音を半音上げ——ハ短調の A♮ と B♮——すべてのステップを歌える幅に保ちます。',
     },
     caption: {
-      en: 'The first bar of the Fifth Cello Suite (BWV 1011), in C minor. The opening C hangs in the air, then the line climbs from G straight through A♮ and B♮ back to C. The key signature says A♭ and B♭; written that way, the ascent would contain the augmented second A♭→B♮ — the leap-sized "step" the previous figure shows being rejected. Bach raises both degrees on the way up, exactly the melodic-minor practice the validator\'s key-aware spelling check encodes. Descending later in the bar, the line relaxes back onto E♭ — the raised notes exist only to serve the climb. (The opening C sounds over its lower octave in the source; the double stop is omitted here.)',
-      ja: '無伴奏チェロ組曲第5番（BWV 1011）の第1小節、ハ短調です。冒頭の C が空中に保持されたあと、線は G から A♮、B♮ を踏んでまっすぐ C へ登ります。調号は A♭ と B♭ を指定しています。そのまま書けば上行には A♭→B♮ の増2度——前の譜例で退けられた、跳躍サイズの「ステップ」——が含まれてしまう。バッハは上りの2音をどちらも半音上げます。検証器が調を考慮した綴りの判定で符号化しているのは、まさにこの旋律的短音階の実践です。小節の後半で下行に転じると、線は E♭ へ緩みます——引き上げられた音は、登りに奉仕するためだけに存在するのです。（原曲では冒頭の C は1オクターヴ下の音との重音です。ここでは省略しています。）',
+      en: 'The first bar of the Fifth Cello Suite (BWV 1011), in C minor. The opening C hangs in the air, then the line climbs from G straight through A♮ and B♮ back to C. The key signature says A♭ and B♭; written that way, the ascent would contain the augmented second A♭→B♮ — the leap-sized "step" the previous figure shows being rejected. Bach raises both degrees in this local ascent, matching the validator\'s key-aware spelling check. The later descent through E♭ shows one context for these raised degrees; in Bach, sixth and seventh degrees vary with harmony and voice leading rather than following an ascending-only rule. (The opening C sounds over its lower octave in the source; the double stop is omitted here.)',
+      ja: '無伴奏チェロ組曲第5番（BWV 1011）の第1小節、ハ短調です。冒頭の C が空中に保持されたあと、線は G から A♮、B♮ を踏んでまっすぐ C へ登ります。調号は A♭ と B♭ を指定しています。そのまま書けば上行には A♭→B♮ の増2度——前の譜例で退けられた、跳躍サイズの「ステップ」——が含まれてしまいます。バッハはこの箇所の上行で2音を半音上げ、検証器の調を考慮した綴りの判定と対応させています。後半の E♭ への下行は、このような音高の一例です。バッハの第6音・第7音は、上行だけの規則ではなく、和声と声部進行に応じて変化します。（原曲では冒頭の C は1オクターヴ下の音との重音です。ここでは省略しています。）',
     },
     time: '4/4',
     keySignature: 'Cm',
@@ -55,16 +55,16 @@ export const melodyBachExamples: Record<string, StaffExampleDef> = {
     ruleIds: [],
     badge: { en: 'From Bach', ja: 'バッハの実例' },
     title: {
-      en: 'Bach: "Little" Fugue in G minor — one peak, then the line pays it back',
-      ja: 'バッハ: 小フーガ ト短調 — 頂点はひとつ、あとは線が返済する',
+      en: 'Bach: "Little" Fugue in G minor — one peak, then a varied return',
+      ja: 'バッハ: 小フーガ ト短調 — 頂点ひとつ、変化に富む帰還',
     },
     diagnosis: {
-      en: 'One leap to the high D — the only one — and the rest of the subject walks back down by step.',
-      ja: '高い D への跳躍は一度きり。主唱の残りはすべて、順次進行で降りていきます。',
+      en: 'The subject rises to a single high D, then returns through stepwise motion and several smaller leaps.',
+      ja: '主唱は高い D を頂点に、順次進行といくつかの小さな跳躍を交えて戻ります。',
     },
     caption: {
-      en: 'The subject of the "Little" G minor organ fugue (BWV 578), one of the most singable themes Bach ever wrote — and a model of the leap economy. The line spends its entire melodic budget in the first two notes: a clean fifth up to D, the peak, touched once and never regained. Everything after is repayment — B♭-A, then G-B♭-A-G-F♯ stepping down through the octave, until the cadence figure A→D closes the curve where it began. One climax, stepwise recovery, a clear arch: the shape the optional free-counterpoint scorer rewards, written in 1700 or so.',
-      ja: '小フーガ ト短調（BWV 578）の主唱——バッハが書いた最も歌いやすい主題のひとつであり、跳躍の経済学の手本です。旋律の予算は最初の2音で使い切られます。D への完全5度の跳躍、それが頂点で、二度と取り戻されません。その後はすべて返済です。B♭-A、つづいて G-B♭-A-G-F♯ とオクターヴの中を順次に降り、終止音型の A→D が曲線を出発点で閉じます。頂点ひとつ、順次進行での回復、明確なアーチ——オプションの自由対位法スコアラーが評価するその形が、1700年頃にすでに書かれています。',
+      en: 'The subject of the "Little" G minor organ fugue (BWV 578) rises from G to a high D, then returns through a mix of stepwise motion and smaller leaps: D→B♭, G→B♭, F♯→A, and the closing A→D. The single high point remains clear, while the recovery is not stepwise throughout. The optional free-counterpoint scorer rewards this broader arch.',
+      ja: '小フーガ ト短調（BWV 578）の主唱は G から高い D へ上がったあと、順次進行と小さな跳躍を交えて戻ります。D→B♭、G→B♭、F♯→A、そして最後の A→D が含まれます。頂点は一つですが、戻りには順次進行だけでなく跳躍も含まれます。オプションの自由対位法スコアラーは、この幅のあるアーチを評価します。',
     },
     time: '4/4',
     bars: 2,
@@ -95,7 +95,7 @@ export const melodyBachExamples: Record<string, StaffExampleDef> = {
     issues: [
       { kind: 'motion', label: 'P5 up', fromUpper: 0, toUpper: 1, color: AMBER },
       { kind: 'note', label: 'single climax', upperIndex: 1, color: GREEN },
-      { kind: 'bracket', label: 'stepwise payback', fromUpper: 2, toUpper: 8, color: GREEN },
+      { kind: 'bracket', label: 'varied return', fromUpper: 2, toUpper: 8, color: GREEN },
     ],
   },
 
@@ -103,16 +103,16 @@ export const melodyBachExamples: Record<string, StaffExampleDef> = {
     ruleIds: ['diminished_melodic'],
     badge: { en: 'From Bach', ja: 'バッハの実例' },
     title: {
-      en: 'Bach: WTC I Fugue in C♯ minor — a leap that is dissonant only on paper',
-      ja: 'バッハ: 平均律 I 巻 嬰ハ短調フーガ — 紙の上だけ不協和な跳躍',
+      en: 'Bach: WTC I Fugue in C♯ minor — a spelled diminished fourth',
+      ja: 'バッハ: 平均律 I 巻 嬰ハ短調フーガ — 綴りでは減4度、響きは4半音',
     },
     diagnosis: {
-      en: 'B♯ up to E is a diminished fourth in spelling — but only 4 semitones in sound, identical to a major third, and the line resolves it by step.',
-      ja: 'B♯ から E への上行は綴りの上では減4度——しかし響きは4半音、長3度と同一で、旋律は順次進行でこれを解決します。',
+      en: 'B♯ up to E is a diminished fourth by spelling but spans 4 semitones in sound, the same size as a major third; the line leaves the leap by step.',
+      ja: 'B♯ から E への上行は綴りでは減4度ですが、響きは4半音で長3度と同じ幅です。旋律はこの跳躍のあと順次進行します。',
     },
     caption: {
-      en: 'The subject of the C♯ minor fugue (WTC I, BWV 849) — four notes, among the most analyzed in the literature. On paper the leap B♯→E is a diminished fourth; in semitones it spans 4, byte-identical to a plain major third, so `diminished_melodic` has nothing to flag — and the ear agrees, hearing a consonant leap. What gives the subject its dark intensity is the spelling and the handling: the leap is approached by half step and left by step, every note a tendency tone. The rule bans only the spans unsingable under any name (6 and 11 semitones); this is Bach working expressively inside everything the ban leaves open.',
-      ja: '嬰ハ短調フーガ（平均律 I 巻、BWV 849）の主唱——わずか4音、文献で最も分析されてきた主題の一つです。紙の上では B♯→E の跳躍は減4度。しかし半音数では4、ただの長3度とバイト単位で同一なので、`diminished_melodic` には検出するものがありません——耳も同じ意見で、協和な跳躍として聞きます。この主題の暗い張力を生むのは、綴りと扱い方です。跳躍は半音で近づかれ、順次進行で離れ、すべての音が傾向音。ルールが禁じるのは、どんな名前でも歌えない幅（6半音と11半音）だけです。禁止が開けたままにした空間の中で、バッハは表現として存分に書いています。',
+      en: 'The subject of the C♯ minor fugue (WTC I, BWV 849) contains the notated leap B♯→E. Its spelling names a diminished fourth; its sounding size is four semitones, equal to a major third in 12-tone equal temperament. This is a melodic interval, so the example does not classify a vertical dissonance. `diminished_melodic` checks the semitone span and leaves this four-semitone leap alone; the following E→D♯ moves by step. The notation keeps the chromatic voice leading visible.',
+      ja: '嬰ハ短調フーガ（平均律 I 巻、BWV 849）の主唱には、記譜上 B♯→E の跳躍があります。綴りは減4度ですが、響きの幅は4半音で、12平均律では長3度と同じです。これは旋律音程なので、縦の不協和として分類する例ではありません。`diminished_melodic` は半音数を検査し、この4半音の跳躍を対象にしません。その後の E→D♯ は順次進行です。記譜は半音階的な声部進行を示します。',
     },
     time: '4/4',
     bars: 3,

@@ -11,16 +11,16 @@ export const intervalBachExamples: Record<string, StaffExampleDef> = {
     ruleIds: [],
     badge: { en: 'From Bach', ja: 'バッハの実例' },
     title: {
-      en: 'Bach: WTC I Prelude in E♭ — a full bar of parallel tenths',
-      ja: 'バッハ: 平均律 I 巻 変ホ長調プレリュード — まるまる1小節の並行10度',
+      en: 'Bach: WTC I Prelude in E♭ — two runs of parallel tenths',
+      ja: 'バッハ: 平均律 I 巻 変ホ長調プレリュード — 二つの並行10度走句',
     },
     diagnosis: {
-      en: 'Two sixteenth-note lines move in strict parallel tenths for the whole bar — and no rule objects.',
-      ja: '二本の16分音符の線が小節全体を厳格な並行10度で駆け抜けます——どのルールも咎めません。',
+      en: 'Two sixteenth-note lines move in strict parallel tenths in two seven-note runs, separated by rests — and no rule objects.',
+      ja: '二本の16分音符の線が、休符で区切られた7音ずつの二つの走句で厳格な並行10度を進みます。どのルールも咎めません。',
     },
     caption: {
-      en: 'Bar 32 of the E♭ major prelude (WTC I, BWV 852): two lines race a whole bar in lockstep tenths — a compound third on every single sixteenth. The quality flexes between major and minor as the scale dictates, but the family never leaves imperfect consonance, so the parallel rules of chapter 2 have nothing to say. Compare what happens when voices try the same trick with fifths or octaves. (The sustained notes that ring above each run — B♭ and G, then E♭ and C — are omitted here.)',
-      ja: '変ホ長調プレリュード（平均律 I 巻、BWV 852）の第32小節。二本の線が1小節を10度——どの16分音符も複合3度——で並走します。音階の都合で長10度と短10度が入れ替わりますが、不完全協和音程という家族からは一度も出ません。だから第2章の並行禁則は何も言わないのです。同じことを5度やオクターヴでやったときとの違いを比べてみてください。（各走句の上で鳴り続ける保持音——B♭とG、つづいてE♭とC——はここでは省略しています。）',
+      en: 'Bar 32 of the E♭ major prelude (WTC I, BWV 852): two lines move in two seven-note runs of parallel tenths, at positions 1–7 and 9–15; rests occupy positions 0 and 8. Each sounding pair is a compound third, with the quality flexing between major and minor as the scale dictates. The family never leaves imperfect consonance, so the parallel rules of chapter 2 have nothing to say. Compare what happens when voices try the same trick with fifths or octaves. (The sustained notes that ring above each run — B♭ and G, then E♭ and C — are omitted here.)',
+      ja: '変ホ長調プレリュード（平均律 I 巻、BWV 852）の第32小節。二本の線は、位置1–7と9–15の7音ずつ二つの走句で並行10度を進み、位置0と8には休符があります。鳴っている各ペアは複合3度で、音階に応じて長10度と短10度が入れ替わります。不完全協和音程という家族からは一度も出ないため、第2章の並行禁則は何も言いません。同じことを5度やオクターヴでやったときとの違いを比べてみてください。（各走句の上で鳴り続ける保持音——B♭とG、つづいてE♭とC——はここでは省略しています。）',
     },
     time: '4/4',
     keySignature: 'Eb',
@@ -70,7 +70,7 @@ export const intervalBachExamples: Record<string, StaffExampleDef> = {
       { kind: 'vertical', label: 'm10', upperIndex: 1, lowerIndex: 1, color: GREEN },
       {
         kind: 'bracket',
-        label: 'tenths on every sixteenth',
+        label: 'tenths in both runs',
         fromUpper: 1,
         toUpper: 15,
         color: GREEN,

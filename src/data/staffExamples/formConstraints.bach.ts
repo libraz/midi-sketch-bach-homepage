@@ -15,12 +15,12 @@ export const formConstraintBachExamples: Record<string, StaffExampleDef> = {
       ja: 'バッハ: 「われ汝に呼ばわる」(オルゲルビュッヒライン) — 長い音価で運ばれるコラール',
     },
     diagnosis: {
-      en: 'Three voices, three speeds: the hymn tune in quarters, an embroidering inner line in sixteenths, a walking pedal in eighths.',
-      ja: '三つの声部に三つの速度——賛美歌の旋律は4分音符、刺繍する内声は16分音符、歩くペダルは8分音符です。',
+      en: 'Three voices, three layers: a long-note hymn tune, an embroidering inner line, and a moving pedal line.',
+      ja: '三つの声部、三つの層——長い音価のコラール旋律、刺繍する内声、動くペダル線です。',
     },
     caption: {
-      en: 'The first bar of "Ich ruf zu dir, Herr Jesu Christ" (BWV 639), the only chorale prelude in the Orgelbüchlein with this exact three-layer plan. The hymn tune sits on top in plain quarters — fixed material no ornament may touch, the engine\'s `material` source in its purest form. Beneath it an inner voice embroiders in unbroken sixteenths, and the pedal repeats its quiet eighth-note F, each layer on its own rhythmic grid. The tune is the contract, the other two voices are the realization: change a single melody note and it stops being the chorale. (The pedal\'s first two notes sound an octave lower in the source recording — kept as recorded.)',
-      ja: '「われ汝に呼ばわる、主イエス・キリストよ」(BWV 639) の第1小節。オルゲルビュッヒライン全曲の中で、この正確な三層設計を持つ唯一のコラール前奏曲です。賛美歌の旋律は最上声で飾りのない4分音符のまま——装飾が一切触れてはならない固定素材、エンジンの `material` ソースの最も純粋な形です。その下で内声が途切れない16分音符の刺繍を続け、ペダルは静かな8分音符の F を繰り返す。各層がそれぞれのリズム格子の上にいます。旋律は契約であり、残りの二声はその実現です。旋律をひとつでも変えれば、それはもうこのコラールではありません。（ペダルの最初の2音は、出典の録音では1オクターヴ低く鳴っています。録音のまま記しています。）',
+      en: 'The first bar of "Ich ruf zu dir, Herr Jesu Christ" (BWV 639). The cantus firmus sits on top in long values; this excerpt includes a dotted eighth and a sixteenth at the end of the bar. The engine\'s `cantus_firmus_immutable` contract fixes the cantus bar heads; eligible within-bar notes can receive decoration under other characters, while `Severe` keeps the full cantus plain. Beneath it an inner voice embroiders in sixteenths, and the pedal follows the actual displayed line F–F–F–F–F–E–F–F. (The pedal\'s first two notes sound an octave lower in the source recording — kept as recorded.)',
+      ja: '「われ汝に呼ばわる、主イエス・キリストよ」(BWV 639) の第1小節です。コラール定旋律は最上声で長い音価を持ち、この抜粋の小節末には付点8分音符と16分音符があります。エンジンの `cantus_firmus_immutable` 契約が固定するのはコラールの小節頭です。小節内の対象音は他の性格で装飾できますが、`Severe` では定旋律全体をそのまま保ちます。その下で内声が16分音符の刺繍を続け、ペダルは表示された F–F–F–F–F–E–F–F の実際の線をたどります。（ペダルの最初の2音は、出典の録音では1オクターヴ低く鳴っています。録音のまま記しています。）',
     },
     time: '4/4',
     keySignature: 'Fm',
@@ -288,19 +288,19 @@ export const formConstraintBachExamples: Record<string, StaffExampleDef> = {
   },
 
   bachGroundBass: {
-    ruleIds: ['ground_bass_immutable', 'passacaglia_ground_immutable'],
+    ruleIds: ['goldberg_aria_bass_immutable'],
     badge: { en: 'From Bach', ja: 'バッハの実例' },
     title: {
-      en: "Bach: Goldberg Variations — the Aria's ground",
-      ja: 'バッハ: ゴルトベルク変奏曲 — アリアの基礎低音',
+      en: "Bach: Goldberg Variations — the Aria's bass scheme",
+      ja: 'バッハ: ゴルトベルク変奏曲 — アリアのバスの構想',
     },
     diagnosis: {
-      en: "Strip the passing notes from the Aria's bass and one scheme tone per bar remains — the skeleton all thirty variations keep.",
-      ja: 'アリアのバスから経過音を取り除くと、1小節に1つの骨格音が残ります。30の変奏すべてが守り続ける骨組みです。',
+      en: "Strip the passing notes from the Aria's bass and one scheme tone per bar remains — a compact reduction of the harmonic plan underlying the variations.",
+      ja: 'アリアのバスから経過音を取り除くと、1小節に1つの骨格音が残ります。変奏を支える和声構想を簡約したものです。',
     },
     caption: {
-      en: "The first eight bars of the Aria of the Goldberg Variations (BWV 988): the actual bass voice above, its reduction to one tone per bar below. The famous descent G–F♯–E–D, then B–C–D–G closing the half-phrase. It is this scheme — not the ornamented melody — that every variation restates, which is exactly the relation the immutable-ground rules enforce between declared material and its replays. Bar 8's mordent is shown plain. Switch to a variation above to hear a completely different surface walk the same eight downbeats. The demo's Goldberg preset builds on the same idea.",
-      ja: 'ゴルトベルク変奏曲（BWV 988）のアリア、最初の8小節。上が実際のバス声部、下がそれを1小節1音に簡約したものです。名高い G–F♯–E–D の下行、続く B–C–D–G の半終止。30の変奏が再提示し続けるのは装飾された旋律ではなくこの骨組みであり、不変グラウンドのルールが宣言素材と再生のあいだに強制するのと同じ関係です。第8小節のモルデントは装飾記号を省いて示しています。上の切り替えで変奏を選ぶと、まったく違う表面が同じ8つの小節頭を歩くのが聴き取れます。デモの Goldberg プリセットも同じ発想の上に立っています。',
+      en: "The first eight bars of the Aria of the Goldberg Variations (BWV 988): the actual bass voice above, its reduction to one tone per bar below. The famous descent G–F♯–E–D, then B–C–D–G closing the half-phrase. The variations preserve this bass and harmonic scheme rather than the ornamented melody, while their sounding bass notes and durations can change. This display is a schematic reduction of Bach's bass and harmonic scheme, not a byte-exact replay of the engine carrier. The dedicated `goldberg_aria_bass_immutable` rule checks each declared carrier onset, duration, and pitch exactly in every non-coda variation block. Bar 8's mordent is shown plain. Switch to a variation above to hear a different surface over the same scheme. The demo's Goldberg preset uses the same distinction.",
+      ja: 'ゴルトベルク変奏曲（BWV 988）のアリア、最初の8小節。上が実際のバス声部、下がそれを1小節1音に簡約したものです。名高い G–F♯–E–D の下行、続く B–C–D–G が前半句を閉じます。変奏が保つのは装飾された旋律ではなく、このバスと和声の構想です。ただし、実際に鳴るバスの音高や音価は変わり得ます。この表示はバッハのバスと和声構想を模式的に簡約したもので、エンジンのキャリアをバイト単位で再現したものではありません。専用の `goldberg_aria_bass_immutable` 規則は、終結部を除く各変奏ブロックで、宣言されたキャリアの各オンセット・音価・音高を完全に照合します。第8小節のモルデントは装飾記号を省いて示しています。上の切り替えで変奏を選ぶと、同じ構想の上に異なる表面が現れます。デモの Goldberg プリセットもこの区別を使います。',
     },
     time: '3/4',
     bars: 8,
@@ -313,7 +313,7 @@ export const formConstraintBachExamples: Record<string, StaffExampleDef> = {
     lowerLabel: { en: 'ground', ja: '基礎低音' },
     playback: 'sequential',
     verdict: 'good',
-    variantsHint: { en: 'over the same ground —', ja: '同じ低音の上で——' },
+    variantsHint: { en: 'over the same declared carrier —', ja: '同じ宣言済みキャリアの上で——' },
     upper: [
       { key: 'g/3', duration: 'hd' },
       { key: 'f#/3', duration: 'hd' },
@@ -346,7 +346,7 @@ export const formConstraintBachExamples: Record<string, StaffExampleDef> = {
     issues: [
       {
         kind: 'bracket',
-        label: 'the scheme every variation keeps',
+        label: 'the bass and harmonic scheme',
         fromLower: 0,
         toLower: 3,
         color: AMBER,

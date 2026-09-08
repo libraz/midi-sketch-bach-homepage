@@ -24,8 +24,8 @@ export const motionBachExamples: Record<string, StaffExampleDef> = {
       ja: '後続声部は先行声部を上下逆さまに再現します。上行は下行で、1小節遅れて答えられます。',
     },
     caption: {
-      en: "Variation 12 of the Goldberg Variations (BWV 988) is a canon by inversion: the lower voice repeats the upper voice's line one bar later with every interval flipped — where the leader steps up, the follower steps down, mirror-exact for the whole variation. The result is contrary motion elevated from a recommendation to a structural law: in bar 2 the leader climbs to its peak while the follower descends beneath it, and the two lines could not be more audibly independent. (The bass of the ground, which runs under both voices, is omitted here.)",
-      ja: 'ゴルトベルク変奏曲（BWV 988）の第12変奏は反行カノンです。下声部が上声部の旋律を1小節遅れで、すべての音程を裏返して再現します——先行声部が一歩上がれば、後続声部は一歩下がる。この鏡映しが変奏全体で正確に貫かれます。反行は「推奨」から「構造の掟」に格上げされ、第2小節では先行声部が頂点へ駆け上がるその下を後続声部が降りていきます。これ以上ないほど独立して聞こえる二本の線です。（両声部の下を流れる低音主題のバスは、ここでは省略しています。）',
+      en: "Variation 12 of the Goldberg Variations (BWV 988) is a canon by inversion: the lower voice repeats the upper voice's line one bar later with every interval flipped — where the leader steps up, the follower steps down, mirror-exact for the whole variation. This excerpt shows how inversion produces contrary motion in this canon; it does not make contrary motion a universal rule in Bach's writing. In bar 2 the leader climbs to its peak while the follower descends beneath it. (The bass of the ground, which runs under both voices, is omitted here.)",
+      ja: 'ゴルトベルク変奏曲（BWV 988）の第12変奏は反行カノンです。下声部が上声部の旋律を1小節遅れで、すべての音程を裏返して再現します——先行声部が一歩上がれば、後続声部は一歩下がる。この鏡映しが変奏全体で正確に貫かれます。この抜粋は、反行カノンで反行が生まれる仕組みを示します。バッハの書法全体に対する普遍的な規則を示すものではありません。第2小節では先行声部が頂点へ上がり、その下を後続声部が下行します。（両声部の下を流れる低音主題のバスは、ここでは省略しています。）',
     },
     time: '3/4',
     bars: 2,
@@ -108,8 +108,8 @@ export const motionBachExamples: Record<string, StaffExampleDef> = {
           upperLabel: { en: 'follower', ja: '後続声部' },
           lowerLabel: { en: 'leader', ja: '先行声部' },
           caption: {
-            en: 'Variation 15 — the canon at the fifth, in G minor — swings the same mirror the other way: the follower enters a fifth higher and climbs exactly where the leader fell, sigh for sigh. The leader holds its D across the bar line while the inverted reply unfolds above it. Same structural law, minor mode. (The ground bass is again omitted.)',
-            ja: '第15変奏——5度の反行カノン、ト短調——は同じ鏡を逆向きに振ります。後続声部は5度上で入り、先行声部が下がったところをそのまま、ため息ひとつ分ずつ登り返します。先行声部が D を小節線越しに保持する間、その上で反転された応答がほどけていきます。同じ構造の掟を、短調の光の中で。（低音主題はここでも省略しています。）',
+            en: 'Variation 15 — the canon at the fifth, in G minor — uses the same inversion pattern: the follower enters a fifth higher and climbs where the leader fell. The leader holds its D across the bar line while the inverted reply unfolds above it. The local canon pattern also appears in minor mode. (The ground bass is again omitted.)',
+            ja: '第15変奏——5度の反行カノン、ト短調——も同じ反行の型を使います。後続声部は5度上で入り、先行声部が下がったところで上がります。先行声部が D を小節線越しに保持する間、その上で反転された応答が進みます。この局所的なカノンの型は短調にも現れます。（低音主題はここでも省略しています。）',
           },
           upper: [
             { key: 'b/4', duration: 'h', rest: true },
@@ -165,16 +165,16 @@ export const motionBachExamples: Record<string, StaffExampleDef> = {
     ruleIds: ['voice_crossing'],
     badge: { en: 'From Bach', ja: 'バッハの実例' },
     title: {
-      en: 'Bach: Goldberg Variation 3 — a canon at the unison must cross',
-      ja: 'バッハ: ゴルトベルク第3変奏 — 同度カノンは交差せざるを得ない',
+      en: 'Bach: Goldberg Variation 3 — a unison canon crosses at the entry',
+      ja: 'バッハ: ゴルトベルク第3変奏 — 同度カノンが入り口で交差する',
     },
     diagnosis: {
-      en: 'Both canonic voices live in the same register: the moment the follower enters, the leader dips beneath it.',
-      ja: '二つのカノン声部は同じ音域に住んでいます。フォロワーが入った瞬間、リーダーはその下へ潜ります。',
+      en: 'Both canonic voices occupy an overlapping register; in this excerpt, the leader drops below the follower as it enters.',
+      ja: '二つのカノン声部は重なる音域にあります。この抜粋では、後続声部が入ると先行声部がその下へ潜ります。',
     },
     caption: {
-      en: "Variation 3 of the Goldbergs is a canon at the unison: the follower repeats the leader's line one bar later at the very same pitch. Same pitch means same register — and when the follower enters in bar 2 on the B the leader sang a bar ago, the leader has already stepped down to G, a third below it. The voices are crossed from the follower's first note; half a bar later the leader vaults an octave to G5 and order is restored. Bach accepts the tangle as the price of strict imitation — on a page, slurs and stems keep the lines legible. The engine's generated voices carry no page, so `voice_crossing` refuses every crossing outright, with no exemptions. The ground bass below the two canonic voices is omitted here.",
-      ja: 'ゴルトベルク変奏曲の第3変奏は同度のカノンです。フォロワーはリーダーの線を、1小節遅れで*まったく同じ高さ*のままなぞります。同じ高さということは同じ音域ということ——第2小節、リーダーが1小節前に歌った B の音でフォロワーが入ってくるとき、リーダー自身はすでに3度下の G へ降りています。フォロワーの最初の音から声部は交差しているのです。半小節後、リーダーはオクターヴ跳躍で G5 へ駆け上がり、上下は元に戻ります。バッハは厳格な模倣の代価としてこのもつれを受け入れます——紙の上ではスラーと符尾が線を読み分けさせてくれるからです。エンジンが生成する声部には紙がありません。だから `voice_crossing` は例外なく、すべての交差を拒否します。二つのカノン声部の下を歩く低音は省略しています。',
+      en: "Variation 3 of the Goldbergs is a canon at the unison: the follower repeats the leader's line one bar later at the very same pitch. Same pitch means same register — and when the follower enters in bar 2 on the B the leader sang a bar ago, the leader has already stepped down to G, a third below it. The voices cross from the follower's first note in this excerpt; half a bar later the leader vaults an octave to G5 and order is restored. Bach accepts the tangle as the price of strict imitation — on a page, slurs and stems keep the lines legible. The engine's generic `voice_crossing` rule rejects this Goldberg crossing. Its one-onset allowance is limited to the Trio Sonata's upper-voice policy and does not apply here. The ground bass below the two canonic voices is omitted here.",
+      ja: 'ゴルトベルク変奏曲の第3変奏は同度のカノンです。後続声部は先行声部の線を、1小節遅れで*まったく同じ高さ*のままなぞります。同じ高さということは同じ音域ということ——第2小節、先行声部が1小節前に歌った B の音で後続声部が入ってくるとき、先行声部自身はすでに3度下の G へ降りています。この抜粋では後続声部の最初の音から交差し、半小節後、先行声部はオクターヴ跳躍で G5 へ駆け上がって上下が元に戻ります。バッハは厳格な模倣の一部としてここでこのもつれを許しています——紙の上ではスラーと符尾が線を読み分けさせてくれるからです。エンジンの一般的な `voice_crossing` 規則は、このゴルトベルクの交差を拒否します。1オンセットだけの許可はトリオ・ソナタの上声部ポリシーに限られ、この例には適用されません。二つのカノン声部の下を歩く低音は省略しています。',
     },
     time: '12/8',
     bars: 2,

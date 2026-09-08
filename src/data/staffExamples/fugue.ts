@@ -12,12 +12,12 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
     badge: { en: 'Fugal device', ja: 'フーガ技法' },
     title: { en: 'Subject and tonal answer', ja: '主唱と変応（トーナルアンサー）' },
     diagnosis: {
-      en: 'The subject opens on the tonic; the answer opens on the dominant — the head is mapped I to V, not transposed literally.',
-      ja: '主唱は主音で始まり、応唱は属音で始まります。冒頭は機械的な移調ではなく I と V を写像した形です。',
+      en: 'The subject opens on the tonic; this teaching cell models a tonal answer whose head maps I to V.',
+      ja: '主唱は主音で始まります。この譜例は、冒頭で I を V へ写像する変応をモデル化しています。',
     },
     caption: {
-      en: 'A real answer transposes the whole subject up a fifth. A tonal answer adjusts the opening so that tonic maps to dominant and dominant maps back to tonic, keeping the music anchored in the home key during the exposition. The validator checks exactly this head mapping when the material declares a tonal answer.',
-      ja: '応唱が主唱を5度上へそのまま移調したものなら「実応」、冒頭だけ主音↔属音を入れ替えて調の重心を保つのが「変応」です。提示部で音楽が主調から離れすぎないための調整で、検証器は素材が変応を宣言しているとき、まさにこの冒頭の写像を検査します。',
+      en: 'A real answer transposes the whole subject up a fifth. A tonal answer makes small intervallic adjustments where a literal transposition would destabilize the tonic; this teaching cell models that as I↔V mapping at the head. Real fugues can modify more than a simple head/tail split, while the validator checks the declared head mapping.',
+      ja: '実応は主唱全体を5度上へ移調します。変応は、機械的な移調が主調を不安定にする箇所で音程を小さく調整します。この譜例はその調整を冒頭の I↔V 写像としてモデル化したものです。実際のフーガでは単純な「冒頭／尾部」の分割を超えて変更されることもありますが、検証器が確認するのは宣言された冒頭の写像です。',
     },
     time: '4/4',
     width: 620,
@@ -42,7 +42,7 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
       { kind: 'vertical', label: 'I maps to V', upperIndex: 0, lowerIndex: 0, color: AMBER },
       {
         kind: 'motion',
-        label: 'head adjusted, tail transposed',
+        label: 'engine head mapping',
         fromLower: 0,
         toLower: 3,
         color: AMBER,
@@ -53,14 +53,14 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
   countersubjectContinuous: {
     ruleIds: ['countersubject_continuous'],
     badge: { en: 'Fugal device', ja: 'フーガ技法' },
-    title: { en: 'Countersubject keeps sounding', ja: '対主題は鳴り続ける' },
+    title: { en: 'Declared countersubject keeps sounding', ja: '宣言された対主題が鳴り続ける' },
     diagnosis: {
-      en: 'While the answer states the theme, the countersubject fills every beat without resting.',
-      ja: '応唱が主題を歌うあいだ、対主題は休みなくすべての拍を満たしています。',
+      en: 'When a countersubject is declared, it fills every beat of the answer window without resting.',
+      ja: '対主題を宣言した場合、その声部が応唱の区間を休みなく満たします。',
     },
     caption: {
-      en: 'The countersubject is the recurring companion line that accompanies each later entry of the subject. To do its job it must actually be there: the validator samples every quarter-beat of the answer window and fails the rule if the countersubject voice falls silent.',
-      ja: '対主題は、主題が再登場するたびに寄り添う決まった相方の旋律です。その役割を果たすには実際に鳴っていなければなりません。検証器は応唱の区間を4分音符単位でサンプリングし、対主題声部が途切れていればこのルールで弾きます。',
+      en: 'A countersubject is a recurring companion in some fugues, not a requirement of every fugue. When material declares one, this engine contract samples every quarter-beat of the answer window and fails if the countersubject voice falls silent.',
+      ja: '対主題は一部のフーガで使われる反復的な相方の線で、すべてのフーガに必須ではありません。素材が対主題を宣言した場合、このエンジン契約は応唱の区間を4分音符単位で調べ、対主題声部が途切れると失敗にします。',
     },
     time: '4/4',
     width: 620,
@@ -89,12 +89,12 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
     badge: { en: 'Episode', ja: '嬉遊部' },
     title: { en: 'Descending sequence', ja: '下行ゼクエンツ' },
     diagnosis: {
-      en: 'Bar two repeats bar one exactly, transposed down one step.',
+      en: 'This engine cell repeats bar one exactly, transposed down one step.',
       ja: '2小節目が1小節目をそのまま1度下へ移調して繰り返しています。',
     },
     caption: {
-      en: 'Sequences are how Baroque episodes travel between keys: a short seed is restated on successively lower (or higher) steps. The validator checks that each step is a verbatim transposition of the seed by the declared offset — paraphrases fail the rule.',
-      ja: 'ゼクエンツは、嬉遊部が調から調へ移動するための乗り物です。短い種となる音型を、順に一段ずつ下（または上）に置き直していきます。検証器は各段が宣言されたオフセットどおりの「正確な移調」であることを確認し、言い換えはこのルールで落とします。',
+      en: 'Sequences are common ways for Baroque episodes to travel between keys, but episodes can also develop other ideas and need not be exact transpositions. This cell shows the stricter engine contract: each declared step must be a verbatim transposition of the seed by the declared offset.',
+      ja: 'ゼクエンツはバロックの嬉遊部が調から調へ移動する一般的な方法ですが、嬉遊部は別の素材を展開することもあり、常に正確な移調になるわけではありません。このセルは、各段を宣言されたオフセットで種から逐語的に移調させる、より厳しいエンジン契約を示します。',
     },
     time: '3/4',
     bars: 2,
@@ -132,8 +132,8 @@ export const fugueExamples: Record<string, StaffExampleDef> = {
       ja: '導出された線が、種のすべての歩みを反対方向に鏡映しています。',
     },
     caption: {
-      en: 'Episode material must be the declared transform of a declared subject slice — and inversion is the most striking transform: up a step becomes down a step, up a third becomes down a third. Play the two lines one after the other; the second is recognizably the first, upside down. The validator recomputes the expected notes from the transform and compares pitch, duration, and tick.',
-      ja: '嬉遊部の素材は、宣言された主題の断片に宣言された変形を適用したものでなければなりません。反行はその中で最も鮮烈な変形です。1度上がる動きは1度下がる動きに、3度上は3度下になります。二つの線を順に再生してみてください。二つ目は紛れもなく一つ目の逆さまです。検証器は変形から期待される音列を再計算し、音高・音価・ティックを突き合わせます。',
+      en: 'When material declares a subject slice and a transform, inversion is a clear example: an upward step becomes a downward step, and an upward third becomes a downward third. Historical episodes can use other ideas; this cell isolates the declared engine transform, which is checked by pitch, duration, and tick.',
+      ja: '素材が主題の断片と変形を宣言した場合、反行は分かりやすい例です。1度上がる動きが1度下がる動きに、3度上がる動きが3度下がる動きになります。歴史上の嬉遊部には別の素材を使うものもあります。このセルは、音高・音価・ティックで検査されるエンジンの変形契約を切り出して示します。',
     },
     time: '4/4',
     width: 620,

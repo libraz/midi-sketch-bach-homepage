@@ -9,15 +9,18 @@ import { AMBER, GREEN, RED } from './types'
 export const formConstraintExamples: Record<string, StaffExampleDef> = {
   groundBass: {
     ruleIds: ['ground_bass_immutable', 'passacaglia_ground_immutable'],
-    badge: { en: 'Immutable carrier', ja: '不変の素材' },
-    title: { en: 'Ground bass replays unchanged', ja: '固執低音は変わらない' },
+    badge: { en: 'Engine carrier', ja: 'エンジンのキャリア' },
+    title: {
+      en: 'Engine ground carrier preserves bar-head skeleton',
+      ja: 'エンジンのグラウンドキャリアは小節頭の骨格を保つ',
+    },
     diagnosis: {
-      en: 'The bass line repeats verbatim each cycle while the upper voice varies.',
-      ja: '低音主題は毎周そのまま反復され、上声だけが変奏されます。',
+      en: "The engine compares the canonical ground's pitch skeleton at each bar head while the upper voice varies.",
+      ja: 'エンジンは、上声が変奏するあいだ、正準グラウンドの小節頭の音高骨格を照合します。',
     },
     caption: {
-      en: 'Passacaglia and chaconne are built on a ground: a bass theme that repeats unchanged underneath ever-richer variations. The engine marks the ground as immutable material — if any cycle alters even one note, the structural rule fails. Variation happens above the ground, never inside it.',
-      ja: 'パッサカリアとシャコンヌは固執低音の上に築かれます。低音主題は一切変えずに反復され、その上で変奏だけが豊かになっていきます。エンジンはこの低音を不変素材として印づけており、どこか一周でも一音でも変われば構造ルールが失敗します。変奏は低音の上で起きるもので、低音の中では起きません。',
+      en: 'Passacaglia and chaconne traditions can use recurring bass or harmonic frameworks whose voicing and surface realization change. This engine compares the replayed ground with its canonical material at cycle-relative bar heads; off-downbeat pitches and rhythmic subdivision can vary, so the rule is not byte-exact replay of every event. The default form builder still emits its carrier as immutable material, and a changed bar-head pitch fails the structural rule. Variation happens above this engine carrier.',
+      ja: 'パッサカリアとシャコンヌの伝統では、低音や和声の枠組みが反復されても、声部配置や表面の実現が変わることがあります。このエンジンは、同じ周回相対位置の小節頭で再生されたグラウンドと正準素材を照合します。小節頭以外の音高やリズム上の細分化は変えられるため、すべての発音イベントをバイト単位で再生する規則ではありません。既定の形式ビルダーはキャリアを不変素材として出力し、小節頭の音高が変わると構造ルールが失敗します。変奏は、このエンジンのキャリアの上で行われます。',
     },
     time: '3/4',
     bars: 2,
@@ -46,7 +49,7 @@ export const formConstraintExamples: Record<string, StaffExampleDef> = {
     issues: [
       {
         kind: 'bracket',
-        label: 'replays verbatim every cycle',
+        label: 'engine replays every cycle',
         fromLower: 0,
         toLower: 5,
         color: AMBER,

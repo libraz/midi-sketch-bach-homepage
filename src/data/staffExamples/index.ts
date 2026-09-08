@@ -12,6 +12,7 @@ import { motionExamples } from './motion'
 import { motionBachExamples } from './motion.bach'
 import { primerExamples } from './primer'
 import { primerBachExamples } from './primer.bach'
+import { referenceAdditionBachExamples } from './referenceAdditions.bach'
 import { tonalityExamples } from './tonality'
 import { tonalityBachExamples } from './tonality.bach'
 import type { StaffExampleDef } from './types'
@@ -40,6 +41,7 @@ export const staffExampleRegistry: Record<string, StaffExampleDef> = {
   ...fugueBachExamples,
   ...formConstraintExamples,
   ...formConstraintBachExamples,
+  ...referenceAdditionBachExamples,
 }
 
 /** Look up an example definition; returns undefined for unknown ids. */

@@ -9,15 +9,15 @@ import { AMBER, GREEN, RED } from './types'
 export const tonalityExamples: Record<string, StaffExampleDef> = {
   cadence: {
     ruleIds: ['cadence_voice_leading'],
-    badge: { en: 'Cadence cell', ja: '終止型' },
-    title: { en: 'Authentic cadence voice leading', ja: '正格終止の声部進行' },
+    badge: { en: 'Engine cadence cell', ja: 'エンジン終止セル' },
+    title: { en: 'Engine perfect-cadence pattern', ja: 'エンジンの完全終止パターン' },
     diagnosis: {
-      en: 'The leading tone resolves upward while the bass moves V to I.',
-      ja: '導音が上行して主音へ解決し、バスは属音から主音へ進みます。',
+      en: 'This cell shows the engine’s narrow leading-tone-to-tonic and bass V-to-I pattern.',
+      ja: 'このセルは、エンジンが使う限定的な導音→主音とバスの V→I の型を示します。',
     },
     caption: {
-      en: 'The validator checks the declared cadence type, not just chord labels.',
-      ja: '検証器は和音名だけでなく、宣言された終止型に合う外声進行を確認します。',
+      en: 'In standard theory, a perfect authentic cadence is V–I with both chords in root position and scale degree 1 in the highest voice of the final tonic. A soprano 7→1 approach is one common realization, not a requirement. This figure shows the narrower 7→1 pattern used by the validator, which checks the declared cadence type rather than chord labels alone.',
+      ja: '標準的な完全正格終止は、V→I、両和音の根位置、そして最後の主和音の最高声部が第1音度、という条件を満たします。ソプラノの 7→1 はよくある実現例の一つで、必須条件ではありません。この譜例は、検証器が使うより狭い 7→1 の型を示し、和音名だけでなく宣言された終止型も確認します。',
     },
     time: '2/4',
     width: 440,
@@ -34,7 +34,7 @@ export const tonalityExamples: Record<string, StaffExampleDef> = {
     issues: [
       {
         kind: 'motion',
-        label: 'LT -> I / V -> I',
+        label: 'engine 7 -> 1 / V -> I',
         fromUpper: 0,
         toUpper: 1,
         fromLower: 0,
@@ -250,8 +250,8 @@ export const tonalityExamples: Record<string, StaffExampleDef> = {
       ja: '近い位置で、別声部が同じ音度を半音階的に食い違わせています。',
     },
     caption: {
-      en: 'The red notes show a chromatic clash between voices inside the validator window. Natural E-F and B-C half steps are not cross-relations.',
-      ja: '赤い音同士が対斜です。E-F や B-C の自然な半音ではなく、声部間の変化記号衝突として扱います。',
+      en: 'The red notes sound the same scale degree with different inflections at the same time. The completed-score validator also checks adjacent onsets when neither voice starts another note between them; natural E-F and B-C half steps are different degrees and are excluded.',
+      ja: '赤い音は同じ音度を異なる変化記号で同時に鳴らしています。完成したスコアでは、どちらの声部にも途中の開始位置がない隣接する開始位置も検査します。E-F や B-C の自然な半音は異なる音度なので除外されます。',
     },
     time: '2/4',
     width: 440,
