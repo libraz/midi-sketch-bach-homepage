@@ -15,15 +15,21 @@ description: Complete JavaScript API reference for MIDI Sketch Bach.
 
 Loads and initializes the WASM module. Must be called before creating any `BachGenerator` instances.
 
-```js
+::: code-group
+
+```js [Node.js]
 import { init } from '@libraz/midi-sketch-bach'
 
-// Node.js (WASM path resolved automatically)
 await init()
+```
 
-// Browser (specify WASM path)
+```js [Browser]
+import { init } from '@libraz/midi-sketch-bach'
+
 await init({ wasmPath: '/wasm/bach.wasm' })
 ```
+
+:::
 
 **Parameters**:
 
@@ -103,7 +109,7 @@ console.log(events.tracks)           // Array of TrackData
 ```
 
 ::: info Event pitches match the MIDI output
-The engine composes internally in C, then applies the requested key and any instrument-range octave shift to both `getEvents()` pitches and the `.mid` file from `getMidi()`. Use `getGenerated()` when you need the internal-C pitches.
+The engine composes internally in C, then applies the requested key and any instrument-range octave shift to both `getEvents()` pitches and the `.mid` file from `getMidi()`. `getEvents()` and `getMidi()` also use the post-articulation playback durations. Use `getGenerated()` when you need the internal-C pitches and the notated durations captured before articulation.
 :::
 
 ::: warning `bpm` alone will not place a note on the clock
@@ -118,15 +124,70 @@ Returns the `generated.v1` document: a flat, index-addressable note list intende
 
 Unlike `getEvents()`, its note pitches remain in the engine's internal C before output transposition.
 
+Its note durations are the notated snapshot captured before character-dependent articulation. `FinalScore` validation and its texture metrics use this snapshot; `getEvents()` and `getMidi()` use the shortened playback gates.
+
 ```js
 const generated = generator.getGenerated()
 console.log(generated.schema_version)  // "generated.v1"
 console.log(generated.ticks_per_beat)  // 480
 console.log(generated.notes[0])
-// { index: 0, start_tick: 0, duration: 60, pitch: 82, voice: 0, velocity: 80 }
+// { index, start_tick, duration, pitch, voice, velocity }
 ```
 
 **Returns**: `GeneratedData`. Throws when no successful generation has happened yet.
+
+### `generated.v1` wire fields
+
+`getGenerated()` returns the parsed `generated.v1` object. Its required root fields are `schema_version`, `ticks_per_beat`, `duration_ticks`, `notes`, `counterpoint_observations`, `informational_findings`, and `wave_veto`. `tempos` is optional and appears when the exporter receives a tempo map. `info` is optional and carries generated metrics such as subject features, stream segregation, or texture metrics when those metrics are available. The [generated.v1 schema](https://github.com/libraz/midi-sketch-bach/blob/973659e705915c2178d72663d5a65ab95d3cae4b/schema/generated.v1.json) is the wire contract; `info` intentionally remains an open object because its metric families are optional.
+
+```ts
+interface GeneratedV1Wire {
+  schema_version: 'generated.v1'
+  ticks_per_beat: number
+  duration_ticks: number
+  tempos?: Array<{ tick: number; bpm: number }>
+  notes: Array<{
+    index: number
+    start_tick: number
+    duration: number
+    pitch: number
+    voice: number
+    velocity: number
+  }>
+  counterpoint_observations: Array<{
+    rule_id: string
+    geometry: 'linear' | 'vertical' | 'unclassified'
+    total: number
+    gated: number
+    exempted: number
+  }>
+  informational_findings: Array<{
+    span_id: number | null
+    rule_id: string
+    geometry: 'linear' | 'vertical' | 'unclassified'
+    kind: 'StructuralFail' | 'MusicalFail' | 'ConfigFail'
+  }>
+  wave_veto: {
+    anchor_parallel_displaced: number
+    wobble_breaker_fired: number
+    step_parallel_adjusted: number
+    step_harsh_adjusted: number
+    order_clamp_changed: number
+    window_expanded: number
+    anchor_fault_held: number
+    total: number
+  }
+  info?: Record<string, unknown>
+}
+```
+
+`counterpoint_observations` contains one entry for each rule that matched during validation, sorted by `rule_id`. `geometry` identifies whether the rule measures a melodic succession (`linear`) or a relation involving simultaneous voices or the harmonic plan (`vertical`). `total` is the match count before routing, `gated` counts findings routed to blocking validation failures, and `exempted` counts generation-pass findings suppressed because every operand is an immutable `Material` or `Ornament` source. For findings handled by this recorder, the difference `total - gated - exempted` is the count represented by informational findings; some standalone informational rules can have no observation tally.
+
+`informational_findings` contains findings retained as evidence without setting a blocking validation status. Each entry carries the nullable `span_id`, the rule ID, its geometry, and its `FailKind`. A form's counterpoint budget can still promote a matched closed vertical rule to a blocking failure; that budget failure has no span and does not change the observation tally.
+
+`wave_veto` reports how often each reactive figuration-wave layer changed a note or left an anchor fault unresolved. `total` is the sum of the six counters that changed a note; `anchor_fault_held` is reported separately because it counts an unrepairable anchor fault that was left in place. All eight fields are emitted even when every counter is zero.
+
+The wire exporter already emits `informational_findings`, `wave_veto`, optional `tempos`, and optional `info`. The checked-in JavaScript declaration currently declares `counterpoint_observations` but not the two named fields or the optional exporter metadata. This page documents the runtime wire object; TypeScript consumers reading the undeclared fields need a local type extension or a runtime narrowing.
 
 ### `getProvenance()`
 
@@ -163,6 +224,8 @@ try {
   }
 }
 ```
+
+A successful `generate()` call does not throw, and `getDiagnostic()` returns `null` for that result. Read the diagnostic in the `catch` branch when generation reports a composer validation failure.
 
 **Returns**: `DiagnosticData | null`
 
@@ -206,18 +269,18 @@ Configuration object passed to `generate()`. All fields are optional.
 | `key` | `KeyId \| KeyName` | `0` | Key as a pitch class (0=C, 1=C#, 2=D, ... 11=B) or its canonical name (`"C"`, `"C#"`, `"D"`, `"Eb"`, `"E"`, `"F"`, `"F#"`, `"G"`, `"Ab"`, `"A"`, `"Bb"`, `"B"`). |
 | `isMinor` | `boolean` | `false` | Minor key when `true`, major when `false` |
 | `bpm` | `number` | `100` | Starting tempo in BPM. `0` uses the default of 100; any other value must be in 40--200 (out of range throws). |
-| `seed` | `number` | `0` | Random seed. `0` picks a random non-zero seed, reported via `getInfo().seedUsed`. |
+| `seed` | `number` | `0` | Unsigned 32-bit random seed. `0` picks a random non-zero seed, reported via `getInfo().seedUsed`. |
 | `character` | `CharacterId \| CharacterName` | `"severe"` | Subject character (`"severe"`, `"playful"`, `"noble"`, `"restless"`). Invalid value throws. |
 | `instrument` | `InstrumentId \| InstrumentName` | Form default | Instrument (`"organ"`, `"harpsichord"`, `"piano"`, `"violin"`, `"cello"`, `"guitar"`). Must be one the form accepts, otherwise it throws. |
 | `scale` | `DurationScaleId \| DurationScaleName` | `"short"` | Length multiplier of the form's natural length: `"short"` (~1x), `"medium"` (~2x), `"long"` (~3x), `"full"` (~4x). Invalid value throws. |
-| `targetBars` | `number` | -- | Explicit bar count. When `> 0` it overrides `scale`; the value is snapped to the form's granularity and clamped to `[min, 128]`. |
+| `targetBars` | `number` | -- | Recommended integer range is 0--128. `0` uses `scale`; a positive value overrides it, then is snapped to the form's granularity and clamped to `[min, 128]`. The wire accepts unsigned 16-bit values; very large values may wrap during grid snapping. See [Option Relationships](/docs/option-relationships#scale-and-targetbars) for accepted bounds and edge behavior. |
 
 ::: info Name strings are matched exactly
 Form, key and scale names must match the canonical spelling — `"Fugue"`, `"g"` and `"FULL"` all throw. Character names are the exception and match case-insensitively, so the capitalized labels from `getCharacters()` can be passed straight back in.
 :::
 
-::: warning `numVoices` was removed
-The voice count is decided by the `form` — see the [Forms](/docs/forms) table. `num_voices`/`numVoices` is still accepted and ignored for backward compatibility; it has no effect on the output.
+::: info Voice count follows the form
+The `BachConfig` object has no `numVoices` field. The `form` determines the voice count; see the [Forms](/docs/forms) table. The raw C JSON interface separately accepts `num_voices` for compatibility, but ignores it after validating it as an unsigned 8-bit integer.
 :::
 
 ### Form Values
@@ -259,6 +322,8 @@ Each form is written for a specific instrument, and the engine rejects anything 
 | `2` | `"noble"` | Stately, broad, dignified |
 | `3` | `"restless"` | Driving, chromatic, dramatically charged |
 
+The character also controls note-release articulation and the controller level. At 480 ticks per beat, the declared separations are Noble 24, Severe 40, Playful 56, and Restless 72 ticks; Cello Prelude and Chaconne halve those values, and cantus-firmus voices use zero. The controller offsets keep the arc shape unchanged.
+
 ### Scale Values
 
 `scale` multiplies the form's natural length (see [Forms](/docs/forms)). `targetBars` overrides it.
@@ -268,9 +333,9 @@ Each form is written for a specific instrument, and the engine rejects anything 
 | `0` | `"short"` | ~1x natural (default) |
 | `1` | `"medium"` | ~2x natural |
 | `2` | `"long"` | ~3x natural |
-| `3` | `"full"` | ~4x natural |
+| `3` | `"full"` | ~4x natural; Goldberg Variations uses a special complete 128-bar layout |
 
-The natural length is a raw form value that is snapped to the form's bar grid before output. Fugue has a raw natural length of 42 bars and resolves to 44 bars for `"short"`.
+The natural length is a raw form value that is snapped to the form's bar grid before output. Fugue has a raw natural length of 42 bars and resolves to 44 bars for `"short"`. Goldberg Variations `"full"` is a special complete layout of 128 bars (aria, all 30 variations, and aria da capo), rather than four times its 20-bar natural layout.
 
 ---
 
@@ -299,7 +364,7 @@ interface EventData {
 
 ```ts
 interface TrackData {
-  name: string          // Track name (e.g., "Soprano", "Bass")
+  name: string          // Track name (e.g., "Voice 0", "Voice 1")
   channel: number       // MIDI channel (0-15)
   program: number       // General MIDI program number
   note_count: number    // Number of notes in this track
@@ -308,7 +373,7 @@ interface TrackData {
 }
 ```
 
-`control_changes` is an already-merged, duplicate-free performance curve. Organ and harpsichord tracks use CC 7 (channel volume); piano, violin, and cello tracks use CC 11 (expression).
+`control_changes` is an already-merged, duplicate-free performance curve. Organ and harpsichord tracks use CC 7 (channel volume); piano, violin, and cello tracks use CC 11 (expression); guitar tracks have no continuous-expression profile. CC 7 changes playback level and does not select organ stops. Character offsets shift the curve relative to `Severe`: Noble +5, Severe 0, Playful -7, Restless +2.
 
 ### NoteEvent
 
@@ -317,11 +382,15 @@ interface NoteEvent {
   pitch: number         // MIDI note number (0-127), transposed to the output key and range
   velocity: number      // Note velocity (0-127)
   start_tick: number    // Start time in MIDI ticks
-  duration: number      // Duration in MIDI ticks
+  duration: number      // Post-articulation playback gate in MIDI ticks
   voice: number         // Voice index
   source: string        // Provenance: "material" | "compose" | "ornament"
 }
 ```
+
+::: info Note duration and provenance
+`duration` in `getEvents()` is the playback gate after character-dependent articulation. For notes shorter than an eighth (240 ticks at 480 ticks per beat), the declared release scales with the note; a final guard retains at least half of the note's duration. Each voice's final onset remains whole. `source` records how a note was created: later velocity or articulation changes do not turn an existing `material` or `compose` note into `ornament`.
+:::
 
 ::: info Note provenance (`source`)
 Every note carries a `source` tag recording how it was produced:
@@ -389,6 +458,8 @@ function timeSignatureAtTick(tick, events) {
 ## Preset Enumeration Functions
 
 These functions return arrays of `PresetInfo` objects describing available options.
+
+The examples below assume that `await init()` has completed as shown in [Initialization](#initialization).
 
 ### `getForms()`
 
@@ -460,7 +531,7 @@ const instrumentId = getDefaultInstrumentForForm(7)
 import { getVersion } from '@libraz/midi-sketch-bach'
 
 const version = getVersion()
-// e.g. "0.4.0"
+console.log(version) // current engine version string
 ```
 
 ---

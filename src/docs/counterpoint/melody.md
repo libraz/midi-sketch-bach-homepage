@@ -13,35 +13,39 @@ A **vertical interval** compares two voices at the same time. A **melodic interv
 
 ## Forbidden leaps
 
-Three interval qualities are banned as direct melodic motion in generated lines: augmented, diminished, and the tritone. They are exactly the leaps a Baroque singer would stumble over — the distances that do not fit the scale the ear is tracking.
+The engine conservatively bans three interval categories as direct melodic motion in generated lines: augmented, diminished, and tritone spans. Historical acceptability depends on interval spelling, scale context, and musical setting.
 
 ::: info Augmented and diminished, in one line
-An interval is **augmented** when it is one semitone wider than its perfect or major form, **diminished** when one semitone narrower ([legend](/docs/music-primer#interval-names-and-qualities)). An augmented second spans 3 semitones — the *same sound* as a harmless minor third, but spelled across adjacent letter names, so the ear hears a stretched, unsingable step rather than a leap.
+An interval is **augmented** when it is one semitone wider than its perfect or major form. It is **diminished** when it is one semitone narrower than its perfect form or, for a major/minor interval, one semitone narrower than its minor form ([legend](/docs/music-primer#interval-names-and-qualities)). An augmented second spans 3 semitones; in 12-tone equal temperament that is the same semitone distance as a minor third, while the letter spelling and tonal context determine the written interval and its treatment.
 :::
 
 <CounterpointStaff example="melodicTritone" locale="en" />
 
 <CounterpointStaff example="augmentedSecond" locale="en" />
 
-The augmented second deserves its own example because it arises so naturally in minor keys: harmonic minor raises the seventh degree (the leading tone), leaving a three-semitone gap from the natural sixth. Bach's lines avoid it by choosing the melodic-minor forms on the way up and down. MIDI Sketch Bach's form builders author the same choice into their carrier material, and the validator rejects a forbidden leap if one reaches the final score.
+The augmented second deserves its own example because it arises so naturally in minor keys: harmonic minor raises the seventh degree (the leading tone), leaving a three-semitone gap from the natural sixth. In historical tonal writing, however, scale-degree alterations follow harmony and voice leading; raised sixths and sevenths can occur in either direction. The familiar ascending/descending melodic-minor pattern is a useful teaching model, not a rule Bach applies mechanically. MIDI Sketch Bach's form builders choose carrier material for this interval check, and the validator rejects a forbidden leap if one reaches the final score. See the [common-practice scale overview](https://open.lib.umn.edu/musiccomposition/chapter/common-practice-era-scales-intervals-and-chord-functions/).
 
 ::: info The three flavors of minor
-A minor key has one chord vocabulary but three melodic spellings of its scale: **natural** minor (no raised notes), **harmonic** minor (7th degree raised a semitone — this manufactures the leading tone that cadences need), and **melodic** minor (6th *and* 7th raised on the way up, natural on the way down). The raised 7th of harmonic minor is what opens the augmented-second trap between degrees 6 and 7; the melodic form exists precisely to walk around it.
+A minor key has one chord vocabulary but three useful textbook spellings of its scale: **natural** minor (no raised notes), **harmonic** minor (7th degree raised a semitone to supply a leading tone), and **melodic** minor (often described as 6th *and* 7th raised on the way up and natural on the way down). These labels describe common patterns rather than three exclusive scales: Bach and other composers alter degrees 6 and 7 in either direction when the harmony or voice leading calls for it. The raised 7th of harmonic minor opens the augmented-second gap between degrees 6 and 7; the melodic form is one way to avoid that gap.
 :::
 
 That walk-around is not a theory abstraction — it is the first bar of the Fifth Cello Suite:
 
 <CounterpointStaff example="bachMelodicMinor" locale="en" />
 
+This Fifth Suite excerpt is one ascending realization of that pattern, not a general rule for every Bach descent. Bach also uses chromatic inflection inside a subject:
+
+<CounterpointStaff example="bachChromaticSubject" locale="en" />
+
 ::: tip The applied-harmony exemption
 Inside a declared secondary-dominant region (chapter 5), chromatic motion is the *point* — so `augmented_melodic`, `diminished_melodic`, and `tritone_melodic` are all exempt there. The borrowed leading tone gets to behave like a leading tone.
 :::
 
 ::: info Where is the diminished seventh?
-In MIDI, a diminished seventh (9 semitones — G♯ up to F in A minor) is byte-identical to a major sixth, a perfectly legal consonant leap, so `diminished_melodic` cannot and does not flag it. (Conveniently, Bach *uses* the d7 leap as an expressive device anyway.) The rule covers the spans that are unambiguous in semitones: 6 (the tritone / diminished fifth) and 11 (major seventh or diminished octave — unsingable under either name). The one case where spelling truly changes the verdict — the forbidden augmented second versus the harmless minor third, both 3 semitones — is resolved from the key: the leap is flagged when its two notes sit on *adjacent scale degrees*, which is how a "second" is recognized without letter names. (A 3-semitone leap touching a note foreign to the scale is flagged conservatively as well — though in practice such chromatic notes usually sit inside the secondary-dominant exemption.)
+MIDI records semitone distance, not letter spelling. A diminished seventh (9 semitones — G♯ up to F in A minor) therefore cannot be distinguished from a major sixth by this data, so `diminished_melodic` cannot and does not flag that spelling. The validator treats 6- and 11-semitone melodic spans conservatively in its melodic rules; a semitone count alone does not determine one written interval, and chromatic context can change the musical interpretation. For the 3-semitone A2/m3 cases, the engine uses the key: it flags the leap when the endpoints occupy *adjacent scale degrees* and treats a span touching a foreign note conservatively. Secondary-dominant regions remain exempt.
 :::
 
-Bach shows what that scope leaves open. The C♯ minor fugue's subject leaps a *written* diminished fourth — four semitones, the sound of a major third — and handles it with the care the rule is really about:
+Bach shows what that scope leaves open. The C♯ minor fugue's subject leaps a *written* diminished fourth — four semitones, the same equal-tempered semitone span as a major third — and handles it with the care the rule is really about:
 
 <CounterpointStaff example="bachLeapResolution" locale="en" />
 
@@ -59,7 +63,7 @@ Even consonant leaps are rationed. A **step** moves to the adjacent scale note; 
 
 No single rule enforces the arch. In the default path, the contour comes from the line authored by the form builder and replayed by its carrier. Scored search is not responsible for default melodic shape; it is available only for the opt-in Passacaglia counterline. The arch is still useful when reading a generated voice: a line that rises to one clear high point and settles has a coherent phrase shape.
 
-Bach wrote the reference implementation. The subject of the "Little" G minor organ fugue spends its one leap immediately, touches its peak once, and walks the rest of the way home by step:
+The opening subject of Bach's "Little" Fugue in G minor (BWV 578) shows a compact arch with an early high point and a return toward its opening register:
 
 <CounterpointStaff example="bachArch" locale="en" />
 
@@ -80,7 +84,7 @@ Each voice also declares a playable range in its texture plan (soprano, alto, te
 | Rule | FailKind | Check |
 |------|----------|-------|
 | `augmented_melodic` | MusicalFail | Flags 6-semitone leaps, and 3-semitone leaps whose endpoints sit on adjacent scale degrees or off the scale (the augmented second; spelling reconstructed from the key). Exempt in secondary-dominant regions. |
-| `diminished_melodic` | MusicalFail | Flags 6- and 11-semitone leaps (diminished fifth; diminished octave / major seventh). The 9-semitone diminished seventh is indistinguishable from a major sixth and is not flagged. Exempt in secondary-dominant regions. |
+| `diminished_melodic` | MusicalFail | Conservatively flags 6- and 11-semitone melodic spans (possible spellings include A4/d5 and M7/d8). The 9-semitone diminished seventh/major sixth span is indistinguishable in MIDI and is not flagged. Exempt in secondary-dominant regions. |
 | `tritone_melodic` | MusicalFail | No direct 6-semitone leaps. Exempt in secondary-dominant regions. |
 | `consecutive_leaps` | MusicalFail | No two consecutive leaps of a fifth or more, regardless of direction. Cadence-cell notes exempt. |
 | `leading_tone_resolution` | MusicalFail | A note marked as a leading tone must step up to the tonic pitch class in the same voice's next note. |

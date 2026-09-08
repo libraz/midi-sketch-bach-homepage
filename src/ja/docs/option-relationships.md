@@ -8,39 +8,18 @@ description: MIDI Sketch Bach の設定オプションの相互作用 - 依存�
 MIDI Sketch Bach の設定オプションは特定の方法で相互に作用します。これらの関係を理解することで、望む結果を生む設定を作成する助けになります。
 
 ::: info オプションには二つの層があります
-`form`、`isMinor`、`character` は内部の作曲結果に影響します。`key` はその結果を出力時に移調し、`instrument`、`bpm`、`seed` はレンダリングや再現性に関わります。このページで使う音楽用語は[エンジニアのための音楽用語入門](/ja/docs/music-primer)で説明しています。
+`form`、`isMinor`、`character` は内部の作曲結果に影響します。`character` は完成した出力の音符のアーティキュレーションと MIDI CC プロファイルにも影響します。`key` はその結果を出力時に移調し、`instrument`、`bpm`、`seed` はレンダリングや再現性に関わります。このページで使う音楽用語は[エンジニアのための音楽用語入門](/ja/docs/music-primer)で説明しています。
 :::
 
 ## 依存関係の概要
 
-```mermaid
-graph TD
-    A["form"] -->|"固定"| C["声部数"]
-    A -->|"既定と許容範囲を決定"| B["instrument"]
-    A -->|"構造と拍子を決定"| E["形式構造"]
-    A -->|"基準長を設定"| P["基準長"]
-    F["scale"] -->|"倍率"| P
-    P --> G["出力の長さ"]
-    H["targetBars"] -->|"上書き"| F
-    I["seed"] -->|"初期化"| J["RNG"]
-    K["key"] -->|"移調"| L["MIDI と getEvents のピッチ"]
-    K -->|"表示"| Q["出力調のメタデータ"]
-    M["isMinor"] -->|"選択"| R["内部の C 長調/短調プラン"]
-    M --> Q
-    N["character"] -->|"形作る"| O["主題/テーマ"]
-    A -->|"禁止する場合あり"| N
-```
+![2 つの帯。form・character・isMinor・seed は音そのものを変え、key・instrument・bpm は出力だけを変える](/images/option-graph-ja.svg)
 
 ## 声部数は形式が決定
 
 `form` は最も影響力のあるオプションです。声部数・拍子・基準長を**固定**し、既定の `instrument` を選択します。
 
-```mermaid
-graph LR
-    A["form: 'fugue'"] --> B["3声 · 4/4<br>基準42 → 出力44小節 · オルガン"]
-    C["form: 'cello_prelude'"] --> D["1声 · 4/4<br>8小節 · チェロ"]
-    E["form: 'chaconne'"] --> F["2声 · 3/4<br>16小節 · ヴァイオリン"]
-```
+![声部レーンで見る 3 つの形式。フーガのずれた 3 つの提示、チェロ前奏曲の 1 本の線、変奏・中声・グラウンドの 3 レーンを持つシャコンヌ](/images/form-texture-ja.svg)
 
 ::: warning `numVoices` は廃止されました
 声部数オプションは存在しません — テクスチュアを選ぶには形式を選びます（[楽曲形式](/ja/docs/forms)の表を参照）。後方互換のため `num_voices`/`numVoices` の指定は受理されますが無視されます。エラーにはならず、効果もありません。
@@ -103,19 +82,22 @@ generator.generate({
 
 ## scale と targetBars
 
-`scale` と `targetBars` はどちらも出力の長さを設定します。`scale` は形式の基準長に対する倍率、`targetBars` は明示的な上書きです。
+`scale` と `targetBars` はどちらも出力の長さを設定します。`scale` は形式の基準長に対する倍率です。`targetBars: 0` は `scale` を使い、正の `targetBars` は明示的な上書きです。`targetBars` の指定値は `0`〜`128` を推奨します。API は `65535` までの整数を受け付けますが、上限付近の大きな値は小節数を揃える計算で桁あふれし、形式の最小長に戻ることがあります。
+
+![基準長に scale を掛け、形式の小節グリッドに丸め、範囲に収める。targetBars は素の目標値の段階で入り、丸めと範囲制限は同じく通る](/images/length-resolution-ja.svg)
 
 | 設定 | 動作 |
 |------|------|
 | `scale` のみ | 長さ = 形式の基準長 × スケール倍率 |
-| `targetBars` のみ | エンジンはその小節数を目標とする |
-| 両方指定 | `targetBars` が優先；`scale` は無視 |
+| `targetBars: 0` | `scale` を使う（0 は明示的な上書きなしを示す） |
+| 正の `targetBars` | その小節数を目標とし、`scale` を無視 |
+| 両方指定 | `targetBars` が正なら優先；`scale` は無視 |
 | どちらも未指定 | 既定: `scale: "short"`（≒ 基準長） |
 
-スケール倍率はおおよそ `short` ≒ 1倍、`medium` ≒ 2倍、`long` ≒ 3倍、`full` ≒ 4倍です。
+スケール倍率はおおよそ `short` ≒ 1倍、`medium` ≒ 2倍、`long` ≒ 3倍、`full` ≒ 4倍です。ゴルトベルク変奏曲だけは例外で、`scale: "full"` で正の `targetBars` を指定しない場合は、20 × 4 = 80 小節ではなく、完全な圧縮レイアウトである 128 小節を選びます。
 
 ::: tip
-`targetBars` は形式の刻み（グラウンドバスの周期など）にスナップされ、`[形式の最小値, 128]` に丸め込まれます。すべての形式は128小節で上限となります。一般的なサイズカテゴリには `scale`、特定の長さには `targetBars` を使用してください。
+正の値は形式の刻み（グラウンドバスの周期など）にスナップされ、`[形式の最小値, 128]` に丸め込まれます。すべての形式は128小節で上限となります。一般的なサイズカテゴリには `scale`、特定の長さには `targetBars` を使用してください。
 :::
 
 ```js
@@ -192,7 +174,7 @@ generator.generate({ key: 'D', isMinor: true })
 `character` パラメータ（`severe`、`playful`、`noble`、`restless`）は主要な主題素材を形作ります。影響は形式により異なり、一部の組み合わせは禁止されています。
 
 ::: info `character` はジャンルではありません
-`character` は、主題や主要素材の旋律傾向を変えます。音程の大きさ、リズムの活発さ、半音階的な傾向、旋律の輪郭などです。形式そのものを切り替える設定ではありません。`restless` なフーガも、形式としてはフーガです。
+`character` は、主題や主要素材の旋律傾向を変えます。音程の大きさ、リズムの活発さ、半音階的な傾向、旋律の輪郭などです。さらに、すべての形式で音符のアーティキュレーションと MIDI CC プロファイルも変わります。`cello_prelude` では、小節ごとに使う音型パレットの順序も変わります。楽器ごとの表現出力は[楽器](/ja/docs/physical-models)を参照してください。形式そのものを切り替える設定ではありません。`restless` なフーガも、形式としてはフーガです。
 :::
 
 | 形式タイプ | 性格の影響 |
@@ -232,7 +214,7 @@ generator.generate({ key: 'D', isMinor: true })
 | `character` | string または number | 名前 / 0--3 | `"severe"` | 不明な値では例外；禁止された形式の組み合わせでは例外 |
 | `instrument` | string または number | 名前 / 0--5 | 形式既定 | 不明な値では例外；その形式が受け付けない楽器でも例外 |
 | `scale` | string または number | 名前 / 0--3 | `"short"` | 不明な値では例外 |
-| `targetBars` | number | >0 | -- | `scale` を上書き；形式の刻みにスナップし `[最小, 128]` に丸め込み |
+| `targetBars` | integer | 0--65535 | 0 | 0 は `scale` を使用；正の値は上書き後に形式の刻みへスナップし `[最小, 128]` に丸め込み |
 | `numVoices` | number | -- | -- | 受理されるが無視（声部数は形式が決定） |
 
 エラーメッセージは失敗ごとに異なり（`Invalid BPM (must be 0 or 40-200)`、`Incompatible instrument for this form` など）、どのフィールドが原因かを判別できます。

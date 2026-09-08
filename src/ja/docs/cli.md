@@ -33,17 +33,17 @@ npm パッケージは未公開で、CLI 実行ファイルも提供しません
 |-----------|----------|------|----------|------|
 | `--form <value>` | | string | `fugue` | 楽曲形式名 |
 | `--key <value>` | | string | `c_major` | `c_major`、`g_minor`、`F_major` などの調名 |
-| `--character <value>` | | string | `severe` | 主題の性格（`severe`、`playful`、`noble`、`restless`） |
+| `--character <value>` | | string | `severe` | 主題の性格（`severe`、`playful`、`noble`、`restless`）。音楽素材、ノートのアーティキュレーション、MIDI の表情レベルに影響します。[楽器](/ja/docs/physical-models)を参照してください。 |
 | `--instrument <value>` | | string | 形式の既定 | その形式が受け付ける楽器（`organ`、`harpsichord`、`piano`、`violin`、`cello`、`guitar`） |
 | `--bpm <value>` | | number | `100` | 開始テンポ（BPM、40--200） |
 | `--seed <value>` | | number | `0` | ランダムシード（0 = ランダム、解決済みシードが報告される） |
-| `--scale <value>` | | string | `short` | 長さ倍率（`short`、`medium`、`long`、`full`） |
-| `--bars <value>` | | number | -- | 目標小節数（`--scale` を上書き） |
+| `--scale <value>` | | string | `short` | 長さ倍率（`short`、`medium`、`long`、`full`）。ゴルトベルク変奏曲では、`full` が完全な 128 小節構成を選びます |
+| `--bars <value>` | | number | -- | 推奨する整数範囲は 0--128 です。`0` は `--scale` を使います。正の値は `--scale` を上書きしてから形式のグリッドに合わせます。パーサーはより広い `uint16` の値も受け付けます。受理範囲と大きな値の挙動は[オプションの関係](/ja/docs/option-relationships)を参照してください |
 | `--free-counterpoint` | | boolean | `false` | 実験的: パッサカリアの副次対旋律を候補探索で生成する。他の形式では利用不可の診断を出して終了 |
 | `-o <path>` | | string | `output.mid` | 出力ファイルパス |
 | `--json` | | boolean | `false` | MIDI ファイルと同じ場所に `.json` のイベントデータを書き出す |
-| `--generated-json` | | boolean | `false` | 採点用の `generated.v1` + `provenance.v1` JSON を出力（開発者向け） |
-| `--composer-phase <value>` | | string | -- | 開発用のハーネスフェーズ実行モード。上記のオプションとは併用できない |
+| `--generated-json` | | boolean | `false` | 採点用の `generated.v1` + `provenance.v1` JSON を出力します（開発者向け）。`generated.v1` は記譜上の長さを保持し、MIDI とイベント JSON は演奏用にアーティキュレーションで短縮された長さを使います |
+| `--composer-phase <value>` | | string | -- | 開発用のハーネスフェーズ実行モードです。製品生成オプション（`--form`、`--character`、`--instrument`、`--bpm`、`--scale`、`--bars`、`--free-counterpoint`）とは併用できません |
 | `--help` | `-h` | boolean | -- | ヘルプを表示 |
 
 ::: warning 廃止されたフラグ
@@ -182,7 +182,7 @@ npm パッケージは未公開で、CLI 実行ファイルも提供しません
 ### JSONイベントデータの出力
 
 ```bash
-./build/bin/bach_cli --form fugue --key d_minor --json -o fugue.mid
+./build/bin/bach_cli --form fugue --key d_minor --bpm 80 --seed 12345 --json -o fugue.mid
 ```
 
 この例では `fugue.mid` と `fugue.json` が書き出されます。`--generated-json` を付けると `fugue.generated.json` と `fugue.provenance.json` が追加されます。`-o` が既に `.json` で終わっている場合、サイドカーは拡張子を置き換えるのではなく末尾に付け足されるため、出力ファイル自身がサイドカーで上書きされることはありません。
@@ -191,7 +191,9 @@ npm パッケージは未公開で、CLI 実行ファイルも提供しません
 
 `--json` を使用した場合、MIDI ファイルと同じ場所に書き出される JSON は [EventData](/ja/docs/api-js#eventdata) の構造に従います。
 
-イベント JSON のピッチは `.mid` ファイルと同じ出力調へ移調され、楽器の音域に合わせたオクターブシフトも反映されます。`generated.v1` サイドカーのピッチはエンジン内部の C のままです。イベント JSON の各ノートは `source` 由来タグ（`"material"`、`"compose"`、`"ornament"`）も持ちます。
+イベント JSON のピッチは `.mid` ファイルと同じ出力調へ移調され、楽器の音域に合わせたオクターブシフトも反映されます。[`generated.v1` サイドカー](/ja/docs/api-js#generated-v1-のワイヤーフィールド)はエンジン内部の C のピッチを保持します。[`provenance.v1` サイドカー](/ja/docs/api-js#getprovenance)は各生成ノートがどのように選ばれたかを記録します。イベント JSON の各ノートは `source` 由来タグ（`"material"`、`"compose"`、`"ornament"`）も持ちます。
+
+以下は現在の出力から1トラックと1ノートだけを抜き出した簡略例です。`note_count` はそのトラックに含まれる全ノート数です。`notes` と `control_changes` の配列は一部だけを示し、残りのノート、コントローラーイベント、他のトラックは省略しています。
 
 ```json
 {
@@ -214,10 +216,10 @@ npm パッケージは未公開で、CLI 実行ファイルも提供しません
   ],
   "tracks": [
     {
-      "name": "Soprano",
+      "name": "Voice 0",
       "channel": 0,
       "program": 19,
-      "note_count": 128,
+      "note_count": 264,
       "control_changes": [
         { "tick": 0, "controller": 7, "value": 75 }
       ],

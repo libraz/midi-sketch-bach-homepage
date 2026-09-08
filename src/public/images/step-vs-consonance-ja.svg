@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 308" width="960" height="308" role="img" aria-labelledby="ttl dsc">
+  <title id="ttl">順次進行と縦の協和のせめぎ合い</title>
+  <desc id="dsc">3 つのパネルはいずれも、持続するバスの上に置かれた 8 つの 8 分音符です。1 つ目では自由に走る音階がなめらかに動きますが、拍の頭のうち 2 つが和音外の音に着地します。2 つ目では拍の頭がすべて和音構成音になりますが、そこへ到達するために線が跳躍します。3 つ目では、進行方向の先にある和音構成音へ向かって順次進行するので、順次性と拍頭の協和が両立します。</desc>
+
+  <style>
+    .bg    { fill:#f7f5f1 }
+    .grp   { fill:#edeae4 }
+    .chip  { fill:#ffffff; stroke:#d7d4cd }
+    .card  { fill:#ffffff; stroke:#8a6a1f }
+    .alt   { fill:#ffffff; stroke:#3f6b8a }
+    .seam  { fill:none; stroke:#b8b4ac; stroke-dasharray:6 5 }
+    .rule  { fill:none; stroke:#b8b4ac; stroke-width:1 }
+    .ln    { fill:none; stroke:#8a6a1f; stroke-width:1.4 }
+    .ln2   { fill:none; stroke:#3f6b8a; stroke-width:1.4 }
+    .ah    { fill:#8a6a1f }
+    .ah2   { fill:#3f6b8a }
+    .fill1 { fill:#8a6a1f; opacity:.16 }
+    .fill2 { fill:#3f6b8a; opacity:.16 }
+    .warn  { fill:none; stroke:#a3401f; stroke-width:1.6 }
+    .warnt { fill:#a3401f }
+    text   { font-family:Inter,"Helvetica Neue","Hiragino Sans","Noto Sans JP",Arial,sans-serif; fill:#1f2328 }
+    .h     { font-size:12.5px }
+    .lbl   { font-size:11px; fill:#6e7781; letter-spacing:.06em }
+    .s     { font-size:10.5px; fill:#6e7781 }
+    .mono  { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:10.5px; fill:#8a6a1f }
+    @media (prefers-color-scheme: dark) {
+      .bg{fill:#0d1117} .grp{fill:#12171d}
+      .chip{fill:#161b22;stroke:#30363d} .card{fill:#161b22;stroke:#d9b45c} .alt{fill:#161b22;stroke:#7fb3d5}
+      .seam{stroke:#484f58} .rule{stroke:#484f58}
+      .ln{stroke:#d9b45c} .ln2{stroke:#7fb3d5} .ah{fill:#d9b45c} .ah2{fill:#7fb3d5}
+      .fill1{fill:#d9b45c} .fill2{fill:#7fb3d5}
+      .warn{stroke:#e08a68} .warnt{fill:#e08a68} .mono{fill:#d9b45c}
+      text{fill:#e6edf3} .lbl{fill:#8b949e} .s{fill:#8b949e}
+    }
+  </style>
+
+  <rect class="bg" x="0" y="0" width="960" height="308" rx="12"/>
+
+  <text class="s" x="480" y="32" text-anchor="middle">どのパネルも、持続するバス（下端の帯）の上に置かれた 8 つの 8 分音符を示します。</text>
+  <text class="s" x="480" y="46" text-anchor="middle">破線はそのバスの和音構成音、赤い丸と赤い線分は破綻している箇所です。</text>
+
+  <rect class="grp" x="24" y="58" width="288" height="198" rx="8"/>
+  <text class="h" x="40" y="80">自由に走る音階</text>
+  <text class="s" x="40" y="97">横方向はコーパスに近いが、</text>
+  <text class="s" x="40" y="109">拍の頭が和音外の音に乗る</text>
+  <path class="seam" d="M 40 202 H 290 M 40 178 H 290 M 40 142 H 290 M 40 118 H 290"/>
+  <path class="ln" d="M 53 202 L 85 190 L 117 178 L 149 166 L 181 154 L 213 142 L 245 130 L 277 118"/>
+  <rect class="card" x="40"  y="198" width="26" height="8" rx="3"/>
+  <rect class="card" x="72"  y="186" width="26" height="8" rx="3"/>
+  <rect class="card" x="104" y="174" width="26" height="8" rx="3"/>
+  <rect class="card" x="136" y="162" width="26" height="8" rx="3"/>
+  <rect class="card" x="168" y="150" width="26" height="8" rx="3"/>
+  <rect class="card" x="200" y="138" width="26" height="8" rx="3"/>
+  <rect class="card" x="232" y="126" width="26" height="8" rx="3"/>
+  <rect class="card" x="264" y="114" width="26" height="8" rx="3"/>
+  <circle class="warn" cx="181" cy="154" r="10"/>
+  <circle class="warn" cx="245" cy="130" r="10"/>
+  <rect class="fill1" x="40" y="212" width="250" height="10" rx="4"/>
+  <text class="warnt" style="font-size:10.5px" x="40" y="242">拍の頭が 2 か所、和音から外れる</text>
+
+  <rect class="grp" x="336" y="58" width="288" height="198" rx="8"/>
+  <text class="h" x="352" y="80">拍の頭をすべて和音構成音に</text>
+  <text class="s" x="352" y="97">縦方向は清潔だが、そこへ届く</text>
+  <text class="s" x="352" y="109">ために線が跳びまわる</text>
+  <path class="seam" d="M 352 202 H 602 M 352 178 H 602 M 352 142 H 602 M 352 118 H 602"/>
+  <path class="ln" d="M 365 202 L 397 142 L 429 178 L 461 202 L 493 142 L 525 178 L 557 202 L 589 142"/>
+  <path class="warn" d="M 365 202 L 397 142"/>
+  <path class="warn" d="M 461 202 L 493 142"/>
+  <path class="warn" d="M 557 202 L 589 142"/>
+  <rect class="card" x="352" y="198" width="26" height="8" rx="3"/>
+  <rect class="card" x="384" y="138" width="26" height="8" rx="3"/>
+  <rect class="card" x="416" y="174" width="26" height="8" rx="3"/>
+  <rect class="card" x="448" y="198" width="26" height="8" rx="3"/>
+  <rect class="card" x="480" y="138" width="26" height="8" rx="3"/>
+  <rect class="card" x="512" y="174" width="26" height="8" rx="3"/>
+  <rect class="card" x="544" y="198" width="26" height="8" rx="3"/>
+  <rect class="card" x="576" y="138" width="26" height="8" rx="3"/>
+  <rect class="fill1" x="352" y="212" width="250" height="10" rx="4"/>
+  <text class="warnt" style="font-size:10.5px" x="352" y="242">どの拍にも跳躍で到達している</text>
+
+  <rect class="grp" x="648" y="58" width="288" height="198" rx="8"/>
+  <text class="h" x="664" y="80">エンジンの音型がやること</text>
+  <text class="s" x="664" y="97">進行方向の先にある和音構成音へ</text>
+  <text class="s" x="664" y="109">向かって順次に進む</text>
+  <path class="seam" d="M 664 202 H 914 M 664 178 H 914 M 664 142 H 914 M 664 118 H 914"/>
+  <path class="ln" d="M 677 202 L 709 190 L 741 178 L 773 154 L 805 142 L 837 130 L 869 118 L 901 130"/>
+  <rect class="card" x="664" y="198" width="26" height="8" rx="3"/>
+  <rect class="card" x="696" y="186" width="26" height="8" rx="3"/>
+  <rect class="card" x="728" y="174" width="26" height="8" rx="3"/>
+  <rect class="card" x="760" y="150" width="26" height="8" rx="3"/>
+  <rect class="card" x="792" y="138" width="26" height="8" rx="3"/>
+  <rect class="card" x="824" y="126" width="26" height="8" rx="3"/>
+  <rect class="card" x="856" y="114" width="26" height="8" rx="3"/>
+  <rect class="card" x="888" y="126" width="26" height="8" rx="3"/>
+  <rect class="fill1" x="664" y="212" width="250" height="10" rx="4"/>
+  <text class="s" x="664" y="242">順次進行のまま、拍の頭は協和する</text>
+
+  <path class="seam" d="M 24 272 H 936"/>
+  <text class="s" x="480" y="292" text-anchor="middle">コーパスのモデルは旋律音程をもっとも重く見るので跳躍の多い線は落ちる。だが不協和に踏み込み続ける線も同じように落ちる。</text>
+</svg>

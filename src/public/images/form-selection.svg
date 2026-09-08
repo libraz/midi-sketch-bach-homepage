@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 384" width="960" height="384" role="img" aria-labelledby="ttl dsc">
+  <title id="ttl">Choosing a form</title>
+  <desc id="dsc">The instrument comes first and the form list follows from it. Organ opens onto seven forms: fugue, prelude and fugue, trio sonata, chorale prelude, toccata and fugue, passacaglia, and fantasia and fugue. Solo cello leads to the cello prelude, solo violin to the chaconne with three declared lanes — V0 variation, V1 middle material that may rest, and V2 ground — and harpsichord to the Goldberg variations, which is the only form that also accepts piano.</desc>
+
+  <style>
+    .bg    { fill:#f7f5f1 }
+    .grp   { fill:#edeae4 }
+    .chip  { fill:#ffffff; stroke:#d7d4cd }
+    .card  { fill:#ffffff; stroke:#8a6a1f }
+    .alt   { fill:#ffffff; stroke:#3f6b8a }
+    .seam  { fill:none; stroke:#b8b4ac; stroke-dasharray:6 5 }
+    .rule  { fill:none; stroke:#b8b4ac; stroke-width:1 }
+    .ln    { fill:none; stroke:#8a6a1f; stroke-width:1.4 }
+    .ln2   { fill:none; stroke:#3f6b8a; stroke-width:1.4 }
+    .ah    { fill:#8a6a1f }
+    .ah2   { fill:#3f6b8a }
+    .fill1 { fill:#8a6a1f; opacity:.16 }
+    .fill2 { fill:#3f6b8a; opacity:.16 }
+    .warn  { fill:none; stroke:#a3401f; stroke-width:1.6 }
+    .warnt { fill:#a3401f }
+    text   { font-family:Inter,"Helvetica Neue","Hiragino Sans","Noto Sans JP",Arial,sans-serif; fill:#1f2328 }
+    .h     { font-size:12.5px }
+    .lbl   { font-size:11px; fill:#6e7781; letter-spacing:.06em }
+    .s     { font-size:10.5px; fill:#6e7781 }
+    .mono  { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:10.5px; fill:#8a6a1f }
+    @media (prefers-color-scheme: dark) {
+      .bg{fill:#0d1117} .grp{fill:#12171d}
+      .chip{fill:#161b22;stroke:#30363d} .card{fill:#161b22;stroke:#d9b45c} .alt{fill:#161b22;stroke:#7fb3d5}
+      .seam{stroke:#484f58} .rule{stroke:#484f58}
+      .ln{stroke:#d9b45c} .ln2{stroke:#7fb3d5} .ah{fill:#d9b45c} .ah2{fill:#7fb3d5}
+      .fill1{fill:#d9b45c} .fill2{fill:#7fb3d5}
+      .warn{stroke:#e08a68} .warnt{fill:#e08a68} .mono{fill:#d9b45c}
+      text{fill:#e6edf3} .lbl{fill:#8b949e} .s{fill:#8b949e}
+    }
+  </style>
+
+  <defs>
+    <marker id="a" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path class="ah" d="M0,0 L9,4.5 L0,9 z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="960" height="384" rx="12"/>
+
+  <text class="lbl" x="24" y="34">start from the instrument — the form list follows from it</text>
+
+  <rect class="grp" x="24" y="48" width="912" height="150" rx="8"/>
+  <rect class="card" x="38" y="106" width="170" height="44" rx="6"/>
+  <text class="h" x="50" y="126">Organ</text>
+  <text class="s" x="50" y="142">seven forms to pick from</text>
+  <path class="ln" d="M 208 128 H 224" marker-end="url(#a)"/>
+  <text class="lbl" x="228" y="70">then, which style?</text>
+
+  <rect class="chip" x="228" y="78" width="168" height="44" rx="6"/>
+  <text class="h" x="240" y="98">0 · Fugue</text>
+  <text class="s" x="240" y="114">strict counterpoint</text>
+  <rect class="chip" x="408" y="78" width="168" height="44" rx="6"/>
+  <text class="h" x="420" y="98">1 · Prelude and Fugue</text>
+  <text class="s" x="420" y="114">prelude, then fugue</text>
+  <rect class="chip" x="588" y="78" width="168" height="44" rx="6"/>
+  <text class="h" x="600" y="98">2 · Trio Sonata</text>
+  <text class="s" x="600" y="114">three voices in dialogue</text>
+  <rect class="chip" x="768" y="78" width="168" height="44" rx="6"/>
+  <text class="h" x="780" y="98">3 · Chorale Prelude</text>
+  <text class="s" x="780" y="114">a hymn tune in long notes</text>
+
+  <rect class="chip" x="228" y="134" width="168" height="44" rx="6"/>
+  <text class="h" x="240" y="154">4 · Toccata and Fugue</text>
+  <text class="s" x="240" y="170">dramatic and virtuosic</text>
+  <rect class="chip" x="408" y="134" width="168" height="44" rx="6"/>
+  <text class="h" x="420" y="154">5 · Passacaglia</text>
+  <text class="s" x="420" y="170">variations on a ground</text>
+  <rect class="chip" x="588" y="134" width="168" height="44" rx="6"/>
+  <text class="h" x="600" y="154">6 · Fantasia and Fugue</text>
+  <text class="s" x="600" y="170">free, then strict</text>
+
+  <rect class="grp" x="24" y="208" width="912" height="124" rx="8"/>
+  <rect class="card" x="38" y="218" width="170" height="30" rx="6"/>
+  <text class="h" x="50" y="238">Solo cello</text>
+  <path class="ln" d="M 208 233 H 224" marker-end="url(#a)"/>
+  <rect class="chip" x="228" y="218" width="210" height="30" rx="6"/>
+  <text class="h" x="240" y="238">7 · Cello Prelude</text>
+  <text class="s" x="454" y="237">one continuous arpeggiated line, 8 bars</text>
+
+  <rect class="card" x="38" y="254" width="170" height="30" rx="6"/>
+  <text class="h" x="50" y="274">Solo violin</text>
+  <path class="ln" d="M 208 269 H 224" marker-end="url(#a)"/>
+  <rect class="chip" x="228" y="254" width="210" height="30" rx="6"/>
+  <text class="h" x="240" y="274">8 · Chaconne</text>
+  <text class="s" x="454" y="273">three lanes: variation, middle where clear, ground, in 3/4</text>
+
+  <rect class="card" x="38" y="290" width="170" height="30" rx="6"/>
+  <text class="h" x="50" y="310">Harpsichord</text>
+  <path class="ln" d="M 208 305 H 224" marker-end="url(#a)"/>
+  <rect class="chip" x="228" y="290" width="210" height="30" rx="6"/>
+  <text class="h" x="240" y="310">9 · Goldberg Variations</text>
+  <text class="s" x="454" y="309">the one form that also accepts piano</text>
+
+  <path class="seam" d="M 24 348 H 936"/>
+  <text class="s" x="480" y="368" text-anchor="middle">Every form but the Goldberg Variations accepts exactly one instrument; asking for another throws instead of transcribing the piece.</text>
+</svg>

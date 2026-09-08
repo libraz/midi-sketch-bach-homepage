@@ -8,26 +8,32 @@ description: Subject and answer, countersubject continuity, episodes and sequenc
 A fugue is not a form like a sonata — it is a *procedure*: one theme (the subject) enters voice by voice, travels through related keys, and returns intensified. Every device in that procedure is a contract between declared material and emitted notes, and the validator checks each one. These rules sit above the local interval rules from chapters 2–3, which keep applying throughout.
 
 ::: info The fugue procedure at a glance
-**Exposition**: each voice enters in turn with the subject or its answer, accompanied by the countersubject. **Episodes**: sequential passages derived from subject motifs travel between keys. **Development**: middle entries restate the subject in related keys; stretto and pedal points raise the temperature toward the close.
+**Exposition**: each voice enters in turn with the subject or its answer; a countersubject may accompany those entries. **Episodes**: passages often use sequences or subject-related ideas to travel between keys, but their material can vary. **Development**: middle entries restate the subject in related keys; stretto and pedal points raise the temperature toward the close.
 :::
+
+These labels describe common procedures rather than universal requirements; see [Open Music Theory's exposition overview](https://viva.pressbooks.pub/openmusictheorycopy/chapter/high-baroque-fugal-exposition/) and [Puget Sound's fugue analysis guide](https://musictheory.pugetsound.edu/mt21c/FugueAnalysis.html).
 
 ## Subject and answer
 
-When the second voice enters, it carries the subject transposed to the dominant — the **answer**. A literal transposition is a *real answer*. But if the subject opens by outlining tonic→dominant, literal transposition would immediately yank the music out of the home key. The fix, used constantly by Bach, is the **tonal answer**: adjust the head so tonic maps to dominant and dominant maps back to tonic, then transpose the tail normally.
+When the second voice enters, it usually carries the subject toward the dominant — the **answer**. A literal transposition is a *real answer*; the exact interval can be a fifth up or a fourth down, depending on the entering voice. A **tonal answer** makes small intervallic adjustments where a literal transposition would destabilize the tonal center. The adjustments depend on the subject and its context; they are not limited to an I↔V head followed by an untouched tail.
 
 <CounterpointStaff example="realVsTonalAnswer" locale="en" />
 
-`tonal_answer_dominant_mapping` checks exactly this head mapping when the material declares a tonal answer: the subject's opening pitch class must map I↔V. Subjects that open on neither tonic nor dominant pass vacuously — they need no adjustment.
+`tonal_answer_dominant_mapping` is a narrower engine contract. When material declares a tonal answer, it checks the subject's opening pitch class for the I↔V mapping; subjects that open on neither tonic nor dominant pass that particular check without requiring a mapping. The contract does not claim that every historical tonal answer uses only this head adjustment.
 
 Here is the textbook case in Bach's own hand — the opening of the C minor fugue from WTC I. Play the two lines in turn and listen for the single bent note:
 
 <CounterpointStaff example="bachTonalAnswer" locale="en" />
 
+A contrasting real answer appears in Bach’s G-minor “Little” Fugue (BWV 578): the displayed alto entry is a literal transposition of the quoted soprano opening, a perfect fourth below. It needs no tonal head correction:
+
+<CounterpointStaff example="bachRealAnswer" locale="en" />
+
 ## The countersubject
 
 <CounterpointStaff example="countersubjectContinuous" locale="en" />
 
-A countersubject is only useful if it actually accompanies. `countersubject_continuous` samples every quarter-beat of the answer's window and requires a sounding note from the countersubject voice at each one. Since the pair is designed to be reused with voices swapped, `invertible_at_octave` also checks it at structural accents; fourths are judged against the actual bass by `vertical_dissonance`.
+A countersubject is a recurring companion in some fugues, but it is not a required part of every fugue. When material declares one, `countersubject_continuous` samples every quarter-beat of the answer's window and requires a sounding note from the countersubject voice at each one. Since the pair is designed to be reused with voices swapped, `invertible_at_octave` also checks it at structural accents; fourths are judged against the actual bass by `vertical_dissonance`.
 
 In the same C minor fugue, the countersubject enters the moment the answer does — and never stops sounding under it:
 
@@ -35,7 +41,7 @@ In the same C minor fugue, the countersubject enters the moment the answer does 
 
 ## Episodes and sequences
 
-Episodes are where fugues travel. Their material is not free improvisation: it must be derived from a declared slice of the subject by a declared transform — **restatement** re-anchors the slice verbatim at its new position, **inversion** mirrors the contour upside down, **retrograde** plays it backwards, and **augmentation/diminution** stretch or compress every duration (not to be confused with augmented *intervals* from chapter 4). It usually moves as a **sequence** — the same seed restated on successively higher or lower steps.
+Episodes are where fugues travel. Historical episodes often develop fragments of the subject or countersubject, and sequences are common, but they can also use free counterpoint or another salient idea. In this engine, only material explicitly declared as a motif transform must be derived from a source slice — **restatement** re-anchors the slice at its new position, **inversion** mirrors the contour upside down, **retrograde** plays it backwards, and **augmentation/diminution** stretch or compress every duration (not to be confused with augmented *intervals* from chapter 4). A declared sequence uses the same seed on successively higher or lower steps.
 
 <CounterpointStaff example="sequenceSteps" locale="en" />
 
@@ -53,8 +59,8 @@ The C minor fugue puts both contracts on display the moment its exposition pause
 
 | Rule | Contract |
 |------|----------|
-| `episode_motif_derived` | Every note emitted for an episode fragment matches the expected output of the declared motif operation applied to the declared source slice — pitch, duration, and tick. |
-| `sequence_pattern_consistency` | Each step of a sequence is a verbatim transposition of the seed by the declared offset. Paraphrases fail. |
+| `episode_motif_derived` | For a declared episode fragment, every note matches the expected output of the declared motif operation applied to the declared source slice — pitch, duration, and tick. |
+| `sequence_pattern_consistency` | For a declared sequence, each step is a verbatim transposition of the seed by the declared offset. Paraphrases fail this engine contract. |
 
 ## Imitation
 
@@ -70,14 +76,14 @@ Bach wrote a whole laboratory for this contract: the Goldberg canons. In the las
 
 ### Middle entries
 
-After the exposition, the subject returns in **related keys** — the dominant (V), the relative (vi), the subdominant (IV), the supertonic (ii). `middle_entry_in_related_key` restricts the declared entry key to that family and requires every note of the entry to stay diatonic in it.
+After the exposition, the subject returns in **related keys**. In major mode, the allowed stations are the dominant (V), relative (vi), subdominant (IV), and supertonic (ii); in minor mode, they are the minor dominant (v), relative major (III), and minor subdominant (iv). `middle_entry_in_related_key` restricts the declared entry key to the mode-specific family and checks every entry pitch against the corresponding collection.
 
 ::: info What makes a key "related"?
 Two keys are related when their scales share most of their notes, so the ear can slide between them without a jolt. The dominant and subdominant keys differ from home by a single accidental; the **relative** key (vi of a major key — A minor for C major) uses the *same* notes with a different center.
 :::
 
 ::: info What about minor keys?
-The related-key set is defined as fixed distances from the home tonic — V, vi, IV, ii — whatever the home mode, and the diatonic check reads the entry against the *major* scale on the declared key. A minor-mode fugue therefore states its middle entries in related major keys (the engine restates the subject in its major-mode shape for the entry). The destinations classical minor-key practice favors most — the relative major (III: E♭ for C minor, where Bach takes the C minor fugue's first middle entry) and the minor dominant (v) — sit outside the current set.
+Minor mode uses the related-key set {v, III, iv}. The validator checks every entry pitch against the home minor collection: pitch-class offsets {0, 2, 3, 5, 7, 8, 10, 11} from the tonic, which includes the natural-minor flat seventh and the raised leading tone.
 :::
 
 <CounterpointStaff example="middleEntry" locale="en" />
@@ -102,14 +108,16 @@ The first prelude of WTC I shows the device at its barest. Before the ending, Ba
 
 ## How the validator sees this chapter
 
-| Rule | FailKind | Check |
+| Rule | Outcome | Check |
 |------|----------|-------|
 | `tonal_answer_dominant_mapping` | MusicalFail | Tonal answer's head maps the subject's opening pitch class I↔V. |
 | `countersubject_continuous` | MusicalFail | The countersubject voice sounds at every quarter-beat of the answer window. |
+| `countersubject_invertible` | Informational | A strong-beat perfect fifth between a marked countersubject and an overlapping subject or answer would become a fourth under octave inversion. This observation is informational and never blocks generation. |
 | `episode_motif_derived` | MusicalFail | Episode notes equal the declared motif transform of the declared source slice. |
 | `sequence_pattern_consistency` | MusicalFail | Each sequence step is an exact transposition of the seed by the declared offset. |
 | `imitation_entry_match` | MusicalFail | Follower enters at the declared tick distance and interval from the leader. |
-| `middle_entry_in_related_key` | MusicalFail | Entry key ∈ {V, vi, IV, ii} of the home tonic; entry notes diatonic in that key's major scale, whatever the home mode. |
+| `imitation_entry_realization` | MusicalFail | During `Generation`, emitted Material notes must match the declared leader/follower windows in pitch, onset, duration, voice, and intent; both entry heads need the realization marker. |
+| `middle_entry_in_related_key` | MusicalFail | In major mode, entry key ∈ {V, vi, IV, ii}; notes are diatonic in the related station's major scale, except vi uses the home major collection. In minor mode, entry key ∈ {v, III, iv}; notes use home-minor pitch-class offsets {0, 2, 3, 5, 7, 8, 10, 11}. |
 | `stretto_overlap_valid` | MusicalFail | Follower starts strictly inside the leader's subject window and is an exact transposition. |
 | `pedal_point_tonic_or_dominant` | MusicalFail | Every pedal pitch class is the home tonic or dominant. |
 

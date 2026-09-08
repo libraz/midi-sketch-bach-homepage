@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" width="960" height="340" role="img" aria-labelledby="ttl dsc">
+  <title id="ttl">generate() の 7 ステップ</title>
+  <desc id="dsc">左上から設定が入り、7 つの固定ステップ — 生成要求の解決、形式ディレクター、候補探索、規則検証、レンダラー、最終検証と表現、MIDI とイベントの書き出し — を通ります。最終化では、装飾、FinalScore と形式の予算の検証、速度の適用、作譜値の保存、アーティキュレーション、再レンダー、CC とテンポの追加をこの順に行います。3 番目のあと段が折り返して 4 番目に続きます。横に伸びる分岐は、阻害的な検証失敗が出た場合に出力を作らず報告を返して中断することを示します。</desc>
+
+  <style>
+    .bg    { fill:#f7f5f1 }
+    .grp   { fill:#edeae4 }
+    .chip  { fill:#ffffff; stroke:#d7d4cd }
+    .card  { fill:#ffffff; stroke:#8a6a1f }
+    .alt   { fill:#ffffff; stroke:#3f6b8a }
+    .seam  { fill:none; stroke:#b8b4ac; stroke-dasharray:6 5 }
+    .rule  { fill:none; stroke:#b8b4ac; stroke-width:1 }
+    .ln    { fill:none; stroke:#8a6a1f; stroke-width:1.4 }
+    .ln2   { fill:none; stroke:#3f6b8a; stroke-width:1.4 }
+    .ah    { fill:#8a6a1f }
+    .ah2   { fill:#3f6b8a }
+    .fill1 { fill:#8a6a1f; opacity:.16 }
+    .fill2 { fill:#3f6b8a; opacity:.16 }
+    .warn  { fill:none; stroke:#a3401f; stroke-width:1.6 }
+    .warnt { fill:#a3401f }
+    text   { font-family:Inter,"Helvetica Neue","Hiragino Sans","Noto Sans JP",Arial,sans-serif; fill:#1f2328 }
+    .h     { font-size:12.5px }
+    .lbl   { font-size:11px; fill:#6e7781; letter-spacing:.06em }
+    .s     { font-size:10.5px; fill:#6e7781 }
+    .mono  { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:10.5px; fill:#8a6a1f }
+    @media (prefers-color-scheme: dark) {
+      .bg{fill:#0d1117} .grp{fill:#12171d}
+      .chip{fill:#161b22;stroke:#30363d} .card{fill:#161b22;stroke:#d9b45c} .alt{fill:#161b22;stroke:#7fb3d5}
+      .seam{stroke:#484f58} .rule{stroke:#484f58}
+      .ln{stroke:#d9b45c} .ln2{stroke:#7fb3d5} .ah{fill:#d9b45c} .ah2{fill:#7fb3d5}
+      .fill1{fill:#d9b45c} .fill2{fill:#7fb3d5}
+      .warn{stroke:#e08a68} .warnt{fill:#e08a68} .mono{fill:#d9b45c}
+      text{fill:#e6edf3} .lbl{fill:#8b949e} .s{fill:#8b949e}
+    }
+  </style>
+
+  <defs>
+    <marker id="a" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path class="ah" d="M0,0 L9,4.5 L0,9 z"/>
+    </marker>
+    <marker id="c" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path class="warnt" d="M0,0 L9,4.5 L0,9 z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="960" height="340" rx="12"/>
+
+  <rect class="chip" x="36" y="62" width="204" height="66" rx="6"/>
+  <text class="mono" x="48" y="84">BachConfig</text>
+  <text class="s" x="48" y="102">form, key, isMinor, character,</text>
+  <text class="s" x="48" y="114">bpm, seed, scale / targetBars</text>
+
+  <path class="ln" d="M 240 95 H 264" marker-end="url(#a)"/>
+
+  <rect class="card" x="264" y="62" width="204" height="66" rx="6"/>
+  <text class="h" x="276" y="84">1 · 生成要求の解決</text>
+  <text class="s" x="276" y="103">既定値を補い、シードを確定し、</text>
+  <text class="s" x="276" y="117">要求全体を検証する</text>
+
+  <path class="ln" d="M 468 95 H 492" marker-end="url(#a)"/>
+
+  <rect class="card" x="492" y="62" width="204" height="66" rx="6"/>
+  <text class="h" x="504" y="84">2 · 形式ディレクター</text>
+  <text class="s" x="504" y="103">設計値のアーチに沿って、小節</text>
+  <text class="s" x="504" y="117">スパンに声部意図を配置する</text>
+
+  <path class="ln" d="M 696 95 H 720" marker-end="url(#a)"/>
+
+  <rect class="card" x="720" y="62" width="204" height="66" rx="6"/>
+  <text class="h" x="732" y="84">3 · 候補探索</text>
+  <text class="s" x="732" y="103">全スパンを処理。出荷形式では</text>
+  <text class="s" x="732" y="117">記述済みの担体を再生する</text>
+
+  <path class="ln" d="M 822 128 V 148 H 138 V 168" marker-end="url(#a)"/>
+
+  <rect class="card" x="36" y="170" width="204" height="66" rx="6"/>
+  <text class="h" x="48" y="192">4 · 規則検証</text>
+  <text class="s" x="48" y="211">対位法と構造の違反を、対象の</text>
+  <text class="s" x="48" y="225">スパンとともに蓄積する</text>
+
+  <path class="ln" d="M 240 203 H 264" marker-end="url(#a)"/>
+
+  <rect class="card" x="264" y="170" width="204" height="66" rx="6"/>
+  <text class="h" x="276" y="192">5 · 初回レンダラー</text>
+  <text class="s" x="276" y="211">声部を 1 声部 1 トラックに変換。</text>
+  <text class="s" x="276" y="225">チャンネルと音色番号を付ける</text>
+
+  <path class="ln" d="M 468 203 H 492" marker-end="url(#a)"/>
+
+  <rect class="card" x="492" y="170" width="204" height="66" rx="6"/>
+  <text class="h" x="504" y="190">6 · 最終化と表現</text>
+  <text class="s" x="504" y="204">装飾 → FinalScore + 予算</text>
+  <text class="s" style="font-size:9px" x="504" y="216">速度 → 記譜長 → アーティキュレーション</text>
+  <text class="s" x="504" y="228">再レンダー → CC / テンポ</text>
+
+  <path class="ln" d="M 696 203 H 720" marker-end="url(#a)"/>
+
+  <rect class="card" x="720" y="170" width="204" height="66" rx="6"/>
+  <text class="h" x="732" y="192">7 · MIDI とイベント出力</text>
+  <text class="s" x="732" y="211">出力調を適用し、Type 1 の SMF</text>
+  <text class="s" x="732" y="225">とイベントデータを書く</text>
+
+  <path class="warn" d="M 138 236 V 254" marker-end="url(#c)"/>
+  <rect class="chip" x="36" y="256" width="300" height="28" rx="6"/>
+  <text class="warnt" style="font-size:10.5px" x="186" y="274" text-anchor="middle">阻害的な失敗が出たら、中断して報告を返す</text>
+
+  <path class="ln" d="M 822 236 V 254" marker-end="url(#a)"/>
+  <rect class="chip" x="720" y="256" width="204" height="28" rx="6"/>
+  <text class="mono" x="822" y="274" text-anchor="middle">getMidi() · getEvents()</text>
+
+  <path class="seam" d="M 24 302 H 936"/>
+  <text class="s" x="480" y="322" text-anchor="middle">非ゼロの固定シードなら、同じ設定はこの経路をたどり、同じバイト列になる。シード 0 は実行時に新しく決まる。</text>
+</svg>

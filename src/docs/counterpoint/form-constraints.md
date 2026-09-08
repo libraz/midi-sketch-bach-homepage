@@ -5,29 +5,33 @@ description: Immutable grounds and cantus firmi, figuration harmony, implied voi
 
 # 7. Form-Specific Constraints
 
-The previous chapters apply to every generated piece. This chapter covers the contracts that exist because of *what kind of piece* is being built: a passacaglia promises its ground will never change; a chorale prelude promises the hymn tune survives its decoration; a cello prelude promises that a single instrumental line implies coherent multi-voice counterpoint. The engine encodes each promise as material carriers plus a validating rule.
+The previous chapters apply to every generated piece. This chapter covers contracts that arise from *what kind of piece* is being built. Historically, passacaglia and chaconne labels can describe an ostinato scheme realized through varied voicings; this engine chooses stricter carrier contracts. A chorale prelude keeps its cantus-firmus skeleton, and a cello prelude uses one instrumental line to imply coherent multi-voice counterpoint. The engine encodes each promise as material carriers plus a validating rule.
 
 ## Immutable material: the ground
 
 <CounterpointStaff example="groundBass" locale="en" />
 
-Passacaglia and chaconne are **ground-bass forms**: a short bass theme repeats unchanged for the entire piece while the upper texture varies cycle by cycle. Two rules — `ground_bass_immutable` (chaconne, modeled on the BWV 1004 Chaconne) and `passacaglia_ground_immutable` (the organ passacaglia's 8-bar ground, modeled on BWV 582) — verify byte-exact replay of the ground on every cycle via **provenance bits**, the origin tags carried beside each note. The `provenance.v1` sidecar serializes them as `source: "Material" | "Compose" | "Ornament"`; `generated.v1` deliberately contains notes only and has no source field. These violations are `StructuralFail`s: a changed ground is not bad counterpoint, it is a different piece.
+Passacaglia and chaconne are historically related **ostinato forms**: a bass scheme may be transferred, voiced, varied, or ornamented in actual repertoire. This engine deliberately tightens that idea into a carrier contract. `ground_bass_immutable` (the solo-string form inspired by the BWV 1004 Chaconne) and `passacaglia_ground_immutable` (the organ form inspired by BWV 582) compare the replayed ground's **bar-head pitch skeleton** with the canonical material at the same cycle-relative positions. Off-downbeat pitches are not part of this skeleton, and rhythmic subdivision can be admitted; this is not byte-exact replay of every sounding event. The comparison uses **provenance bits**, the origin tags carried beside each note. The `provenance.v1` sidecar serializes them as `source: "Material" | "Compose" | "Ornament"`; `generated.v1` note records omit provenance/source, while observations and other validation metadata are exported separately. These violations are `StructuralFail`s because they break the engine's declared carrier identity.
 
 ::: info BWV numbers
-**BWV** (Bach-Werke-Verzeichnis) is the standard catalogue of Bach's works — BWV 582 is the C minor Passacaglia for organ, BWV 1004 the violin partita whose final movement is the Chaconne. When a rule says it is "modeled on" a BWV number, the engine's form template encodes the proportions of that specific piece.
+**BWV** (Bach-Werke-Verzeichnis) is the standard catalogue of Bach's works — BWV 582 is the C minor Passacaglia for organ, BWV 1004 the violin partita whose final movement is the Chaconne. When a rule says it is "inspired by" a BWV number, the engine's form template borrows selected proportions or surface material; it does not claim to reproduce the work's historical instrumentation or every sounding event.
 :::
 
 A related rule keeps the *variation layer* honest: `variation_role_ornament_constraint` prevents a variation span that plays the ground role from subdividing below quarter notes — the ground must stay recognizable as a slow line even when restated by another voice.
 
-The most famous ground in Bach is not in a passacaglia at all — it carries the Goldberg Variations. The Aria's bass walks a scheme that thirty variations then restate — switch the excerpt above the score to hear two of those variations walk the same skeleton:
+The Goldberg Variations preserve the Aria's underlying bass and harmonic scheme, while their written bass events can vary in pitch placement and duration. The engine represents that distinction with a dedicated `goldberg_aria_bass_immutable` declaration for each non-coda variation block. Switch the excerpt above the score to hear two variations walk the same scheme:
 
 <CounterpointStaff example="bachGroundBass" locale="en" />
+
+The Bach excerpt below shows a return to the passacaglia bass after a variation cycle; it illustrates scheme-level continuity alongside the engine's stricter bar-head carrier check.
+
+<CounterpointStaff example="bachPassacagliaReturn" locale="en" />
 
 ## Immutable material: the cantus firmus
 
 <CounterpointStaff example="cantusFirmus" locale="en" />
 
-The chorale prelude carries a hymn tune (**cantus firmus**) in long notes while another voice embroiders. `cantus_firmus_immutable` checks each bar's [downbeat](/docs/music-primer#strong-and-weak-beats) against the declared skeleton tone — embellishment between downbeats is free, the skeleton is not. Like the grounds, the cantus-firmus voice is excluded from the ornament pass entirely.
+The chorale prelude carries a hymn tune (**cantus firmus**) in long notes while another voice embroiders. `cantus_firmus_immutable` checks each bar's [downbeat](/docs/music-primer#strong-and-weak-beats) against the declared skeleton tone — bar-head pitches are fixed, while eligible within-bar notes may be embellished. The ornament pass therefore keeps cantus bar heads plain; under the `Severe` character the whole cantus line stays plain, while other characters can decorate eligible within-bar tones.
 
 That is precisely the Orgelbüchlein's plan. In "Ich ruf zu dir" the tune floats untouched above a sixteenth-note inner voice and a murmuring pedal:
 
@@ -35,7 +39,7 @@ That is precisely the Orgelbüchlein's plan. In "Ich ruf zu dir" the tune floats
 
 ## Figuration harmony
 
-The free-prelude style (think BWV 543's opening) runs continuous figuration over a slow **harmonic rhythm** — the rate at which the underlying chords change, here typically one chord per bar. `figuration_harmonic_consistency` anchors it: the note that opens each bar must be a chord tone of that bar's chord. Off-downbeat notes are unconstrained — that freedom is what makes it figuration and not chorale writing. Pedal notes are exempt.
+The free-prelude style (think BWV 543's opening) runs continuous figuration over a slow **harmonic rhythm** — the rate at which the underlying chords change, here typically one chord per bar. `figuration_harmonic_consistency` anchors it: the note that opens each bar must be a tone of that bar's chord, including a declared seventh. Off-downbeat notes are unconstrained — that freedom is what makes it figuration and not chorale writing. Pedal notes are exempt, as are `FigurationAnchorRelaxed` notes when the builder has proved that no playable chord tone satisfied the full set of constraints.
 
 <CounterpointStaff example="figurationHarmony" locale="en" />
 
@@ -45,7 +49,7 @@ The purest illustration in the repertoire opens WTC I — two bars of the C majo
 
 ## Solo strings: counterpoint inside one line
 
-A solo cello or violin cannot sound four voices at once, but Bach's solo writing makes the ear *hear* several. The cello prelude is the engine's only single-voice form, and these rules are how one voice still gets counterpoint validation.
+A solo cello or violin can sound a four-note chord, but it cannot sustain four independent lines at once; Bach's solo writing nevertheless makes the ear *hear* several. The cello prelude is the engine's only single-voice form, and these rules are how one voice still gets counterpoint validation.
 
 The reconstruction is three concrete steps. The engine collects the arpeggio line's notes in onset order, partitions them into contiguous **cells** of the declared `group_size`, then takes each cell's *lowest* pitch as the implied bass stream and its *highest* as the implied top stream. Register decides, not slot position — in the BWV 1007 figuration the perceived melody note sits in the *middle* of the written cell, and the min/max extraction still finds it:
 
@@ -102,11 +106,14 @@ The organ trio sonatas are this rule pursued for six works straight. Three bars 
 
 The remaining structural rules have no single staff moment to point at — the violation is a property of whole sections — so they are documented as tables rather than examples. When one fires, inspect the section layout in the event JSON rather than individual notes.
 
+A declared doubling is checked before any exemption is applied. It must name two distinct voices and a valid, nonempty half-open `[start_tick, end_tick)` window containing at least one lead note. Inside that window, the doubled voice must have the same note count, onsets, and durations as the lead voice, with every pitch offset by the declared `semitones`. A mismatch emits `declared_doubling_integrity` as a **StructuralFail**. A verified window treats only two-voice vertical findings inside it as one line; linear checks and vertical findings outside the window still apply.
+
 ## How the validator sees this chapter
 
 | Rule | FailKind |
 |------|----------|
-| `ground_bass_immutable`, `passacaglia_ground_immutable`, `cantus_firmus_immutable` | **StructuralFail** |
+| `declared_doubling_integrity` | **StructuralFail** |
+| `ground_bass_immutable`, `passacaglia_ground_immutable`, `goldberg_aria_bass_immutable`, `cantus_firmus_immutable` | **StructuralFail** |
 | `variation_role_ornament_constraint`, `figuration_harmonic_consistency`, `toccata_archetype_compatible` | MusicalFail |
 | `implicit_voice_counterpoint`, `arpeggio_no_parallel_perfect` | MusicalFail |
 | `phrase_periodicity_4_or_8_bar`, `anacrusis_consistent` | MusicalFail |

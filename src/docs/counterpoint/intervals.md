@@ -28,7 +28,7 @@ The staff figures label intervals with the standard shorthand — `P5` (perfect 
 
 <CounterpointStaff example="perfectConsonances" locale="en" />
 
-Perfect intervals are acoustically the purest — their frequency ratios are simple (2:1 for the octave, 3:2 for the fifth) — which is exactly why they are dangerous. Two voices locked in perfect intervals blend so well that the ear stops hearing two voices. Counterpoint wants stability *at anchor points* (openings, cadences) and independence everywhere else.
+In just intonation, perfect intervals have simple frequency ratios (2:1 for the octave, 3:2 for the fifth). MIDI's usual 12-tone equal temperament gives the fifth the ratio `2^(7/12)`, so it is not exactly 3:2. Bach-era practice did not prescribe one universally accepted temperament; this page describes semitone classes, not a historical tuning. See the [Oxford Early Music discussion of Bach-era temperament](https://academic.oup.com/em/article-abstract/33/3/545/2928360). Two voices locked in perfect intervals blend so well that the ear stops hearing two voices. Counterpoint wants stability *at anchor points* (openings, cadences) and independence everywhere else.
 
 ### Imperfect consonances: the workhorses
 
@@ -36,7 +36,7 @@ Perfect intervals are acoustically the purest — their frequency ratios are sim
 
 Thirds, sixths, and their compounds (tenths, thirteenths) are full but mobile. Most of the vertical sonorities in a generated two-voice texture are imperfect consonances, and chains of parallel thirds or sixths are idiomatic — the engine never penalizes them.
 
-Bach exploits that license at full tilt. In the E♭ major prelude from WTC I, two sixteenth-note lines run an entire bar in strict parallel tenths:
+Bach exploits that license in two short runs. In bar 32 of the E♭ major prelude from WTC I, two sixteenth-note lines move in strict parallel tenths at positions 1–7 and 9–15, with rests at positions 0 and 8:
 
 <CounterpointStaff example="bachParallelTenths" locale="en" />
 

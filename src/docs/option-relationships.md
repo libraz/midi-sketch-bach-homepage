@@ -8,39 +8,18 @@ description: How MIDI Sketch Bach configuration options interact - dependencies,
 MIDI Sketch Bach's configuration options interact with each other in specific ways. Understanding these relationships helps you craft configurations that produce the results you want.
 
 ::: info Two layers of options
-`form`, `isMinor`, and `character` affect the internal composition. `key` transposes that result for output, while `instrument`, `bpm`, and `seed` control rendering or reproducibility. The [Music Primer for Engineers](/docs/music-primer) explains the musical terms used here.
+`form`, `isMinor`, and `character` affect the internal composition. `character` also affects note articulation and the MIDI CC profile in the finished output. `key` transposes that result for output, while `instrument`, `bpm`, and `seed` control rendering or reproducibility. The [Music Primer for Engineers](/docs/music-primer) explains the musical terms used here.
 :::
 
 ## Dependency Overview
 
-```mermaid
-graph TD
-    A["form"] -->|"fixes"| C["voice count"]
-    A -->|"determines default & allowed"| B["instrument"]
-    A -->|"determines structure & meter"| E["Formal Structure"]
-    A -->|"sets natural length"| P["Natural Length"]
-    F["scale"] -->|"multiplies"| P
-    P --> G["Output Length"]
-    H["targetBars"] -->|"overrides"| F
-    I["seed"] -->|"initializes"| J["RNG"]
-    K["key"] -->|"transposes"| L["MIDI and getEvents pitches"]
-    K -->|"labels"| Q["Output-key metadata"]
-    M["isMinor"] -->|"selects"| R["Internal C major/minor plan"]
-    M --> Q
-    N["character"] -->|"shapes"| O["Subject/Theme"]
-    A -->|"may forbid"| N
-```
+![Two bands: form, character, isMinor and seed change the notes; key, instrument and bpm change only the output](/images/option-graph.svg)
 
 ## Form Decides the Voice Count
 
 The `form` is the most influential option. It **fixes** the number of voices, the meter, and the natural length, and it selects the default `instrument`.
 
-```mermaid
-graph LR
-    A["form: 'fugue'"] --> B["3 voices · 4/4<br>42 reference → 44 output · organ"]
-    C["form: 'cello_prelude'"] --> D["1 voice · 4/4<br>8 bars · cello"]
-    E["form: 'chaconne'"] --> F["2 voices · 3/4<br>16 bars · violin"]
-```
+![Three forms as voice lanes: the fugue's three staggered entries, the cello prelude's single line, and the chaconne's three declared lanes for variation, middle material and ground](/images/form-texture.svg)
 
 ::: warning `numVoices` was removed
 There is no voice-count option anymore — pick the form to pick the texture (see the [Forms](/docs/forms) table). Passing `num_voices`/`numVoices` is accepted and ignored for backward compatibility; it never errors and has no effect.
@@ -103,19 +82,22 @@ Whole-score octave displacement keeps the output inside the instrument's compass
 
 ## Scale and targetBars
 
-`scale` and `targetBars` both set the output length. `scale` is a multiplier of the form's natural length; `targetBars` is an explicit override.
+`scale` and `targetBars` both set the output length. `scale` is a multiplier of the form's natural length. `targetBars: 0` uses `scale`, while a positive `targetBars` is an explicit override. Use `targetBars` values from `0` through `128`. The API accepts integers up to `65535`, but values near the upper limit can overflow while the bar count is aligned and return the form's minimum length.
+
+![The natural length is multiplied by scale, snapped to the form's bar grid, then clamped; targetBars enters at the raw-target stage and still passes through both](/images/length-resolution.svg)
 
 | Configuration | Behavior |
 |--------------|----------|
 | `scale` only | Length = form's natural length × the scale multiplier |
-| `targetBars` only | Engine targets that bar count |
-| Both specified | `targetBars` wins; `scale` is ignored |
+| `targetBars: 0` | Uses `scale` (zero is the sentinel for no explicit override) |
+| Positive `targetBars` | Engine targets that bar count and ignores `scale` |
+| Both specified | A positive `targetBars` wins; `scale` is ignored |
 | Neither specified | Default: `scale: "short"` (≈ natural length) |
 
-The scale multipliers are approximately `short` ≈ 1x, `medium` ≈ 2x, `long` ≈ 3x, `full` ≈ 4x of the form's natural length.
+The scale multipliers are approximately `short` ≈ 1x, `medium` ≈ 2x, `long` ≈ 3x, `full` ≈ 4x of the form's natural length. The Goldberg Variations is the exception: `scale: "full"` when no positive `targetBars` is supplied selects the complete compressed 128-bar layout rather than 20 × 4 = 80 bars.
 
 ::: tip
-`targetBars` is snapped to the form's granularity (e.g. the ground-bass period) and clamped to `[form minimum, 128]`. Every form caps at 128 bars. Use `scale` for a general size category; use `targetBars` for a specific length.
+Positive values are snapped to the form's granularity (e.g. the ground-bass period) and clamped to `[form minimum, 128]`. Every form caps at 128 bars. Use `scale` for a general size category; use `targetBars` for a specific length.
 :::
 
 ```js
@@ -192,7 +174,7 @@ Changing only `key` changes the output transposition and key metadata. It does n
 The `character` parameter (`severe`, `playful`, `noble`, `restless`) shapes the primary thematic material. Its impact varies by form, and some combinations are forbidden:
 
 ::: info Character is not genre
-`character` changes the melodic profile of the subject or primary material: interval size, rhythmic energy, chromatic tendency, and contour. It does not switch the form. A `restless` fugue is still a fugue.
+`character` changes the melodic profile of the subject or primary material: interval size, rhythmic energy, chromatic tendency, and contour. It also changes note articulation and the MIDI CC profile in every form. In `cello_prelude`, it orders the figure palette used for each bar. See [Instruments](/docs/physical-models) for the instrument-specific expression output. It does not switch the form. A `restless` fugue is still a fugue.
 :::
 
 | Form Type | Character Impact |
@@ -232,7 +214,7 @@ This table covers API/config validation: whether option values are accepted. Cou
 | `character` | string or number | name / 0--3 | `"severe"` | Unknown value throws; forbidden form pairs throw |
 | `instrument` | string or number | name / 0--5 | Form default | Unknown value throws; an instrument the form does not accept throws |
 | `scale` | string or number | name / 0--3 | `"short"` | Unknown value throws |
-| `targetBars` | number | >0 | -- | Overrides scale; snapped to form granularity, clamped to `[min, 128]` |
+| `targetBars` | integer | 0--65535 | 0 | 0 uses `scale`; positive values override it, then snap to form granularity and clamp to `[min, 128]` |
 | `numVoices` | number | -- | -- | Accepted and ignored (form decides voices) |
 
 Each rejection carries its own message — `Invalid BPM (must be 0 or 40-200)`, `Incompatible instrument for this form`, and so on — so a failure identifies the field that caused it.

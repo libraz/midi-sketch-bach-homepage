@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 418" width="960" height="418" role="img" aria-labelledby="ttl dsc">
+  <title id="ttl">The layers the validator protects</title>
+  <desc id="dsc">Nine rule layers drawn as bars, ordered by how much of the score a rule in that layer has to look at. The shortest need two voices at one beat or two notes in one voice; the longest need the whole form layout and the provenance record of every authored span. Below, the three FailKind values a failure can carry: MusicalFail, StructuralFail and ConfigFail.</desc>
+
+  <style>
+    .bg    { fill:#f7f5f1 }
+    .grp   { fill:#edeae4 }
+    .chip  { fill:#ffffff; stroke:#d7d4cd }
+    .card  { fill:#ffffff; stroke:#8a6a1f }
+    .alt   { fill:#ffffff; stroke:#3f6b8a }
+    .seam  { fill:none; stroke:#b8b4ac; stroke-dasharray:6 5 }
+    .rule  { fill:none; stroke:#b8b4ac; stroke-width:1 }
+    .ln    { fill:none; stroke:#8a6a1f; stroke-width:1.4 }
+    .ln2   { fill:none; stroke:#3f6b8a; stroke-width:1.4 }
+    .ah    { fill:#8a6a1f }
+    .ah2   { fill:#3f6b8a }
+    .fill1 { fill:#8a6a1f; opacity:.16 }
+    .fill2 { fill:#3f6b8a; opacity:.16 }
+    .warn  { fill:none; stroke:#a3401f; stroke-width:1.6 }
+    .warnt { fill:#a3401f }
+    text   { font-family:Inter,"Helvetica Neue","Hiragino Sans","Noto Sans JP",Arial,sans-serif; fill:#1f2328 }
+    .h     { font-size:12.5px }
+    .lbl   { font-size:11px; fill:#6e7781; letter-spacing:.06em }
+    .s     { font-size:10.5px; fill:#6e7781 }
+    .mono  { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:10.5px; fill:#8a6a1f }
+    @media (prefers-color-scheme: dark) {
+      .bg{fill:#0d1117} .grp{fill:#12171d}
+      .chip{fill:#161b22;stroke:#30363d} .card{fill:#161b22;stroke:#d9b45c} .alt{fill:#161b22;stroke:#7fb3d5}
+      .seam{stroke:#484f58} .rule{stroke:#484f58}
+      .ln{stroke:#d9b45c} .ln2{stroke:#7fb3d5} .ah{fill:#d9b45c} .ah2{fill:#7fb3d5}
+      .fill1{fill:#d9b45c} .fill2{fill:#7fb3d5}
+      .warn{stroke:#e08a68} .warnt{fill:#e08a68} .mono{fill:#d9b45c}
+      text{fill:#e6edf3} .lbl{fill:#8b949e} .s{fill:#8b949e}
+    }
+  </style>
+
+  <rect class="bg" x="0" y="0" width="960" height="418" rx="12"/>
+
+  <text class="lbl" x="40" y="40">rule layer</text>
+  <text class="lbl" x="316" y="40">how much of the score the rule has to see</text>
+  <text class="lbl" x="676" y="40">the context a failure needs</text>
+  <path class="rule" d="M 40 46 H 936"/>
+
+  <text class="h" x="40" y="67">Local vertical sound</text>
+  <rect class="fill1" x="316" y="56" width="60" height="14" rx="4"/>
+  <text class="s" x="676" y="67">two voices at one beat</text>
+
+  <text class="h" x="40" y="93">Melodic plausibility</text>
+  <rect class="fill1" x="316" y="82" width="60" height="14" rx="4"/>
+  <text class="s" x="676" y="93">the previous and current note in one voice</text>
+
+  <text class="h" x="40" y="119">Voice independence</text>
+  <rect class="fill1" x="316" y="108" width="100" height="14" rx="4"/>
+  <text class="s" x="676" y="119">two voices across two points in time</text>
+
+  <text class="h" x="40" y="145">Physical bounds</text>
+  <rect class="fill1" x="316" y="134" width="130" height="14" rx="4"/>
+  <text class="s" x="676" y="145">the voice range and the instrument compass</text>
+
+  <text class="h" x="40" y="171">Phrase structure</text>
+  <rect class="fill1" x="316" y="160" width="160" height="14" rx="4"/>
+  <text class="s" x="676" y="171">phrase metadata and the meter</text>
+
+  <text class="h" x="40" y="197">Tonal syntax</text>
+  <rect class="fill1" x="316" y="186" width="190" height="14" rx="4"/>
+  <text class="s" x="676" y="197">the harmonic plan and the phrase position</text>
+
+  <text class="h" x="40" y="223">Fugal structure</text>
+  <rect class="fill1" x="316" y="212" width="240" height="14" rx="4"/>
+  <text class="s" x="676" y="223">the declared material and its entry spans</text>
+
+  <text class="h" x="40" y="249">Form identity</text>
+  <rect class="fill1" x="316" y="238" width="300" height="14" rx="4"/>
+  <text class="s" x="676" y="249">material carriers and the whole form layout</text>
+
+  <text class="h" x="40" y="275">Declaration integrity</text>
+  <rect class="fill1" x="316" y="264" width="340" height="14" rx="4"/>
+  <text class="s" x="676" y="275">provenance records and every authored span</text>
+
+  <rect class="grp" x="24" y="290" width="912" height="76" rx="8"/>
+  <text class="lbl" x="38" y="310">every failure also carries a FailKind</text>
+
+  <rect class="chip" x="33" y="318" width="290" height="40" rx="6"/>
+  <text class="mono" x="45" y="335">MusicalFail</text>
+  <text class="s" x="45" y="350">a counterpoint or harmony contract — the default</text>
+
+  <rect class="chip" x="335" y="318" width="290" height="40" rx="6"/>
+  <text class="mono" x="347" y="335">StructuralFail</text>
+  <text class="s" x="347" y="350">the form's structural promise was broken</text>
+
+  <rect class="chip" x="637" y="318" width="290" height="40" rx="6"/>
+  <text class="mono" x="649" y="335">ConfigFail</text>
+  <text class="s" x="649" y="350">an invalid request, reported before composing</text>
+
+  <path class="seam" d="M 24 382 H 936"/>
+  <text class="s" x="480" y="402" text-anchor="middle">Reading a rule ID starts with its layer: a local note rule and a form identity rule are both failures, but they need different evidence to explain.</text>
+</svg>

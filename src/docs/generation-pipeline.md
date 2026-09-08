@@ -11,20 +11,9 @@ When you call `generator.generate(config)`, the composer engine runs a fixed pip
 The pipeline treats music as structured data: forms allocate voices and authored note carriers, harmony supplies chord targets, and validation rejects illegal voice interactions. The compact glossary is in [Music Primer for Engineers](/docs/music-primer).
 :::
 
-```mermaid
-graph TD
-    A["BachConfig"] --> B["1. Compose Request<br>(resolve & validate)"]
-    B --> C["2. Form Director<br>(per-form layout)"]
-    C --> D["3. Candidate Search<br>(carrier replay by default)"]
-    D --> E["4. Generation Validation<br>(accumulate failures)"]
-    E --> F["5. Initial Renderer<br>(tracks)"]
-    F --> G["6. Ornament Pass"]
-    G --> H["FinalScore Validation"]
-    H --> I["Velocity + Re-render<br>CC + Tempo"]
-    I --> J["7. MIDI + Event Export<br>(output-key pitches)"]
-```
+![The seven steps from a BachConfig to MIDI and event data, with a side branch showing that a blocking failure aborts the run](/images/pipeline.svg)
 
-The whole pipeline is deterministic: the same config and seed always yield byte-identical output.
+The whole pipeline is deterministic for an explicit non-zero seed: the same config and seed yield byte-identical output. With `seed: 0`, the request asks the runtime to choose a new seed.
 
 ## Step 1: Compose Request
 
@@ -40,14 +29,7 @@ The form director lays out the piece. For the chosen form it assigns **voice int
 A **bar span** is a range of measures. **Material** is authored musical content, such as a fugue subject, a counterline, or a repeating ground bass, that a carrier replays verbatim.
 :::
 
-```mermaid
-graph TD
-    A["Form Type"] --> B{{"Layout"}}
-    B -->|"Fugal"| C["Subject / answer entries<br>+ episodes"]
-    B -->|"Ground-bass"| D["Immutable bass<br>+ variation cycles"]
-    B -->|"Cantus firmus"| E["Fixed chorale line<br>+ figuration + bass"]
-    B -->|"Linear / figural"| F["Continuous figuration"]
-```
+![The four layout families drawn as voice lanes: fugal, ground-bass variation, cantus firmus, and linear or figural](/images/form-families.svg)
 
 The layout follows a **design-value arc** — establish, develop, climax at roughly 80% of the span, then resolve — that drives the density, register, and velocity tiers used downstream. The arc is fixed by the form, not searched.
 
@@ -57,6 +39,8 @@ Candidate search dispatches every voice-intent span. In all default shipped form
 
 The scored branch is an off-by-default diagnostic option. `bach_cli --free-counterpoint` reroutes only the Passacaglia V1 (`voice == 1`) counterline to per-beat, chord-tone-anchored search. The ground and principal variation remain carriers. No other form has an eligible span, so requesting free counterpoint for another form returns `FreeCounterpointUnavailable`.
 
+When a free Compose span exhausts every candidate at a position, the engine emits a rest and increments `saturated_positions`; it does not choose a fallback pitch. Saturation is a density signal, not itself a validation failure. Carrier spans never saturate.
+
 ::: info Chords, modulation, cadences
 **Chords** are the vertical targets at each point in time. **Modulation** means moving the tonal center to another key. A **cadence** is a phrase ending, usually a dominant-to-tonic arrival such as V to I.
 :::
@@ -65,28 +49,32 @@ The scored branch is an off-by-default diagnostic option. `bach_cli --free-count
 
 The validator checks the assembled voices against counterpoint and structure rules. It accumulates the failures found during the pass and reports each with a rule identifier so the responsible span can be located. Learn the musical ideas in [Counterpoint Course](/docs/counterpoint), then use the [Validator Rule Reference](/docs/validator-rules) when you need to look up a specific rule ID.
 
-::: info What happens after a blocking failure
-The public generation path aborts and returns the validation report. It does not repair the score, retry the search, or choose a different candidate.
+::: info What happens after a blocking generation failure
+The public generation path aborts and returns the validation report. It does not repair the score, retry the search, or choose a different candidate. The later `FinalScore` audit has its own failure point after ornaments are applied.
 :::
 
 ## Step 5: Renderer
 
-As the final part of `Composer::run()`, the assembled voices are rendered into tracks — one track per voice — with channels and note timings. After final validation, the public generation path applies the instrument-specific velocity curve and renders the tracks again with the General MIDI program.
+As the final part of `Composer::run()`, the assembled voices are rendered into initial tracks — one track per voice — with channels and note timings. After the public `FinalScore` and budget checks succeed, the generation path applies the instrument-specific velocity curve, captures the notated notes, applies character-dependent articulation, and re-renders the tracks with the General MIDI program.
 
 ::: info Source tags survive rendering
 Rendered notes keep their provenance: `"material"` for carrier material, `"compose"` for notes from the opt-in scored search, and `"ornament"` for notes added later. This is useful when locating the source of a validation finding.
 :::
 
-## Step 6: Ornament & Expression (post-pass)
+## Step 6: Finalize & Express (post-pass)
 
-The public generation path runs these operations in order after `Composer::run()`: apply ornaments, run `FinalScore` validation, apply the velocity curve and re-render, add controller events, then add tempo events. A blocking `FinalScore` failure aborts before velocity, controller, tempo, MIDI, or public event output.
+The public generation path runs these operations in order after `Composer::run()`: apply ornaments, run `FinalScore` validation, apply the form's counterpoint budget, apply the velocity curve, save the notated note snapshot for `generated.v1`, apply articulation, re-render the tracks, add controller events, add tempo events, then export MIDI and public event data. A blocking `FinalScore` or closed-budget failure aborts before velocity, articulation, controller, tempo, MIDI, or public event output.
 
-- **Ornaments** — trills, mordents, and Nachschlag, with density depending on character and instrument. Ground-bass and cantus-firmus lines are never ornamented.
+- **Ornaments** — trills (including cadential openings and a closing Nachschlag), appoggiaturas, turns, slides, and mordents, with density depending on character and instrument. Subject, answer, stretto, augmented, diminished, and inverted subject statements remain plain so their identity survives; middle entries remain eligible. Ground carriers are exempt. Cantus-firmus bar heads remain plain, while eligible within-bar notes can be decorated except under `Severe`, which keeps the whole cantus line plain.
 - **Velocity** — an instrument-aware phrase curve applied after final validation; the tracks are re-rendered so MIDI and `getEvents()` expose the updated values.
-- **Expression** — CC 7 registration terraces for organ and harpsichord; CC 11 continuous expression for piano, violin, and cello.
+- **Expression** — MIDI CC 7 level terraces and arc points for organ and harpsichord, and CC 11 continuous expression for piano, violin, and cello. These are playback level/expression events; CC 7 does not select organ stops, and the guitar profile receives the velocity curve without a continuous-expression profile.
 - **Tempo** — a form-dependent closing ritardando (none for the Trio Sonata) and, for the prelude, toccata, and fantasia forms, a section tempo change at the fugue entry.
 
-Notes added by these passes carry the `source: "ornament"` provenance tag (versus `"material"` and `"compose"`).
+Only notes inserted by the ornament pass carry the `source: "ornament"` provenance tag. Velocity and articulation modify existing notes without changing their `source`, while CC and tempo passes add events rather than notes.
+
+::: info Validation uses notated durations
+`FinalScore` validation and its texture metrics run before articulation, on the notated note array. `generated.v1` preserves those notated durations; the public event stream and MIDI use the shortened articulation gates.
+:::
 
 ::: info Ornament
 An **ornament** is a small decorative figure added around a structural note. It is not the source melody itself, so event data marks it separately with `source: "ornament"`.
@@ -133,6 +121,8 @@ This is where the core tension of figuration design lives.
 - **Vertically**: beat onsets sound consonant against a sustained bass the more they are anchored to the bar's chord tones (see also [Leaps need recovery](/docs/counterpoint/melody)).
 
 Implemented naively, the two collide: a freely running scale line steps onto non-chord tones at beat onsets, while jumping every beat to the nearest chord tone produces a leap-riddled line. The engine's figures (scalar wave, sawtooth, broken chord) are written to keep both — landing on chord tones that lie *ahead in the running direction*, and choosing oscillation partners from bass-consonant neighbor tones before resorting to a leap.
+
+![Three eight-note figures over one sustained bass: a scale that lands off the chord, a chord-tone line that leaps, and a stepwise line that stays consonant on the beat](/images/step-vs-consonance.svg)
 
 ### Texture gates
 

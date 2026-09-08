@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 418" width="960" height="418" role="img" aria-labelledby="ttl dsc">
+  <title id="ttl">検証器が守る層</title>
+  <desc id="dsc">9 つの規則層を、その層の規則が譜面のどれだけを見なければならないかの長さで並べた棒グラフです。もっとも短いものは 1 拍上の 2 声、あるいは 1 声部の隣り合う 2 音だけを見ます。もっとも長いものは形式レイアウト全体と、記述されたすべてのスパンの来歴記録を必要とします。下段は、失敗が持つ 3 つの FailKind — MusicalFail、StructuralFail、ConfigFail です。</desc>
+
+  <style>
+    .bg    { fill:#f7f5f1 }
+    .grp   { fill:#edeae4 }
+    .chip  { fill:#ffffff; stroke:#d7d4cd }
+    .card  { fill:#ffffff; stroke:#8a6a1f }
+    .alt   { fill:#ffffff; stroke:#3f6b8a }
+    .seam  { fill:none; stroke:#b8b4ac; stroke-dasharray:6 5 }
+    .rule  { fill:none; stroke:#b8b4ac; stroke-width:1 }
+    .ln    { fill:none; stroke:#8a6a1f; stroke-width:1.4 }
+    .ln2   { fill:none; stroke:#3f6b8a; stroke-width:1.4 }
+    .ah    { fill:#8a6a1f }
+    .ah2   { fill:#3f6b8a }
+    .fill1 { fill:#8a6a1f; opacity:.16 }
+    .fill2 { fill:#3f6b8a; opacity:.16 }
+    .warn  { fill:none; stroke:#a3401f; stroke-width:1.6 }
+    .warnt { fill:#a3401f }
+    text   { font-family:Inter,"Helvetica Neue","Hiragino Sans","Noto Sans JP",Arial,sans-serif; fill:#1f2328 }
+    .h     { font-size:12.5px }
+    .lbl   { font-size:11px; fill:#6e7781; letter-spacing:.06em }
+    .s     { font-size:10.5px; fill:#6e7781 }
+    .mono  { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:10.5px; fill:#8a6a1f }
+    @media (prefers-color-scheme: dark) {
+      .bg{fill:#0d1117} .grp{fill:#12171d}
+      .chip{fill:#161b22;stroke:#30363d} .card{fill:#161b22;stroke:#d9b45c} .alt{fill:#161b22;stroke:#7fb3d5}
+      .seam{stroke:#484f58} .rule{stroke:#484f58}
+      .ln{stroke:#d9b45c} .ln2{stroke:#7fb3d5} .ah{fill:#d9b45c} .ah2{fill:#7fb3d5}
+      .fill1{fill:#d9b45c} .fill2{fill:#7fb3d5}
+      .warn{stroke:#e08a68} .warnt{fill:#e08a68} .mono{fill:#d9b45c}
+      text{fill:#e6edf3} .lbl{fill:#8b949e} .s{fill:#8b949e}
+    }
+  </style>
+
+  <rect class="bg" x="0" y="0" width="960" height="418" rx="12"/>
+
+  <text class="lbl" x="40" y="40">規則の層</text>
+  <text class="lbl" x="316" y="40">その規則が見なければならない範囲</text>
+  <text class="lbl" x="676" y="40">失敗の理解に必要な文脈</text>
+  <path class="rule" d="M 40 46 H 936"/>
+
+  <text class="h" x="40" y="67">局所的な縦の響き</text>
+  <rect class="fill1" x="316" y="56" width="60" height="14" rx="4"/>
+  <text class="s" x="676" y="67">1 拍上の 2 声</text>
+
+  <text class="h" x="40" y="93">旋律としての自然さ</text>
+  <rect class="fill1" x="316" y="82" width="60" height="14" rx="4"/>
+  <text class="s" x="676" y="93">1 声部の、直前の音と現在の音</text>
+
+  <text class="h" x="40" y="119">声部の独立性</text>
+  <rect class="fill1" x="316" y="108" width="100" height="14" rx="4"/>
+  <text class="s" x="676" y="119">2 つの時点にまたがる 2 声</text>
+
+  <text class="h" x="40" y="145">物理的な限界</text>
+  <rect class="fill1" x="316" y="134" width="130" height="14" rx="4"/>
+  <text class="s" x="676" y="145">声部の音域と楽器の音域</text>
+
+  <text class="h" x="40" y="171">フレーズ構造</text>
+  <rect class="fill1" x="316" y="160" width="160" height="14" rx="4"/>
+  <text class="s" x="676" y="171">フレーズのメタデータと拍子</text>
+
+  <text class="h" x="40" y="197">調性の文法</text>
+  <rect class="fill1" x="316" y="186" width="190" height="14" rx="4"/>
+  <text class="s" x="676" y="197">和声プランとフレーズ上の位置</text>
+
+  <text class="h" x="40" y="223">フーガの構造</text>
+  <rect class="fill1" x="316" y="212" width="240" height="14" rx="4"/>
+  <text class="s" x="676" y="223">宣言された素材と、その提示スパン</text>
+
+  <text class="h" x="40" y="249">形式の同一性</text>
+  <rect class="fill1" x="316" y="238" width="300" height="14" rx="4"/>
+  <text class="s" x="676" y="249">素材担体と形式レイアウト全体</text>
+
+  <text class="h" x="40" y="275">宣言との整合</text>
+  <rect class="fill1" x="316" y="264" width="340" height="14" rx="4"/>
+  <text class="s" x="676" y="275">来歴記録と、記述された全スパン</text>
+
+  <rect class="grp" x="24" y="290" width="912" height="76" rx="8"/>
+  <text class="lbl" x="38" y="310">どの失敗も FailKind を持つ</text>
+
+  <rect class="chip" x="33" y="318" width="290" height="40" rx="6"/>
+  <text class="mono" x="45" y="335">MusicalFail</text>
+  <text class="s" x="45" y="351">対位法・和声の契約違反（既定）</text>
+
+  <rect class="chip" x="335" y="318" width="290" height="40" rx="6"/>
+  <text class="mono" x="347" y="335">StructuralFail</text>
+  <text class="s" x="347" y="351">形式が守るはずの構造上の約束が破れた</text>
+
+  <rect class="chip" x="637" y="318" width="290" height="40" rx="6"/>
+  <text class="mono" x="649" y="335">ConfigFail</text>
+  <text class="s" x="649" y="351">不正な要求。作曲に入る前に報告される</text>
+
+  <path class="seam" d="M 24 382 H 936"/>
+  <text class="s" x="480" y="402" text-anchor="middle">ルール ID を読むときは、まずその層を見る。局所的な音の規則と形式の同一性の規則は、どちらも失敗だが、説明に必要な証拠が違う。</text>
+</svg>

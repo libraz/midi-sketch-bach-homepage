@@ -8,7 +8,7 @@ Documentation and live demo site for [MIDI Sketch Bach](https://github.com/libra
 
 - **Live demo** — generate and play Bach-style pieces in the browser via WebAssembly
 - **Documentation** (English / Japanese) — getting started, JavaScript API, CLI, musical forms, presets
-- **Counterpoint course** — a 7-chapter course covering the 47 validator rules the engine enforces, with playable staff notation examples
+- **Counterpoint course** — a 7-chapter course covering the 60 validator rules the engine enforces, with playable staff notation examples
 
 Built with [VitePress](https://vitepress.dev/), Vue 3, [VexFlow](https://www.vexflow.com/) (staff notation), and [smplr](https://github.com/danigb/smplr) (playback).
 
@@ -16,7 +16,7 @@ Built with [VitePress](https://vitepress.dev/), Vue 3, [VexFlow](https://www.vex
 
 ### Prerequisites
 
-- Node.js 22+ (managed via [Volta](https://volta.sh/))
+- Node.js 22+ (managed via [mise](https://mise.jdx.dev/))
 - Yarn 4
 - A sibling clone of [`midi-sketch-bach`](https://github.com/libraz/midi-sketch-bach) at `../midi-sketch-bach` (only needed to refresh the WASM build)
 

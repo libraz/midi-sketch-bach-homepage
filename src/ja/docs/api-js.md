@@ -15,15 +15,21 @@ description: MIDI Sketch Bach のJavaScript API 参照。
 
 WASM モジュールをロードし初期化します。`BachGenerator` インスタンスを作成する前に必ず呼び出してください。
 
-```js
+::: code-group
+
+```js [Node.js]
 import { init } from '@libraz/midi-sketch-bach'
 
-// Node.js（WASM パスは自動解決）
 await init()
+```
 
-// ブラウザ（WASM パスを指定）
+```js [ブラウザ]
+import { init } from '@libraz/midi-sketch-bach'
+
 await init({ wasmPath: '/wasm/bach.wasm' })
 ```
+
+:::
 
 **パラメータ**:
 
@@ -103,7 +109,7 @@ console.log(events.tracks)           // TrackDataの配列
 ```
 
 ::: info イベントのピッチは MIDI 出力と一致する
-エンジンは内部的に C で作曲した後、指定された調と楽器の音域に合わせたオクターブシフトを `getEvents()` のピッチと `getMidi()` の `.mid` ファイルに適用します。内部 C のピッチが必要な場合は `getGenerated()` を使ってください。
+エンジンは内部的に C で作曲した後、指定された調と楽器の音域に合わせたオクターブシフトを `getEvents()` のピッチと `getMidi()` の `.mid` ファイルに適用します。`getEvents()` と `getMidi()` は、キャラクターに応じたアーティキュレーション後の再生時の長さも使います。内部 C のピッチとアーティキュレーション前の記譜上の長さが必要な場合は `getGenerated()` を使ってください。
 :::
 
 ::: warning `bpm` だけでは時刻を決められない
@@ -118,15 +124,70 @@ console.log(events.tracks)           // TrackDataの配列
 
 `getEvents()` とは異なり、ノートのピッチは出力用の移調前にエンジン内部の C で記録されます。
 
+ノートの長さは、キャラクターに応じたアーティキュレーション前に保存された記譜上のスナップショットです。`FinalScore` 検証とテクスチュア指標はこのスナップショットを使い、`getEvents()` と `getMidi()` は短くなった再生時の長さを使います。
+
 ```js
 const generated = generator.getGenerated()
 console.log(generated.schema_version)  // "generated.v1"
 console.log(generated.ticks_per_beat)  // 480
 console.log(generated.notes[0])
-// { index: 0, start_tick: 0, duration: 60, pitch: 82, voice: 0, velocity: 80 }
+// { index, start_tick, duration, pitch, voice, velocity }
 ```
 
 **戻り値**: `GeneratedData`。生成が一度も成功していない場合は例外を投げます。
+
+### `generated.v1` のワイヤーフィールド
+
+`getGenerated()` はパース済みの `generated.v1` オブジェクトを返します。ルートの必須フィールドは `schema_version`、`ticks_per_beat`、`duration_ticks`、`notes`、`counterpoint_observations`、`informational_findings`、`wave_veto` です。`tempos` は任意で、エクスポーターがテンポマップを受け取った場合に現れます。`info` も任意で、利用できる場合に主題の特徴量、ストリーム分離、テクスチュア指標などの生成時メトリクスを持ちます。[generated.v1 スキーマ](https://github.com/libraz/midi-sketch-bach/blob/973659e705915c2178d72663d5a65ab95d3cae4b/schema/generated.v1.json)がワイヤー契約であり、`info` はメトリクスの種類が任意であるため、意図的に開いたオブジェクトです。
+
+```ts
+interface GeneratedV1Wire {
+  schema_version: 'generated.v1'
+  ticks_per_beat: number
+  duration_ticks: number
+  tempos?: Array<{ tick: number; bpm: number }>
+  notes: Array<{
+    index: number
+    start_tick: number
+    duration: number
+    pitch: number
+    voice: number
+    velocity: number
+  }>
+  counterpoint_observations: Array<{
+    rule_id: string
+    geometry: 'linear' | 'vertical' | 'unclassified'
+    total: number
+    gated: number
+    exempted: number
+  }>
+  informational_findings: Array<{
+    span_id: number | null
+    rule_id: string
+    geometry: 'linear' | 'vertical' | 'unclassified'
+    kind: 'StructuralFail' | 'MusicalFail' | 'ConfigFail'
+  }>
+  wave_veto: {
+    anchor_parallel_displaced: number
+    wobble_breaker_fired: number
+    step_parallel_adjusted: number
+    step_harsh_adjusted: number
+    order_clamp_changed: number
+    window_expanded: number
+    anchor_fault_held: number
+    total: number
+  }
+  info?: Record<string, unknown>
+}
+```
+
+`counterpoint_observations` には、検証中に1回以上一致した規則が `rule_id` 順で1件ずつ入ります。`geometry` は、1声部内の旋律進行を測る `linear` と、発音中の声部同士または声部と和声プランの関係を測る `vertical` を示します。`unclassified` は、幾何分類表に登録されていない規則 ID 用です。`total` は振り分け前の一致数、`gated` は停止させる検証失敗へ送った件数、`exempted` は生成時にすべての対象音が不変の `Material` または `Ornament` だったため除外した件数です。このレコーダーで扱う検出結果では、`total - gated - exempted` が参考情報として表現される一致数です。独立した参考情報ルールには観測値がない場合があります。
+
+`informational_findings` には、検証状態を停止させず証拠として残す検出結果が入ります。各要素は `span_id`（`null` 可）、規則 ID、幾何分類、`FailKind` を持ちます。形式別の対位法予算で閉じている垂直規則に一致した場合は、形式の予算によって `span_id: null` の停止 `MusicalFail` が追加されることがあります。この場合も観測値の集計は変わりません。
+
+`wave_veto` は、反応型フィグレーション・ウェーブの各層が音を変更した回数と、アンカー違反を解消できず残した回数を報告します。`total` は音を変更した6つのカウンターだけの合計です。`anchor_fault_held` は、修復できないアンカー違反を残した回数を別に報告します。8つのフィールドは、すべて0の場合も常に出力されます。
+
+ワイヤーエクスポーターは `informational_findings`、`wave_veto`、任意の `tempos`、任意の `info` をすでに出力しています。現在同梱している JavaScript 宣言は `counterpoint_observations` までは宣言していますが、2つの名前付きフィールドと任意のエクスポーターメタデータはまだ宣言していません。このページは実行時のワイヤーオブジェクトを説明しているため、宣言されていないフィールドを TypeScript から読む場合は、ローカルの型拡張または実行時の絞り込みが必要です。
 
 ### `getProvenance()`
 
@@ -163,6 +224,8 @@ try {
   }
 }
 ```
+
+`generate()` が成功した場合は例外を投げず、`getDiagnostic()` は `null` を返します。生成が作曲検証エラーを返したときに、`catch` 節で診断データを読み取ってください。
 
 **戻り値**: `DiagnosticData | null`
 
@@ -206,18 +269,18 @@ generator.destroy()
 | `key` | `KeyId \| KeyName` | `0` | 調。ピッチクラス（0=C, 1=C#, 2=D, ... 11=B）または正式名（`"C"`、`"C#"`、`"D"`、`"Eb"`、`"E"`、`"F"`、`"F#"`、`"G"`、`"Ab"`、`"A"`、`"Bb"`、`"B"`）。 |
 | `isMinor` | `boolean` | `false` | `true` で短調、`false` で長調 |
 | `bpm` | `number` | `100` | 開始テンポ（BPM）。`0` は既定の100を使用。それ以外は 40--200 の範囲が必須（範囲外では例外）。 |
-| `seed` | `number` | `0` | ランダムシード。`0` は非ゼロのランダムシードを選び、`getInfo().seedUsed` で報告。 |
+| `seed` | `number` | `0` | 符号なし 32 ビットのランダムシード。`0` は非ゼロのランダムシードを選び、`getInfo().seedUsed` で報告。 |
 | `character` | `CharacterId \| CharacterName` | `"severe"` | 主題の性格（`"severe"`、`"playful"`、`"noble"`、`"restless"`）。無効値では例外。 |
 | `instrument` | `InstrumentId \| InstrumentName` | 形式の既定 | 楽器（`"organ"`、`"harpsichord"`、`"piano"`、`"violin"`、`"cello"`、`"guitar"`）。その形式が受け付ける楽器である必要があり、それ以外は例外。 |
 | `scale` | `DurationScaleId \| DurationScaleName` | `"short"` | 形式の基準長に対する倍率: `"short"`（約1倍）、`"medium"`（約2倍）、`"long"`（約3倍）、`"full"`（約4倍）。無効値では例外。 |
-| `targetBars` | `number` | -- | 明示的な小節数。`> 0` のとき `scale` を上書きし、形式の刻みにスナップして `[最小, 128]` に丸め込み。 |
+| `targetBars` | `number` | -- | 推奨する整数範囲は 0〜128 です。`0` は `scale` を使い、正の値はそれを上書きしてから形式の刻みにスナップし、`[最小, 128]` に丸め込みます。ワイヤーでは符号なし16ビット値を受け付けますが、非常に大きな値は刻みへのスナップ時に桁あふれして形式の最小長へ戻ることがあります。受け付ける範囲と端の値の動作は[オプション関係](/ja/docs/option-relationships#scale-と-targetbars)を参照してください。 |
 
 ::: info 名前文字列は完全一致
 形式・調・スケールの名前は正式な綴りと完全に一致する必要があり、`"Fugue"`、`"g"`、`"FULL"` はいずれも例外になります。性格名だけは例外で大文字小文字を区別しないため、`getCharacters()` が返す先頭大文字のラベルをそのまま渡せます。
 :::
 
-::: warning `numVoices` は廃止されました
-声部数は `form` によって決定されます（[楽曲形式](/ja/docs/forms)の表を参照）。後方互換のため `num_voices`/`numVoices` の指定は受理されますが無視され、出力には影響しません。
+::: info 声部数は形式で決まります
+`BachConfig` に `numVoices` フィールドはありません。声部数は `form` で決まります。[楽曲形式](/ja/docs/forms)の表を参照してください。C API に直接渡す JSON では互換性のため `num_voices` を別に受け付けますが、符号なし8ビット整数として検証した後に無視します。
 :::
 
 ### 楽曲形式の値
@@ -259,6 +322,8 @@ generator.destroy()
 | `2` | `"noble"` | 荘重で広やか、威厳のある |
 | `3` | `"restless"` | 推進力があり半音階的で劇的 |
 
+性格はノートのリリースのアーティキュレーションとコントローラーのレベルも制御します。1拍=480ティックで、宣言される分離量は Noble 24、Severe 40、Playful 56、Restless 72ティックです。チェロ前奏曲とシャコンヌでは値が半分になり、定旋律の声部は0です。コントローラーのオフセットはカーブ形状を変えません。
+
 ### スケールの値
 
 `scale` は形式の基準長を倍率で伸ばします（[楽曲形式](/ja/docs/forms)を参照）。`targetBars` がこれを上書きします。
@@ -268,9 +333,9 @@ generator.destroy()
 | `0` | `"short"` | 基準長の約1倍（既定） |
 | `1` | `"medium"` | 基準長の約2倍 |
 | `2` | `"long"` | 基準長の約3倍 |
-| `3` | `"full"` | 基準長の約4倍 |
+| `3` | `"full"` | 基準長の約4倍。ただしゴルトベルク変奏曲は完全な128小節の特例 |
 
-基準長は形式が持つスナップ前の小節数です。出力前に形式ごとの小節単位へスナップされます。フーガの基準長は42小節ですが、`"short"` の出力は44小節に解決されます。
+基準長は形式が持つスナップ前の小節数です。出力前に形式ごとの小節単位へスナップされます。フーガの基準長は42小節ですが、`"short"` の出力は44小節に解決されます。ゴルトベルク変奏曲の `"full"` は、アリア、30の全変奏、アリア・ダ・カーポを含む完全な128小節のレイアウトという特例で、20小節の基準長を4倍したものではありません。
 
 ---
 
@@ -299,7 +364,7 @@ interface EventData {
 
 ```ts
 interface TrackData {
-  name: string          // トラック名（例: "Soprano", "Bass"）
+  name: string          // トラック名（例: "Voice 0", "Voice 1"）
   channel: number       // MIDI チャンネル（0-15）
   program: number       // General MIDI プログラム番号
   note_count: number    // このトラックのノート数
@@ -308,7 +373,7 @@ interface TrackData {
 }
 ```
 
-`control_changes` は演奏プロファイルの強弱変化を、重複を統合済みの点列として持ちます。オルガンとチェンバロは CC 7（チャンネルボリューム）、ピアノ、ヴァイオリン、チェロは CC 11（エクスプレッション）を使います。
+`control_changes` は演奏プロファイルの強弱変化を、重複を統合済みの点列として持ちます。オルガンとチェンバロは CC 7（チャンネルボリューム）、ピアノ、ヴァイオリン、チェロは CC 11（エクスプレッション）を使い、ギターには連続表現プロファイルがありません。CC 7 は再生レベルを変えるもので、オルガンのストップ選択ではありません。性格によるオフセットはカーブ形状を保ったまま、Severe を基準に Noble +5、Severe 0、Playful -7、Restless +2 です。
 
 ### NoteEvent
 
@@ -317,11 +382,15 @@ interface NoteEvent {
   pitch: number         // MIDI ノート番号（0-127）、出力調と音域へ移調済み
   velocity: number      // ノートベロシティ（0-127）
   start_tick: number    // MIDIティック単位の開始時間
-  duration: number      // MIDIティック単位の長さ
+  duration: number      // アーティキュレーション後の再生時の長さ（MIDIティック）
   voice: number         // 声部インデックス
   source: string        // 由来: "material" | "compose" | "ornament"
 }
 ```
+
+::: info ノートの音価と由来
+`getEvents()` の `duration` は、キャラクターに応じたアーティキュレーション後の再生時の長さです。240 ティック未満（480 ティックを1拍とするグリッドでの8分音符未満）の音では、宣言された分離量が音の長さに応じて縮小されます。短縮量は元の音価の半分を超えません。各声部の最後の開始音は全長を保ちます。`source` はノートの生成方法を記録するため、後からベロシティやアーティキュレーションを変更しても、既存の `material` や `compose` が `ornament` には変わりません。
+:::
 
 ::: info ノートの由来（`source`）
 すべてのノートは生成方法を記録する `source` タグを持ちます。
@@ -389,6 +458,8 @@ function timeSignatureAtTick(tick, events) {
 ## プリセット列挙関数
 
 これらの関数は、利用可能なオプションを記述する `PresetInfo` オブジェクトの配列を返します。
+
+以下の例は、[初期化](#初期化)に示す `await init()` が完了していることを前提とします。
 
 ### `getForms()`
 
@@ -460,7 +531,7 @@ const instrumentId = getDefaultInstrumentForForm(7)
 import { getVersion } from '@libraz/midi-sketch-bach'
 
 const version = getVersion()
-// 例: "0.4.0"
+console.log(version) // 現在のエンジンバージョン文字列
 ```
 
 ---

@@ -1,11 +1,11 @@
 ---
 title: 検証器ルール一覧
-description: MIDI Sketch Bach の検証器が返す全57ルールの索引。対位法コースの該当章へのリンク付き。
+description: MIDI Sketch Bach の検証器が返す全60ルールの索引。対位法コースの該当章へのリンク付き。
 ---
 
 # 検証器ルール一覧
 
-このページは検証器の全57ルールのフラットな索引です。音楽上の考え方を学ぶには[対位法コース](/ja/docs/counterpoint)を読み、エラー・ログ・イベントデバッグでルール ID を見たときは、このページから該当する解説へ飛んでください。
+このページは検証器の全60ルールのフラットな索引です。音楽上の考え方を学ぶには[対位法コース](/ja/docs/counterpoint)を読み、エラー・ログ・イベントデバッグでルール ID を見たときは、このページから該当する解説へ飛んでください。
 
 ::: info ルール ID の読み方
 ルール ID は品質スコアではなく、破られた音楽的契約の名前です。同じ楽句が複数の契約に同時に違反することもあります。検証器は最初の失敗で停止せず、その処理で見つけた失敗をまとめ、各違反を指摘対象のスパンとともに報告します。
@@ -14,6 +14,8 @@ description: MIDI Sketch Bach の検証器が返す全57ルールの索引。対
 ## ルールの層
 
 検証器は作曲の複数の層を守ります。局所的な音程ルールと形式の同一性ルールはどちらも失敗ですが、理解に必要な文脈が異なります。
+
+![その層のルールが譜面のどれだけを見る必要があるかで並べた 9 つの層と、3 つの FailKind](/images/validator-layers-ja.svg)
 
 | 層 | 守るもの | 必要な文脈 |
 |----|----------|------------|
@@ -30,33 +32,45 @@ description: MIDI Sketch Bach の検証器が返す全57ルールの索引。対
 すべての失敗には `FailKind` も付きます。`MusicalFail`（対位法・和声の契約。既定値）、`StructuralFail`（形式の構造的な約束——不変キャリアと終止レイアウトの破綻）、`ConfigFail`（不正なリクエスト。作曲前に報告）の三種です。
 
 ::: info 停止させる失敗と参考情報
-最終スコアの検査は、作譜済みの素材も含めて出力された音そのものを対象にします。違反に関わる音がすべて不変の作譜素材だった場合、実行を止める失敗ではなく参考情報として記録されます。探索音や装飾音が1つでも関わっていれば、対処可能なスパンを持つ失敗のまま扱われます。現在の公開生成経路は停止させる失敗があると処理を中止し、スコアの修復や生成の再試行は行いません。`getDiagnostic()` が返すのは停止させる失敗のほうです。
+最終スコアの検査は、作譜済みの素材も含めて出力された音そのものを対象にします。対位法の観測レコーダーが扱う検出結果では、すべての対象音が有効な作譜コンテキストを持つ場合に限り、実行を止める失敗ではなく参考情報として記録されます。`Compose` 音は作曲器が作譜した音として扱い、`Material` 音は宣言との一致を、`Ornament` 音は宣言されたキャリア内での実現マーカーと音域を確認します。それ以外は、対処可能なスパンを持つ停止失敗としてレコーダーから送られます。生成時は、対象音がすべて不変の `Material` または `Ornament` なら `exempted` として数え、それ以外（`Compose` 音を含む）は `gated` として停止失敗へ送ります。声部交差、掛留、終止、宣言整合性などの直接検査はそれぞれ失敗を直接追加するため、作譜コンテキストに関係なく停止します。さらに、形式別の対位法予算で閉じている垂直規則に一致すると、`span_id: null` の停止 `MusicalFail` が1件追加されます。現在の公開生成経路は停止させる失敗があると処理を中止し、スコアの修復や生成の再試行は行いません。`getDiagnostic()` が返すのは停止させる失敗であり、参考情報ではありません。
 :::
+
+## 幾何分類・振り分け・形式別予算
+
+生成されたスコアは、検出結果を失敗または参考情報へ振り分ける前に、対位法の一致を記録します。`geometry` の `linear` は1声部内の進行、`vertical` は発音中の声部同士または声部と和声プランの関係を示します。`unclassified` は幾何分類表に登録されていない規則 ID 用です。`total` は振り分け前の一致数、`gated` は停止させる失敗へ送った件数、`exempted` は生成時にすべての対象音が不変の `Material` または `Ornament` だったため除外した件数です。このレコーダーで扱う検出結果では、`total - gated - exempted` が参考情報として表現される一致数です。独立した参考情報ルールには観測値がない場合があります。
+
+形式別予算の対象は垂直規則だけです。予算表にある規則は、その形式ではまだ開いています。一致は `counterpoint_observations` に記録されますが、それだけでは処理を停止しません。ソースの `Unresolved` 行は未修復の作業を、`Accepted` 行は測定したトレードオフまたは形式上の制約を記録します。どちらも開いている行で、ゲートは理由ではなく行の存在を使います。形式の表にない垂直規則は閉じています。その規則の観測値が1件以上になると、`span_id: null` の停止 `MusicalFail` が1件追加されます。旋律規則はこの予算の対象外で、前述の素材または作譜済みコンテキストによる通常の振り分けを使います。[対位法予算のソース](https://github.com/libraz/midi-sketch-bach/blob/973659e705915c2178d72663d5a65ab95d3cae4b/src/composer/counterpoint_budget.cpp)が10形式の開いている `(form, rule_id)` 組み合わせを定める完全な許可リストの正本です。
+
+この予算表は、開いている規則を音楽的に望ましいと宣言するものではなく、実装が現在許容して測定する形式別の境界です。行を削除するとその形式で規則が閉じ、行を追加すると再び開きます。
 
 ## 声部の運動と独立
 
 | Rule ID | コースの章 | 読み方 |
 |---------|------------|--------|
-| `parallel_fifth` | [2. 運動](/ja/docs/counterpoint/motion) | 両声部が動き、直前と現在の縦の音程がどちらも完全5度。 |
-| `parallel_octave` | [2. 運動](/ja/docs/counterpoint/motion) | 両声部が動き、直前と現在の音程がどちらもユニゾンまたはオクターヴ。 |
-| `hidden_parallel_fifth` | [2. 運動](/ja/docs/counterpoint/motion) | 5度以外の音程から、同方向の運動で完全5度に着地。 |
-| `hidden_parallel_octave` | [2. 運動](/ja/docs/counterpoint/motion) | 上声部ペアの強拍で、同方向の運動でオクターヴに着地。 |
-| `voice_crossing` | [2. 運動](/ja/docs/counterpoint/motion) | 下の声部が上の声部を越えた（声部の上下関係はテクスチュアの契約）。 |
+| `parallel_fifth` | [2. 運動](/ja/docs/counterpoint/motion) | 両声部が同方向に動き、直前と現在の縦の音程がどちらも完全5度に縮約される。 |
+| `parallel_octave` | [2. 運動](/ja/docs/counterpoint/motion) | 両声部が同方向に動き、直前と現在の音程がどちらもユニゾンまたはオクターヴに縮約される。 |
+| `anti_parallel_perfect` | [2. 運動](/ja/docs/counterpoint/motion) | 反行で、同じ種類の完全音程（完全5度またはユニゾン／オクターヴ）から同じ種類へ進む。 |
+| `battuta` | [2. 運動](/ja/docs/counterpoint/motion) | 反行で新しいユニゾン／オクターヴへ進み、到達時の上声が全音より大きく下降跳躍する。 |
+| `hidden_parallel_fifth` | [2. 運動](/ja/docs/counterpoint/motion) | 異なる直前の音程から同方向運動で完全5度へ入り、慣例上の上声が全音より大きく（>2半音）跳躍する。 |
+| `hidden_parallel_octave` | [2. 運動](/ja/docs/counterpoint/motion) | 同じ隠伏完全音程の条件でユニゾン／オクターヴへ入る。上声ペアや強拍だけに限定されない。 |
+| `voice_crossing` | [2. 運動](/ja/docs/counterpoint/motion) | 慣例上の上声（小さいインデックス）が下声（大きいインデックス）より低い音を鳴らす。トリオ・ソナタでは上二声の一時的な交換を許す場合があるが、持続する交差は失敗となり、全体の音域も重なる必要がある。 |
 | `spacing_adjacent_voices_within_octave` | [2. 運動](/ja/docs/counterpoint/motion) | 三声以上で、隣接する上声部の間隔がオクターヴを超えた。 |
-| `invertible_at_octave` | [2. 運動](/ja/docs/counterpoint/motion) | 上声部ペアが強拍で並行8度を作った。転回すると並行ユニゾンになる。 |
+| `invertible_at_octave` | [2. 運動](/ja/docs/counterpoint/motion) | 隣接する上声部のペアが構造的アクセントで並行オクターヴを作った。転回すると並行ユニゾンになるためで、最下ペアは対象外。 |
+
+発音中のペアで、現在の下声部の音に `CadenceCellCommitted` プロビナンスビットが付いている拍では、`parallel_fifth`、`parallel_octave`、`hidden_parallel_fifth`、`hidden_parallel_octave`、`anti_parallel_perfect`、`battuta` を検査しません。この終止セルの除外は、声部交差、間隔、その他の検査を一括して免除するものではありません。
 
 ## 不協和音の扱い
 
 | Rule ID | コースの章 | 読み方 |
 |---------|------------|--------|
-| `strong_beat_dissonance` | [3. 不協和](/ja/docs/counterpoint/dissonance) | 小節頭の音がその場の三和音の外にある。 |
+| `strong_beat_dissonance` | [3. 不協和](/ja/docs/counterpoint/dissonance) | 構造的アクセントの音がその場の和音構成音の外にある。宣言された第7音は和音構成音に含める。 |
 | `vertical_dissonance` | [3. 不協和](/ja/docs/counterpoint/dissonance) | 強拍で同時に鳴る声部が、支えのない不協和音程を作った。 |
-| `unprepared_dissonance` | [3. 不協和](/ja/docs/counterpoint/dissonance) | 弱拍の不協和が順次進行で出入りしていない。 |
+| `unprepared_dissonance` | [3. 不協和](/ja/docs/counterpoint/dissonance) | 弱拍の非三和音音が、前後とも順次進行（最大2半音）になっていない。 |
 | `suspension_preparation` | [3. 不協和](/ja/docs/counterpoint/dissonance) | 掛留の準備が、最下声の相手に対して協和になっていない。 |
 | `suspension_preparation_duration` | [3. 不協和](/ja/docs/counterpoint/dissonance) | 準備が、それが準備する掛留より短い。 |
 | `suspension_metrical_accent` | [3. 不協和](/ja/docs/counterpoint/dissonance) | 掛留が準備より強い拍に置かれていない。 |
-| `suspension_resolution_step_down` | [3. 不協和](/ja/docs/counterpoint/dissonance) | 掛留が定められた方向への順次進行で解決していない（4-3 / 7-6 / 9-8 は下行、2-3 は上行）。 |
-| `suspension_interval` | [3. 不協和](/ja/docs/counterpoint/dissonance) | 最下声に対する掛留音と解決音の音程が、宣言された型（4-3 / 7-6 / 9-8 / 2-3）に合っていない。 |
+| `suspension_resolution_step_down` | [3. 不協和](/ja/docs/counterpoint/dissonance) | 掛留が定められた方向への順次進行で解決していない（4-3／7-6／9-8 は下行、エンジンの `Sus2_3` は上行）。歴史的な下声部の 2-3 掛留は下行解決として説明されることが多いため、用語を対応付けるときは [Open Music Theory](https://viva.pressbooks.pub/openmusictheorycopy/chapter/fourth-species-counterpoint/) も参照してください。 |
+| `suspension_interval` | [3. 不協和](/ja/docs/counterpoint/dissonance) | 掛留声部と同時に鳴る他声部の最低音との音程が、宣言された型（4-3 / 7-6 / 9-8 / 2-3）に合っていない。2-3 では掛留声部がバスなので、そこから上向きに測定します。 |
 | `suspension_seventh_sixth` | [3. 不協和](/ja/docs/counterpoint/dissonance) | 宣言された 7-6 掛留が、バス上の本物の7度→6度の形を作っていない。 |
 
 ## 旋律のルール
@@ -74,10 +88,10 @@ description: MIDI Sketch Bach の検証器が返す全57ルールの索引。対
 
 | Rule ID | コースの章 | 読み方 |
 |---------|------------|--------|
-| `cadence_voice_leading` | [5. 調性](/ja/docs/counterpoint/tonality) | 外声が宣言された終止型（完全・不完全正格・変格・半・偽・フリギア・ピカルディ）に一致しない。終止レイアウトの破綻（2声未満・独立したバスがない）は **StructuralFail**、声部進行の不一致そのものは MusicalFail。 |
+| `cadence_voice_leading` | [5. 調性](/ja/docs/counterpoint/tonality) | 終止の声部が宣言された終止型（完全・不完全正格・変格・半・偽・フリギア・ピカルディ）に一致しない。**StructuralFail** になるのは終止に到達する声部がない場合、または終止位置が最初の拍より前の場合だけで、単旋律形式は旋律終止として検査する。声部進行の不一致そのものは MusicalFail。 |
 | `doubling_no_leading_tone` | [5. 調性](/ja/docs/counterpoint/tonality) | 導音を含む和音で導音が重複された。 |
 | `doubling_no_seventh` | [5. 調性](/ja/docs/counterpoint/tonality) | 和音の第7音が重複された。 |
-| `cross_relation` | [5. 調性](/ja/docs/counterpoint/tonality) | 1拍の窓の中で、声部間に同じ音度の半音階的衝突（対斜）が生じた。 |
+| `cross_relation` | [5. 調性](/ja/docs/counterpoint/tonality) | 後の開始位置で有効な局所調で、同じ音度を異なる変化記号で鳴らす声部が、同時、またはどちらの声部にも途中の開始位置がない隣接する音符開始位置で続けて鳴らす。異なる音度どうしの自然な半音は除外。 |
 | `secondary_dominant_resolution` | [5. 調性](/ja/docs/counterpoint/tonality) | 副次ドミナントの次に目標の度数が来ていない。 |
 | `modulation_pivot_chord_required` | [5. 調性](/ja/docs/counterpoint/tonality) | ピボット転調のピボット和音が両方の調で全音階的でない。 |
 
@@ -111,10 +125,10 @@ description: MIDI Sketch Bach の検証器が返す全57ルールの索引。対
 
 | Rule ID | コースの章 | 読み方 |
 |---------|------------|--------|
-| `ground_bass_immutable` | [7. 形式](/ja/docs/counterpoint/form-constraints) | シャコンヌの固執低音が周回の途中で変わった。**StructuralFail。** |
-| `passacaglia_ground_immutable` | [7. 形式](/ja/docs/counterpoint/form-constraints) | パッサカリアの8小節グラウンドが周回の途中で変わった。**StructuralFail。** |
+| `ground_bass_immutable` | [7. 形式](/ja/docs/counterpoint/form-constraints) | シャコンヌの再現が、同じ周回相対位置にある固執低音の小節頭の音高骨格を変えた。弱拍の細分音は比較しない。**StructuralFail。** |
+| `passacaglia_ground_immutable` | [7. 形式](/ja/docs/counterpoint/form-constraints) | パッサカリアの再現が、同じ周回相対位置にある8小節グラウンドの小節頭の音高骨格を変えた。弱拍の細分音は比較しない。**StructuralFail。** |
 | `cantus_firmus_immutable` | [7. 形式](/ja/docs/counterpoint/form-constraints) | コラール前奏曲の小節頭が宣言された骨格音を再現していない。**StructuralFail。** |
-| `goldberg_aria_bass_immutable` | [7. 形式](/ja/docs/counterpoint/form-constraints) | ゴルトベルクの変奏がアリアのバスを正確に再現していない。**StructuralFail。** |
+| `goldberg_aria_bass_immutable` | [7. 形式](/ja/docs/counterpoint/form-constraints) | ゴルトベルクの変奏ブロックが、宣言されたアリア・バスのすべての開始位置を、周回相対の開始位置・長さ・音高まで同じに再現していない。終端の `CodaCarrier` による主和音終止は最後のブロック範囲を置き換えられる。**StructuralFail。** |
 | `variation_role_ornament_constraint` | [7. 形式](/ja/docs/counterpoint/form-constraints) | グラウンド役の変奏が4分音符より細かく分割された。 |
 | `figuration_harmonic_consistency` | [7. 形式](/ja/docs/counterpoint/form-constraints) | フィグレーションの小節頭が非和声音で始まった。 |
 | `toccata_archetype_compatible` | [7. 形式](/ja/docs/counterpoint/form-constraints) | トッカータのセクション原型が宣言された性格と両立しない。 |
@@ -123,7 +137,7 @@ description: MIDI Sketch Bach の検証器が返す全57ルールの索引。対
 
 ## 宣言との整合
 
-これらは最終スコアの検査でのみ走り、音楽的な契約ではなく出力された楽譜と来歴レコードを突き合わせます。いずれも **StructuralFail** です。これが出たということは、出力が形式の宣言と一致していないということであり、音を作り直しても解消しません。
+これらは音楽的な契約ではなく、出力された楽譜と宣言を突き合わせます。来歴の検査は最終スコアでのみ走りますが、`declared_doubling_integrity` は検証器が宣言された重複を認める前にも確認します。いずれも **StructuralFail** です。出力が宣言と一致していないため、再試行の前に宣言と出力された音を確認します。
 
 | Rule ID | コースの章 | 読み方 |
 |---------|------------|--------|
@@ -131,6 +145,7 @@ description: MIDI Sketch Bach の検証器が返す全57ルールの索引。対
 | `carrier_declaration_integrity` | [7. 形式](/ja/docs/counterpoint/form-constraints) | 作譜済みキャリアを名乗る音が、そのキャリアの宣言された開始位置・長さ・音高と一致しない。 |
 | `ornament_declaration_integrity` | [7. 形式](/ja/docs/counterpoint/form-constraints) | 装飾音について、それが装飾するキャリアとの間で同じ不一致が起きた。 |
 | `ornament_group_integrity` | [7. 形式](/ja/docs/counterpoint/form-constraints) | 装飾の展開が元のキャリアを正確に覆っていない（隙間・重なり、または主要音以外で終わっている）。 |
+| `declared_doubling_integrity` | [7. 形式](/ja/docs/counterpoint/form-constraints) | 宣言された重複が、異なる2声部と主声部の音符を少なくとも1つ含む有効で空でない半開区間を指定していない、またはその区間内の出力された音符数・開始位置・長さ・移調後の音高と一致しない。**StructuralFail。** |
 
 ## デバッグの手順
 

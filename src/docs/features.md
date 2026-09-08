@@ -38,7 +38,7 @@ Choose `fugue` to hear strict line-against-line writing, `prelude_and_fugue` for
 | ID | Form | Voices | Description |
 |----|------|--------|-------------|
 | 7 | Cello Prelude | 1 | Flowing single-line prelude for solo cello |
-| 8 | Chaconne | 2 | Monumental ground-bass variation form for solo violin (3/4) |
+| 8 | Chaconne | 3 | Monumental ground-bass variation form with V0 variation, V1 middle material where it fits, and V2 ground for solo violin (3/4) |
 
 ### Variation System (Form 9)
 
@@ -87,7 +87,7 @@ Each instrument maps to a General MIDI program number and a playable range, and 
 Four character types influence the melodic character of fugue subjects and thematic material:
 
 ::: info Subject
-A **subject** is the main theme of a fugue. The `character` option changes the contour and rhythmic profile of that theme and related material; it does not select an instrument or output style.
+A **subject** is the main theme of a fugue. The `character` option changes the contour and rhythmic profile of that theme and related material; it also changes note articulation and the MIDI CC profile in every form. In `cello_prelude`, it orders the figure palette used for each bar. See [Instruments](/docs/physical-models) for the instrument-specific expression output.
 :::
 
 | Character | Style |
@@ -155,9 +155,9 @@ Four scale modes set the length as a multiple of each form's natural length:
 | Short | ~1x natural length (default) |
 | Medium | ~2x natural length |
 | Long | ~3x natural length |
-| Full | ~4x natural length |
+| Full | ~4x natural length; Goldberg uses its complete 128-bar layout |
 
-You can also set a specific bar count with `targetBars`, which overrides `scale` and is clamped to `[form minimum, 128]`.
+You can also set a specific bar count with `targetBars`. A value of `0` uses `scale`; a positive value overrides it. Goldberg's `scale: "full"` when no positive `targetBars` is supplied selects its complete compressed 128-bar layout. See [Option Relationships](/docs/option-relationships) for the accepted range, practical values, and output clamping.
 
 ::: tip
 See [Option Relationships](/docs/option-relationships) for how `targetBars` interacts with the `scale` setting and other configuration options.

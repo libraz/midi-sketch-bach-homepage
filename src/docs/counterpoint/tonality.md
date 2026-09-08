@@ -21,9 +21,11 @@ The two approaches are sampled differently. The upper line is read at `cadence.t
 
 <CounterpointStaff example="cadence" locale="en" />
 
-The **perfect authentic cadence** demands the strongest close: the upper voice resolves the leading tone up to the tonic while the bass falls from dominant to tonic. The **imperfect authentic** variant relaxes the soprano requirement — same harmony, softer punctuation.
+In standard tonal theory, a **perfect authentic cadence (PAC)** has three conditions: V–I harmony, both chords in root position, and scale degree 1 in the highest voice of the final tonic chord. The soprano may approach that tonic by step from scale degree 2 as well as from the leading tone 7. Within an authentic V–I close, if any one of those conditions is missing — for example, an inverted chord or a final soprano other than scale degree 1 — the close is an **imperfect authentic cadence (IAC)**. See the [three PAC conditions and IAC distinction](https://musictheory.pugetsound.edu/mt21c/PerfectAuthenticCadence.html).
 
-Bach signs the Goldberg Aria with exactly this close:
+The engine keeps a separate, narrower contract for its named perfect cadence cell: the sampled upper line must use the 7→1 leading-tone resolution, and the bass must move V→I. The figure above shows that implementation subset; it is not the definition of every PAC.
+
+Bach’s Goldberg Aria includes a close with this 7→1 realization:
 
 <CounterpointStaff example="bachCadence" locale="en" />
 
@@ -61,8 +63,8 @@ And here is the convention at work — the very last bar of the C minor fugue fr
 
 | Cadence type | Validator checks |
 |--------------|------------------|
-| Perfect | Leading tone resolves up by semitone to tonic; bass moves dominant → tonic. |
-| Imperfect authentic | Same harmonic frame with relaxed soprano. |
+| Perfect authentic | Standard PAC: V–I, both chords in root position, and scale degree 1 in the final highest voice. The engine’s perfect cell additionally checks the sampled upper 7→1 motion and bass V→I. |
+| Imperfect authentic | Standard IAC: a V–I close that misses at least one PAC condition. The engine evaluates its separately declared IAC contract. |
 | Plagal | Bass moves subdominant → tonic (IV → I). |
 | Half | The phrase comes to rest on the dominant. |
 | Deceptive | The bass evades the tonic, arriving on the sixth degree (V → vi). |
@@ -85,7 +87,7 @@ Some [scale degrees](/docs/music-primer#scale-degrees) carry an obligation (the 
 
 <CounterpointStaff example="crossRelation" locale="en" />
 
-When one voice sounds F♯ while (or immediately after) another sounds F♮, the listener hears the key contradict itself: one line claims the [chromatic](/docs/music-primer#diatonic-and-chromatic) form of a degree while another insists on the diatonic form. The validator window covers simultaneous notes and adjacent beats. Natural half-step pairs (E–F, B–C) are not cross relations — they are different letter names, not chromatic alterations of the same degree.
+When one voice sounds F♯ while another sounds F♮, the listener hears the key contradict itself: one line claims the [chromatic](/docs/music-primer#diatonic-and-chromatic) form of a degree while another insists on the diatonic form. The completed-score validator checks simultaneous notes and adjacent note onsets. For an adjacent pair, neither voice may start another note strictly between the two onsets, regardless of their distance in ticks; the pair is judged in the local key at the later onset. Natural half-step pairs (E–F, B–C in major; D–E♭, G–A♭ in minor) are not cross relations — they are different scale degrees, not chromatic alterations of the same degree. The candidate-placement helper still uses a beat-wide pre-check because the rest of a partial score is not known yet.
 
 ## Secondary dominants: borrowed tension
 
@@ -109,7 +111,7 @@ To modulate convincingly, Baroque practice routes through a **pivot chord** — 
 | `cadence_voice_leading` | StructuralFail / MusicalFail | At the cadence tick, polyphonic outer voices or the single monophonic line match the declared cadence type. The upper approach is sampled one tick before arrival; a distinct bass is sampled one beat before. A missing cadence voice or a cadence earlier than one beat is StructuralFail; a voice-leading mismatch is MusicalFail. |
 | `doubling_no_leading_tone` | MusicalFail | The leading-tone pitch class sounds in at most one voice when the chord contains it (V, vii°, V7, vii°7). |
 | `doubling_no_seventh` | MusicalFail | A seventh-quality chord's seventh is not doubled. |
-| `cross_relation` | MusicalFail | No chromatic pitch-class conflict between voices within a beat window. Both-material pairs exempt. |
+| `cross_relation` | MusicalFail | Voices sound the same scale degree in the local key at the later onset, with different inflections, either simultaneously or at adjacent note onsets (neither voice has another onset strictly between them). Natural semitone pairs between different degrees are excluded. The partial-placement pre-check remains beat-wide; FinalScore uses completed-score onset adjacency. Both-material pairs are exempt during Generation only; FinalScore audits every source, and the form's vertical budget decides whether observed findings close the form. |
 | `secondary_dominant_resolution` | MusicalFail | A chord marked `V/x` is followed by degree `x`. |
 | `modulation_pivot_chord_required` | MusicalFail | A pivot modulation's pivot chord is diatonic in both keys. |
 

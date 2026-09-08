@@ -5,7 +5,7 @@ description: A staff-notation course on the Baroque counterpoint rules enforced 
 
 # Counterpoint Course
 
-MIDI Sketch Bach does not treat counterpoint as decorative theory text. Each form builder authors the musical lines, the composer replays those lines through material carriers, and the validator checks the result against 57 named rule IDs. Scored note search is separate and off by default; `--free-counterpoint` enables it only for the Passacaglia counterline. This course teaches the constraints as small, checkable contracts, each shown on staff notation you can also listen to.
+MIDI Sketch Bach does not treat counterpoint as decorative theory text. Each form builder authors the musical lines, the composer replays those lines through material carriers, and the validator checks the result against named rule IDs. Scored note search is separate and off by default; `--free-counterpoint` enables it only for the Passacaglia counterline. This course teaches the constraints as small, checkable contracts, each shown on staff notation you can also listen to.
 
 ::: tip Start here if the words are new
 The course defines each rule locally, but it assumes the basic nouns **voice**, **bar**, **chord**, **interval**, **fifth**, **cadence**, and **metric accent**. The short foundation — including how to read the staff figures and how meter assigns strong, medium, and weak positions — is [Music Primer for Engineers](/docs/music-primer).
@@ -18,11 +18,11 @@ A rule ID such as `parallel_fifth` is the *end* of a chain of musical reasoning.
 | Chapter | What you learn | Rules covered |
 |---------|----------------|---------------|
 | [1. Intervals & Consonance](/docs/counterpoint/intervals) | How two simultaneous notes are classified: perfect, imperfect, dissonant, and the ambivalent fourth | foundation for all vertical rules |
-| [2. Motion & Forbidden Parallels](/docs/counterpoint/motion) | The four types of relative motion; why parallel and hidden perfects are banned; crossing, spacing, invertible counterpoint | `parallel_fifth`, `parallel_octave`, `hidden_parallel_fifth`, `hidden_parallel_octave`, `voice_crossing`, `spacing_adjacent_voices_within_octave`, `invertible_at_octave` |
-| [3. Dissonance Treatment](/docs/counterpoint/dissonance) | Structural accents demand chord tones; weak positions tolerate passing and neighbor tones; the four suspension figures | `strong_beat_dissonance`, `vertical_dissonance`, `unprepared_dissonance`, `suspension_preparation`, `suspension_resolution_step_down`, `suspension_seventh_sixth` |
+| [2. Motion & Forbidden Parallels](/docs/counterpoint/motion) | The four types of relative motion; strict and contrary perfect-motion checks; hidden perfects, crossing, spacing, and invertible counterpoint | `parallel_fifth`, `parallel_octave`, `anti_parallel_perfect`, `battuta`, `hidden_parallel_fifth`, `hidden_parallel_octave`, `voice_crossing`, `spacing_adjacent_voices_within_octave`, `invertible_at_octave` |
+| [3. Dissonance Treatment](/docs/counterpoint/dissonance) | Structural accents demand chord tones; weak positions tolerate passing and neighbor tones; the four suspension figures | `strong_beat_dissonance`, `vertical_dissonance`, `unprepared_dissonance`, `suspension_preparation`, `suspension_preparation_duration`, `suspension_metrical_accent`, `suspension_resolution_step_down`, `suspension_interval`, `suspension_seventh_sixth` |
 | [4. Melodic Writing](/docs/counterpoint/melody) | Each voice judged as a line: forbidden leaps, leap recovery, the leading tone's obligation | `augmented_melodic`, `diminished_melodic`, `tritone_melodic`, `consecutive_leaps`, `leading_tone_resolution`, `voice_range_integrity` |
 | [5. Tonal Grammar](/docs/counterpoint/tonality) | The seven cadence types, tendency-tone doubling, cross relations, applied dominants, pivot modulation | `cadence_voice_leading`, `doubling_no_leading_tone`, `doubling_no_seventh`, `cross_relation`, `secondary_dominant_resolution`, `modulation_pivot_chord_required` |
-| [6. Fugal Devices](/docs/counterpoint/fugue) | Subject and answer, countersubject, episodes and sequences, imitation, stretto, pedal points | `tonal_answer_dominant_mapping`, `countersubject_continuous`, `episode_motif_derived`, `sequence_pattern_consistency`, `imitation_entry_match`, `middle_entry_in_related_key`, `stretto_overlap_valid`, `pedal_point_tonic_or_dominant` |
+| [6. Fugal Devices](/docs/counterpoint/fugue) | Subject and answer, countersubject, episodes and sequences, imitation, stretto, pedal points | `tonal_answer_dominant_mapping`, `countersubject_continuous`, `countersubject_invertible`, `episode_motif_derived`, `sequence_pattern_consistency`, `imitation_entry_match`, `imitation_entry_realization`, `middle_entry_in_related_key`, `stretto_overlap_valid`, `pedal_point_tonic_or_dominant` |
 | [7. Form-Specific Constraints](/docs/counterpoint/form-constraints) | Immutable grounds and cantus firmi, figuration harmony, implied voices in solo strings, phrase grids, texture rules | `ground_bass_immutable`, `passacaglia_ground_immutable`, `cantus_firmus_immutable`, `variation_role_ornament_constraint`, `figuration_harmonic_consistency`, `toccata_archetype_compatible`, `implicit_voice_counterpoint`, `arpeggio_no_parallel_perfect`, `phrase_periodicity_4_or_8_bar`, `anacrusis_consistent`, `pedal_range_soft_penalty`, `voice_independence_threshold`, `section_contrast_required` |
 
 For the flat, debugging-oriented index of every rule ID, see the [Validator Rule Reference](/docs/validator-rules).
@@ -47,7 +47,7 @@ How to inspect an example:
 
 ## How the engine applies these rules
 
-The public generation path is `bach_generate_from_json`: parse config, resolve the form and bar count, build a form fixture, run the composer, validate it, optionally apply ornaments (never on immutable ground or cantus-firmus voices), assign instruments, then export MIDI and event JSON. Counterpoint validation lives in `../midi-sketch-bach/src/composer/validator.cpp`; material declarations live in `material.h`.
+The public generation path is `bach_generate_from_json`: parse config, resolve the form and bar count, build a form fixture, run the composer, validate the generated score, apply the ornament pass, validate the `FinalScore`, and apply the form's counterpoint budget. For a passing score it applies the velocity curve, snapshots the notated notes, applies articulation, re-renders the tracks, assigns instruments, adds CC and tempo events, and exports MIDI and event JSON. Validation reports and the successful `generated.v1` audit retain the notated lengths used for validation; tracks, MIDI, and public event data use the lengths heard in performance after articulation. Counterpoint validation lives in `../midi-sketch-bach/src/composer/validator.cpp`; material declarations live in `material.h`.
 
 The validator separates local sonority from source ownership:
 
@@ -55,11 +55,11 @@ The validator separates local sonority from source ownership:
 |------|-----------------------|
 | Compose note | A note produced by scored search. No default form uses this path; `--free-counterpoint` routes only the Passacaglia counterline through it. |
 | Material note | An authored subject, answer, ground bass, cantus firmus, variation, or other carrier payload replayed verbatim. This is the default generation path. |
-| Immutable carrier | Ground bass, passacaglia ground, or cantus firmus. These voices are exempt from the ornament pass so the structural line stays recognizable. |
+| Immutable carrier | Ground bass, passacaglia ground, or the bar-head skeleton of a cantus firmus. Ground carriers are exempt from the ornament pass; cantus-firmus bar heads stay plain while eligible within-bar notes can still receive decoration. |
 | Structural accent | The downbeat plus meter-specific medium accents: beat 3 in 4/4, dotted pulses in compound meter, beat 2 in a Sarabande, and the midpoint of longer even simple meters ([primer](/docs/music-primer#strong-and-weak-beats)). |
 | Weak position | A position outside that accent grid, where prepared non-chord tones can function as passing or ornamental tones. |
 
-Several checks are skipped when **both** notes of a pair are fixed Material notes, because the composer cannot rewrite carrier inputs. If either side is a generated Compose note, the problem is considered fixable and the rule fires, blaming the Compose side.
+For the counterpoint observations routed through the recorder, `Generation` records a finding as an exemption when all operands are fixed `Material` or `Ornament` notes because that pass cannot rewrite its inputs. `FinalScore` evaluates authored material again: an all-authored observation is retained as informational evidence, while an observation with a generated side can remain a failure. After that audit, `applyCounterpointBudget` turns observed vertical findings into a form-level failure for closed rules; linear observations remain measured. Direct structural and integrity checks have their own failure paths. Thus a fixed-material match is not globally erased, and the final status depends on the form's measured vertical budget.
 
 ## Failure kinds
 
@@ -68,7 +68,7 @@ Every reported failure carries a `FailKind` that tells you which layer broke:
 | Kind | Meaning | Rules that use it |
 |------|---------|-------------------|
 | `MusicalFail` | A counterpoint or harmony contract was violated. The default for almost all rules. | parallels, dissonance, melodic, doubling, fugal, phrase, and texture rules |
-| `StructuralFail` | The form's structural promise was broken. | `ground_bass_immutable`, `passacaglia_ground_immutable`, `cantus_firmus_immutable`; also `cadence_voice_leading` when the cadence layout itself is malformed |
+| `StructuralFail` | The form's structural promise was broken. | `ground_bass_immutable`, `passacaglia_ground_immutable`, `goldberg_aria_bass_immutable`, `cantus_firmus_immutable`; also `cadence_voice_leading` when the cadence layout itself is malformed |
 | `ConfigFail` | The request itself was invalid (reported before composition). | configuration validation, not counterpoint rules |
 
 ::: tip Practical mental model
@@ -77,7 +77,7 @@ The form builder authors the musical object and material carriers replay it verb
 
 ## Reading a validation report
 
-Validation runs after carrier assembly. A violation aborts generation; the composer does not repair the span or emit a fallback note. Diagnostics therefore come in two shapes: the failed-run report, and the per-note provenance audit trail for a successful piece.
+Generation validation runs after carrier assembly, and a blocking generation violation aborts the public request; the composer does not repair the span or emit a fallback note. The ornament pass then runs a `FinalScore` audit, followed by the form-specific vertical budget, so a post-ornament failure can also abort before output. Diagnostics therefore come in two shapes: the failed-run report, and the per-note provenance audit trail for a successful piece.
 
 **1. The failure lines.** A hard failure prints one line per violation (native CLI, exit code 3):
 
@@ -103,9 +103,9 @@ jq '.notes[42] | {start_tick, pitch, voice}' piece.generated.json
 
 With 480 ticks per quarter (the file's `ticks_per_beat` field) and four beats to the bar, `start_tick / 1920` is the zero-based bar number: a note at tick 26880 opens bar 15. It is a structural accent because it is the downbeat; in 4/4, beat 3 is another structural accent checked by `strong_beat_dissonance` (chapter 3).
 
-**4. Read the chain backwards.** From here the course is the decoder. `parallel_fifth` (chapter 2): compare the flagged pair with the *previous* pair — both voices moved and both vertical intervals were perfect fifths — then check the exemptions (oblique motion? cadence cell? both notes Material?). `strong_beat_dissonance` (chapter 3): is the note at that structural accent a chord tone of the declared harmony? Every chapter ends with the same table — rule, FailKind, exemptions — for precisely this lookup.
+**4. Read the chain backwards.** From here the course is the decoder. `parallel_fifth` (chapter 2): compare the flagged pair with the *previous* pair — both voices moved in the same direction and both vertical intervals were perfect fifths — then check the cadence and provenance scope. `anti_parallel_perfect` and `battuta` are separate contrary-motion checks. `strong_beat_dissonance` (chapter 3): is the note at that structural accent a chord tone of the declared harmony? Every chapter ends with the same table — rule, FailKind, exemptions — for precisely this lookup.
 
-**5. The audit trail on success.** Every note's provenance row records `source` (Material / Compose / Ornament), scoring fields, and `satisfied_rules`, the rule-bit mask stamped on the note. Default carrier replay produces Material rows; candidate scores and rejected alternatives describe scored selection only on the opt-in Passacaglia counterline. The chapter-2 exemption "skipped when both notes are Material" becomes visible here: two adjacent `"source": "Material"` rows explain why generation-time pair checks cannot ask the composer to rewrite that fixed pair.
+**5. The audit trail on success.** Every note's provenance row records `source` (Material / Compose / Ornament), scoring fields, and `satisfied_rules`, the rule-bit mask stamped on the note. Default carrier replay produces Material rows; candidate scores and rejected alternatives describe scored selection only on the opt-in Passacaglia counterline. Fixed-source pair findings are recorded as generation-time exemptions, then the full lifecycle — including `FinalScore` and the form budget — remains visible in the diagnostic validation result.
 
 ::: info The web demo and the full trail
 The JavaScript/WASM library exposes `getDiagnostic()`, `getGenerated()`, and `getProvenance()` in addition to `getEvents()`. This homepage's UI wrapper currently consumes only events. Use the library methods for failed-run diagnostics and the two index-parallel audit objects, or use the native CLI sidecars shown above.

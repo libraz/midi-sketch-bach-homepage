@@ -17,24 +17,7 @@ MIDI Sketch Bach is an algorithmic composition engine that generates Baroque-sty
 
 A C++ composer engine is compiled to WebAssembly, with a JavaScript API on top:
 
-```mermaid
-graph TD
-    subgraph JS["JavaScript API"]
-        A["init() / BachGenerator / presets"]
-    end
-    subgraph EM["Emscripten Bridge"]
-        B["JS ↔ WASM bindings"]
-    end
-    subgraph CORE["Composer Engine — C++ → WASM"]
-        C["Form Director"]
-        D["Carrier Replay<br>+ Opt-in Search"]
-        E["Generation Validation<br>+ Initial Render"]
-        F["Ornament + Final Validation<br>+ Expression"]
-        G["MIDI + Event Export"]
-        C --> D --> E --> F --> G
-    end
-    JS --> EM --> CORE
-```
+![Three layers: the JavaScript API, the Emscripten bridge, and the composer engine compiled from C++ to WebAssembly](/images/wasm-stack.svg)
 
 ## The Composer Engine
 
@@ -49,9 +32,9 @@ The pipeline is:
 1. **Compose Request** — resolve and validate the config; resolve the seed; fix voice count / meter / length from the form.
 2. **Form Director** — assign per-form voice intents (subjects, grounds, cantus firmus, figuration, variations) to bar spans.
 3. **Candidate Search** — dispatch each span; all default shipped spans replay authored carrier material verbatim.
-4. **Generation Validation & Renderer** — accumulate counterpoint and structure failures, then render the assembled voices to tracks.
-5. **Ornament & Final Validation** — apply deterministic ornaments, then validate the complete score.
-6. **Velocity, CC & Tempo** — apply velocity and re-render; add CC 7/CC 11 and tempo events.
+4. **Generation Validation & Initial Renderer** — accumulate counterpoint and structure failures, then render the assembled voices to initial tracks.
+5. **Ornament** — apply deterministic ornaments to eligible notes.
+6. **Final Validation & Expression** — run `FinalScore` and the form budget, apply velocity, save the notated snapshot, apply articulation, re-render, then add CC 7/CC 11 and tempo events.
 7. **MIDI & Event Export** — transpose pitches into the output key and emit the Standard MIDI File and public event data.
 
 The scored search branch is off by default and contributes no notes to default output. `--free-counterpoint` reroutes only `passacaglia` V1 (`voice == 1`); other forms report that free counterpoint is unavailable.
@@ -61,6 +44,8 @@ See the [Generation Pipeline](/docs/generation-pipeline) for a step-by-step brea
 ## Design-Value Arc
 
 Structure follows a fixed design arc — **establish → develop → climax (at ~80% of the span) → resolve** — that controls density, register, and velocity tiers. The arc is a property of the form, not something searched per seed, which keeps output musically shaped and reproducible.
+
+![A curve rising through the establish and develop phases, peaking at about 80% of the span, then falling through the resolve phase](/images/design-arc.svg)
 
 ::: info Density, register, velocity
 **Density** is how many notes happen in a span. **Register** is pitch height, such as low bass or high treble. **Velocity** is MIDI note intensity. The arc raises and lowers these values so the output has phrase shape instead of a flat stream of notes.
@@ -77,10 +62,10 @@ The form director handles several layout families:
 
 ## Determinism
 
-The engine is fully deterministic: the same config and seed produce byte-identical output. Composition and validation run internally in C. Output serialization applies the requested key and any output-octave shift to both the MIDI file and the pitches returned by `getEvents()`. The lower-level `generated.v1` artifact retains the internal C pitches.
+For an explicit non-zero seed, the same config and seed produce byte-identical output. With `seed: 0`, the runtime chooses a new seed. Composition and validation run internally in C. Output serialization applies the requested key and any output-octave shift to both the MIDI file and the pitches returned by `getEvents()`. The lower-level `generated.v1` artifact retains the internal C pitches and the notated durations captured before articulation.
 
 ::: info Two event representations
-Use `getEvents()` when you need the notes as they sound in the selected output key. Use `generated.v1` for internal diagnostics whose pitches must stay comparable across keys.
+Use `getEvents()` when you need the notes as they sound in the selected output key, including articulated playback durations. Use `generated.v1` for internal diagnostics whose pitches and notated durations must stay comparable across keys.
 :::
 
 ## WASM Integration

@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" width="960" height="340" role="img" aria-labelledby="ttl dsc">
+  <title id="ttl">The seven steps of a generate() call</title>
+  <desc id="dsc">A config enters at the top left and runs through seven fixed steps: compose request, form director, candidate search, rule validator, renderer, final validation and expression, and MIDI and event export. The finalization step applies ornaments, validates FinalScore and the form budget, applies velocity, saves the notated snapshot, applies articulation, re-renders, then adds CC and tempo. The row wraps from the third step down to the fourth. A side branch shows that a blocking validation failure aborts the run and returns the report instead of producing output.</desc>
+
+  <style>
+    .bg    { fill:#f7f5f1 }
+    .grp   { fill:#edeae4 }
+    .chip  { fill:#ffffff; stroke:#d7d4cd }
+    .card  { fill:#ffffff; stroke:#8a6a1f }
+    .alt   { fill:#ffffff; stroke:#3f6b8a }
+    .seam  { fill:none; stroke:#b8b4ac; stroke-dasharray:6 5 }
+    .rule  { fill:none; stroke:#b8b4ac; stroke-width:1 }
+    .ln    { fill:none; stroke:#8a6a1f; stroke-width:1.4 }
+    .ln2   { fill:none; stroke:#3f6b8a; stroke-width:1.4 }
+    .ah    { fill:#8a6a1f }
+    .ah2   { fill:#3f6b8a }
+    .fill1 { fill:#8a6a1f; opacity:.16 }
+    .fill2 { fill:#3f6b8a; opacity:.16 }
+    .warn  { fill:none; stroke:#a3401f; stroke-width:1.6 }
+    .warnt { fill:#a3401f }
+    text   { font-family:Inter,"Helvetica Neue","Hiragino Sans","Noto Sans JP",Arial,sans-serif; fill:#1f2328 }
+    .h     { font-size:12.5px }
+    .lbl   { font-size:11px; fill:#6e7781; letter-spacing:.06em }
+    .s     { font-size:10.5px; fill:#6e7781 }
+    .mono  { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:10.5px; fill:#8a6a1f }
+    @media (prefers-color-scheme: dark) {
+      .bg{fill:#0d1117} .grp{fill:#12171d}
+      .chip{fill:#161b22;stroke:#30363d} .card{fill:#161b22;stroke:#d9b45c} .alt{fill:#161b22;stroke:#7fb3d5}
+      .seam{stroke:#484f58} .rule{stroke:#484f58}
+      .ln{stroke:#d9b45c} .ln2{stroke:#7fb3d5} .ah{fill:#d9b45c} .ah2{fill:#7fb3d5}
+      .fill1{fill:#d9b45c} .fill2{fill:#7fb3d5}
+      .warn{stroke:#e08a68} .warnt{fill:#e08a68} .mono{fill:#d9b45c}
+      text{fill:#e6edf3} .lbl{fill:#8b949e} .s{fill:#8b949e}
+    }
+  </style>
+
+  <defs>
+    <marker id="a" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path class="ah" d="M0,0 L9,4.5 L0,9 z"/>
+    </marker>
+    <marker id="c" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path class="warnt" d="M0,0 L9,4.5 L0,9 z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="960" height="340" rx="12"/>
+
+  <rect class="chip" x="36" y="62" width="204" height="66" rx="6"/>
+  <text class="mono" x="48" y="84">BachConfig</text>
+  <text class="s" x="48" y="102">form, key, isMinor, character,</text>
+  <text class="s" x="48" y="114">bpm, seed, scale / targetBars</text>
+
+  <path class="ln" d="M 240 95 H 264" marker-end="url(#a)"/>
+
+  <rect class="card" x="264" y="62" width="204" height="66" rx="6"/>
+  <text class="h" x="276" y="84">1 · Compose Request</text>
+  <text class="s" x="276" y="102">defaults filled in, the seed</text>
+  <text class="s" x="276" y="114">resolved, the request validated</text>
+
+  <path class="ln" d="M 468 95 H 492" marker-end="url(#a)"/>
+
+  <rect class="card" x="492" y="62" width="204" height="66" rx="6"/>
+  <text class="h" x="504" y="84">2 · Form Director</text>
+  <text class="s" x="504" y="102">voice intents laid out over bar</text>
+  <text class="s" x="504" y="114">spans, following the design arc</text>
+
+  <path class="ln" d="M 696 95 H 720" marker-end="url(#a)"/>
+
+  <rect class="card" x="720" y="62" width="204" height="66" rx="6"/>
+  <text class="h" x="732" y="84">3 · Candidate Search</text>
+  <text class="s" x="732" y="102">every span dispatched; shipped</text>
+  <text class="s" x="732" y="114">forms replay authored carriers</text>
+
+  <path class="ln" d="M 822 128 V 148 H 138 V 168" marker-end="url(#a)"/>
+
+  <rect class="card" x="36" y="170" width="204" height="66" rx="6"/>
+  <text class="h" x="48" y="192">4 · Rule Validator</text>
+  <text class="s" x="48" y="210">counterpoint and structure</text>
+  <text class="s" x="48" y="222">failures accumulated with spans</text>
+
+  <path class="ln" d="M 240 203 H 264" marker-end="url(#a)"/>
+
+  <rect class="card" x="264" y="170" width="204" height="66" rx="6"/>
+  <text class="h" x="276" y="192">5 · Initial Renderer</text>
+  <text class="s" x="276" y="210">voices become tracks, one per</text>
+  <text class="s" x="276" y="222">voice, with channel and program</text>
+
+  <path class="ln" d="M 468 203 H 492" marker-end="url(#a)"/>
+
+  <rect class="card" x="492" y="170" width="204" height="66" rx="6"/>
+  <text class="h" x="504" y="190">6 · Finalize &amp; Express</text>
+  <text class="s" x="504" y="204">ornament → FinalScore + budget</text>
+  <text class="s" x="504" y="216">velocity → notated → articulation</text>
+  <text class="s" x="504" y="228">re-render → CC / tempo</text>
+
+  <path class="ln" d="M 696 203 H 720" marker-end="url(#a)"/>
+
+  <rect class="card" x="720" y="170" width="204" height="66" rx="6"/>
+  <text class="h" x="732" y="192">7 · MIDI &amp; Event Export</text>
+  <text class="s" x="732" y="210">the output key applied, then a</text>
+  <text class="s" x="732" y="222">Type 1 SMF and event data</text>
+
+  <path class="warn" d="M 138 236 V 254" marker-end="url(#c)"/>
+  <rect class="chip" x="36" y="256" width="300" height="28" rx="6"/>
+  <text class="warnt" style="font-size:10.5px" x="186" y="274" text-anchor="middle">a blocking failure aborts and returns the report</text>
+
+  <path class="ln" d="M 822 236 V 254" marker-end="url(#a)"/>
+  <rect class="chip" x="720" y="256" width="204" height="28" rx="6"/>
+  <text class="mono" x="822" y="274" text-anchor="middle">getMidi() · getEvents()</text>
+
+  <path class="seam" d="M 24 302 H 936"/>
+  <text class="s" x="480" y="322" text-anchor="middle">With a fixed non-zero seed, the same config follows this path to identical bytes; seed 0 resolves a new seed.</text>
+</svg>

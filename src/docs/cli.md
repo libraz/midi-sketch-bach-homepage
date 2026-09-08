@@ -33,17 +33,17 @@ The npm package is unpublished and does not expose a CLI executable. Run the nat
 |--------|-------|------|---------|-------------|
 | `--form <value>` | | string | `fugue` | Musical form name |
 | `--key <value>` | | string | `c_major` | Key name such as `c_major`, `g_minor`, `F_major` |
-| `--character <value>` | | string | `severe` | Subject character (`severe`, `playful`, `noble`, `restless`) |
+| `--character <value>` | | string | `severe` | Subject character (`severe`, `playful`, `noble`, `restless`). Shapes the musical material, note articulation, and MIDI expression levels; see [Instruments](/docs/physical-models). |
 | `--instrument <value>` | | string | Form default | Instrument the form accepts (`organ`, `harpsichord`, `piano`, `violin`, `cello`, `guitar`) |
 | `--bpm <value>` | | number | `100` | Starting tempo in BPM (40--200) |
 | `--seed <value>` | | number | `0` | Random seed (0 = random; resolved seed is reported) |
-| `--scale <value>` | | string | `short` | Length multiplier (`short`, `medium`, `long`, `full`) |
-| `--bars <value>` | | number | -- | Target bar count (overrides `--scale`) |
+| `--scale <value>` | | string | `short` | Length multiplier (`short`, `medium`, `long`, `full`). For the Goldberg Variations, `full` selects the complete 128-bar layout |
+| `--bars <value>` | | number | -- | Recommended integer range: 0--128. `0` uses `--scale`; a positive value overrides it and is then snapped to the form's grid. The parser accepts wider `uint16` inputs; see [Option Relationships](/docs/option-relationships) for accepted bounds and large-value behavior |
 | `--free-counterpoint` | | boolean | `false` | Experimental: generate the Passacaglia secondary counterline by scored search. Other forms exit with an unavailable diagnostic |
 | `-o <path>` | | string | `output.mid` | Output file path |
 | `--json` | | boolean | `false` | Write event data beside the MIDI file as `.json` |
-| `--generated-json` | | boolean | `false` | Emit `generated.v1` + `provenance.v1` JSON for scoring (developer) |
-| `--composer-phase <value>` | | string | -- | Developer harness mode for pinned composer phases. Cannot be combined with the options above |
+| `--generated-json` | | boolean | `false` | Emit `generated.v1` + `provenance.v1` JSON for scoring (developer). `generated.v1` keeps notated durations; MIDI and event JSON use played, articulated durations |
+| `--composer-phase <value>` | | string | -- | Developer harness mode for pinned composer phases. Cannot be combined with product options (`--form`, `--character`, `--instrument`, `--bpm`, `--scale`, `--bars`, `--free-counterpoint`) |
 | `--help` | `-h` | boolean | -- | Show usage |
 
 ::: warning Removed flags
@@ -182,7 +182,7 @@ Generate the default piece (Fugue in C major):
 ### Output JSON Event Data
 
 ```bash
-./build/bin/bach_cli --form fugue --key d_minor --json -o fugue.mid
+./build/bin/bach_cli --form fugue --key d_minor --bpm 80 --seed 12345 --json -o fugue.mid
 ```
 
 This writes `fugue.mid` and `fugue.json`. `--generated-json` adds `fugue.generated.json` and `fugue.provenance.json`. When `-o` already ends in `.json`, the sidecars are appended to that name rather than replacing its extension, so the output file is never overwritten by its own sidecar.
@@ -191,7 +191,9 @@ This writes `fugue.mid` and `fugue.json`. `--generated-json` adds `fugue.generat
 
 When using `--json`, the sidecar JSON follows the [EventData](/docs/api-js#eventdata) structure:
 
-The events JSON reports the same output-key pitches as the `.mid` file, including any octave shift needed for the instrument's range. The `generated.v1` sidecar keeps the engine's internal C pitches. Every event note also carries a `source` provenance tag (`"material"`, `"compose"`, or `"ornament"`).
+The events JSON reports the same output-key pitches as the `.mid` file, including any octave shift needed for the instrument's range. The [`generated.v1` sidecar](/docs/api-js#generated-v1-wire-fields) keeps the engine's internal C pitches. The [`provenance.v1` sidecar](/docs/api-js#getprovenance) records how each generated note was chosen. Every event note also carries a `source` provenance tag (`"material"`, `"compose"`, or `"ornament"`).
+
+The excerpt below shows one track and one note from current output. `note_count` is the complete count for that track; the shown `notes` and `control_changes` arrays are abbreviated, with remaining notes, controller events, and tracks omitted.
 
 ```json
 {
@@ -214,10 +216,10 @@ The events JSON reports the same output-key pitches as the `.mid` file, includin
   ],
   "tracks": [
     {
-      "name": "Soprano",
+      "name": "Voice 0",
       "channel": 0,
       "program": 19,
-      "note_count": 128,
+      "note_count": 264,
       "control_changes": [
         { "tick": 0, "controller": 7, "value": 75 }
       ],

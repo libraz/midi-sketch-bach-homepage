@@ -39,6 +39,10 @@ bun add @libraz/midi-sketch-bach
 
 ## Quick Example
 
+Every session has the same shape: initialize the module once, create a generator, generate, read the result, and free it again.
+
+![init, then new BachGenerator, then generate; the result is read through getMidi, getEvents, getInfo and getDiagnostic, and destroy frees the WASM memory](/images/generator-lifecycle.svg)
+
 ```js
 import { init, BachGenerator } from '@libraz/midi-sketch-bach'
 import { writeFileSync } from 'fs'

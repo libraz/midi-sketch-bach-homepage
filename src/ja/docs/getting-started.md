@@ -39,6 +39,10 @@ bun add @libraz/midi-sketch-bach
 
 ## クイックスタート
 
+どのセッションも形は同じです。モジュールを一度初期化し、ジェネレーターを作り、生成し、結果を読み、解放します。
+
+![init のあとに new BachGenerator、そして generate。結果は getMidi・getEvents・getInfo・getDiagnostic から読み、destroy が WASM メモリを解放する](/images/generator-lifecycle-ja.svg)
+
 ```js
 import { init, BachGenerator } from '@libraz/midi-sketch-bach'
 import { writeFileSync } from 'fs'

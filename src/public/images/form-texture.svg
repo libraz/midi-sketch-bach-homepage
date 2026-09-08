@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 284" width="960" height="284" role="img" aria-labelledby="ttl dsc">
+  <title id="ttl">Picking the form picks the texture</title>
+  <desc id="dsc">Three forms shown side by side as voice lanes. The fugue has three lanes with staggered theme entries and episodes between them. The cello prelude has a single continuous lane. The chaconne declares three lanes: V0 variation, V1 middle material that starts as a rest and may rest for bars or cycles where no clean register placement exists, and V2 ground. Each card also lists the voice count, meter, length and the instrument the form accepts.</desc>
+
+  <style>
+    .bg    { fill:#f7f5f1 }
+    .grp   { fill:#edeae4 }
+    .chip  { fill:#ffffff; stroke:#d7d4cd }
+    .card  { fill:#ffffff; stroke:#8a6a1f }
+    .alt   { fill:#ffffff; stroke:#3f6b8a }
+    .seam  { fill:none; stroke:#b8b4ac; stroke-dasharray:6 5 }
+    .rule  { fill:none; stroke:#b8b4ac; stroke-width:1 }
+    .ln    { fill:none; stroke:#8a6a1f; stroke-width:1.4 }
+    .ln2   { fill:none; stroke:#3f6b8a; stroke-width:1.4 }
+    .ah    { fill:#8a6a1f }
+    .ah2   { fill:#3f6b8a }
+    .fill1 { fill:#8a6a1f; opacity:.16 }
+    .fill2 { fill:#3f6b8a; opacity:.16 }
+    .warn  { fill:none; stroke:#a3401f; stroke-width:1.6 }
+    .warnt { fill:#a3401f }
+    text   { font-family:Inter,"Helvetica Neue","Hiragino Sans","Noto Sans JP",Arial,sans-serif; fill:#1f2328 }
+    .h     { font-size:12.5px }
+    .lbl   { font-size:11px; fill:#6e7781; letter-spacing:.06em }
+    .s     { font-size:10.5px; fill:#6e7781 }
+    .mono  { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:10.5px; fill:#8a6a1f }
+    @media (prefers-color-scheme: dark) {
+      .bg{fill:#0d1117} .grp{fill:#12171d}
+      .chip{fill:#161b22;stroke:#30363d} .card{fill:#161b22;stroke:#d9b45c} .alt{fill:#161b22;stroke:#7fb3d5}
+      .seam{stroke:#484f58} .rule{stroke:#484f58}
+      .ln{stroke:#d9b45c} .ln2{stroke:#7fb3d5} .ah{fill:#d9b45c} .ah2{fill:#7fb3d5}
+      .fill1{fill:#d9b45c} .fill2{fill:#7fb3d5}
+      .warn{stroke:#e08a68} .warnt{fill:#e08a68} .mono{fill:#d9b45c}
+      text{fill:#e6edf3} .lbl{fill:#8b949e} .s{fill:#8b949e}
+    }
+  </style>
+
+  <rect class="bg" x="0" y="0" width="960" height="284" rx="12"/>
+
+  <rect class="grp" x="24" y="52" width="288" height="176" rx="8"/>
+  <text class="mono" x="40" y="76">form: 'fugue'</text>
+  <rect class="card" x="40"  y="96"  width="76" height="14" rx="3"/>
+  <rect class="alt"  x="132" y="96"  width="56" height="14" rx="3"/>
+  <rect class="card" x="200" y="96"  width="96" height="14" rx="3"/>
+  <rect class="card" x="86"  y="116" width="76" height="14" rx="3"/>
+  <rect class="alt"  x="174" y="116" width="56" height="14" rx="3"/>
+  <rect class="card" x="242" y="116" width="54" height="14" rx="3"/>
+  <rect class="card" x="132" y="136" width="76" height="14" rx="3"/>
+  <rect class="card" x="220" y="136" width="76" height="14" rx="3"/>
+  <text class="s" x="40" y="166">three voices, entries staggered</text>
+  <text class="s" x="40" y="184">3 voices · 4/4</text>
+  <text class="s" x="40" y="198">42 reference bars → 44 output</text>
+  <text class="s" x="40" y="212">organ — the only accepted instrument</text>
+
+  <rect class="grp" x="336" y="52" width="288" height="176" rx="8"/>
+  <text class="mono" x="352" y="76">form: 'cello_prelude'</text>
+  <rect class="alt" x="352" y="116" width="82" height="14" rx="3"/>
+  <rect class="alt" x="439" y="116" width="82" height="14" rx="3"/>
+  <rect class="alt" x="526" y="116" width="82" height="14" rx="3"/>
+  <text class="s" x="352" y="166">one continuous line</text>
+  <text class="s" x="352" y="184">1 voice · 4/4</text>
+  <text class="s" x="352" y="198">8 bars, with no snapping needed</text>
+  <text class="s" x="352" y="212">cello — the only accepted instrument</text>
+
+  <rect class="grp" x="648" y="52" width="288" height="176" rx="8"/>
+  <text class="mono" x="664" y="76">form: 'chaconne'</text>
+  <rect class="card"  x="664" y="98" width="58" height="10" rx="3"/>
+  <rect class="card"  x="730" y="98" width="58" height="10" rx="3"/>
+  <rect class="card"  x="796" y="98" width="58" height="10" rx="3"/>
+  <rect class="card"  x="862" y="98" width="58" height="10" rx="3"/>
+  <rect class="fill2" x="728" y="112" width="60" height="10" rx="3"/>
+  <rect class="fill2" x="856" y="112" width="64" height="10" rx="3"/>
+  <rect class="fill1" x="664" y="126" width="60" height="10" rx="3"/>
+  <rect class="fill1" x="728" y="126" width="60" height="10" rx="3"/>
+  <rect class="fill1" x="792" y="126" width="60" height="10" rx="3"/>
+  <rect class="fill1" x="856" y="126" width="64" height="10" rx="3"/>
+  <text class="s" x="664" y="166">V0 variation + V1 middle over V2 ground</text>
+  <text class="s" x="664" y="184">3 voices · 3/4; V1 may rest by bar</text>
+  <text class="s" x="664" y="198">16 bars, in three-time</text>
+  <text class="s" x="664" y="212">violin — the only accepted instrument</text>
+
+  <path class="seam" d="M 24 248 H 936"/>
+  <text class="s" x="480" y="268" text-anchor="middle">There is no voice-count option. numVoices and num_voices are still accepted for compatibility, and ignored.</text>
+</svg>

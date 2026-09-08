@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 366" width="960" height="366" role="img" aria-labelledby="ttl dsc">
+  <title id="ttl">The shape of a session</title>
+  <desc id="dsc">Three calls in order across the top: await init, new BachGenerator, and generator.generate with a config. The result is then read through six accessors — getMidi, getEvents, getGenerated, getProvenance, getDiagnostic and getInfo — in any order and as often as wanted. Finally generator.destroy frees the WASM memory the instance took.</desc>
+
+  <style>
+    .bg    { fill:#f7f5f1 }
+    .grp   { fill:#edeae4 }
+    .chip  { fill:#ffffff; stroke:#d7d4cd }
+    .card  { fill:#ffffff; stroke:#8a6a1f }
+    .alt   { fill:#ffffff; stroke:#3f6b8a }
+    .seam  { fill:none; stroke:#b8b4ac; stroke-dasharray:6 5 }
+    .rule  { fill:none; stroke:#b8b4ac; stroke-width:1 }
+    .ln    { fill:none; stroke:#8a6a1f; stroke-width:1.4 }
+    .ln2   { fill:none; stroke:#3f6b8a; stroke-width:1.4 }
+    .ah    { fill:#8a6a1f }
+    .ah2   { fill:#3f6b8a }
+    .fill1 { fill:#8a6a1f; opacity:.16 }
+    .fill2 { fill:#3f6b8a; opacity:.16 }
+    .warn  { fill:none; stroke:#a3401f; stroke-width:1.6 }
+    .warnt { fill:#a3401f }
+    text   { font-family:Inter,"Helvetica Neue","Hiragino Sans","Noto Sans JP",Arial,sans-serif; fill:#1f2328 }
+    .h     { font-size:12.5px }
+    .lbl   { font-size:11px; fill:#6e7781; letter-spacing:.06em }
+    .s     { font-size:10.5px; fill:#6e7781 }
+    .mono  { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:10.5px; fill:#8a6a1f }
+    @media (prefers-color-scheme: dark) {
+      .bg{fill:#0d1117} .grp{fill:#12171d}
+      .chip{fill:#161b22;stroke:#30363d} .card{fill:#161b22;stroke:#d9b45c} .alt{fill:#161b22;stroke:#7fb3d5}
+      .seam{stroke:#484f58} .rule{stroke:#484f58}
+      .ln{stroke:#d9b45c} .ln2{stroke:#7fb3d5} .ah{fill:#d9b45c} .ah2{fill:#7fb3d5}
+      .fill1{fill:#d9b45c} .fill2{fill:#7fb3d5}
+      .warn{stroke:#e08a68} .warnt{fill:#e08a68} .mono{fill:#d9b45c}
+      text{fill:#e6edf3} .lbl{fill:#8b949e} .s{fill:#8b949e}
+    }
+  </style>
+
+  <defs>
+    <marker id="a" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path class="ah" d="M0,0 L9,4.5 L0,9 z"/>
+    </marker>
+    <marker id="b" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path class="ah2" d="M0,0 L9,4.5 L0,9 z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="960" height="366" rx="12"/>
+
+  <rect class="card" x="65" y="56" width="250" height="64" rx="6"/>
+  <text class="mono" x="77" y="78">await init()</text>
+  <text class="s" x="77" y="96">loads and instantiates the WASM</text>
+  <text class="s" x="77" y="108">module — once per process</text>
+
+  <path class="ln" d="M 315 88 H 355" marker-end="url(#a)"/>
+
+  <rect class="card" x="355" y="56" width="250" height="64" rx="6"/>
+  <text class="mono" x="367" y="78">new BachGenerator()</text>
+  <text class="s" x="367" y="96">allocates the engine state inside</text>
+  <text class="s" x="367" y="108">WASM memory</text>
+
+  <path class="ln" d="M 605 88 H 645" marker-end="url(#a)"/>
+
+  <rect class="card" x="645" y="56" width="250" height="64" rx="6"/>
+  <text class="mono" x="657" y="78">generator.generate(config)</text>
+  <text class="s" x="657" y="96">runs the seven-step pipeline and</text>
+  <text class="s" x="657" y="108">holds the result on the instance</text>
+
+  <path class="ln" d="M 770 120 V 142" marker-end="url(#a)"/>
+
+  <rect class="grp" x="24" y="144" width="912" height="100" rx="8"/>
+  <text class="lbl" x="38" y="164">read the result — in any order, as often as you like</text>
+
+  <rect class="alt" x="38" y="172" width="136" height="54" rx="6"/>
+  <text class="mono" x="50" y="190">getMidi()</text>
+  <text class="s" x="50" y="206">Standard MIDI file</text>
+  <text class="s" x="50" y="218">bytes in output key</text>
+
+  <rect class="alt" x="182" y="172" width="136" height="54" rx="6"/>
+  <text class="mono" x="194" y="190">getEvents()</text>
+  <text class="s" x="194" y="206">note events with bars,</text>
+  <text class="s" x="194" y="218">tracks and source tags</text>
+
+  <rect class="alt" x="326" y="172" width="136" height="54" rx="6"/>
+  <text class="mono" x="338" y="190">getGenerated()</text>
+  <text class="s" x="338" y="206">notated notes and</text>
+  <text class="s" x="338" y="218">counterpoint audit</text>
+
+  <rect class="alt" x="498" y="172" width="136" height="54" rx="6"/>
+  <text class="mono" x="510" y="190">getProvenance()</text>
+  <text class="s" x="510" y="206">note sources and</text>
+  <text class="s" x="510" y="218">rule-bit evidence</text>
+
+  <rect class="alt" x="642" y="172" width="136" height="54" rx="6"/>
+  <text class="mono" x="654" y="190">getDiagnostic()</text>
+  <text class="s" x="654" y="206">validation failures,</text>
+  <text class="s" x="654" y="218">when generation fails</text>
+
+  <rect class="alt" x="786" y="172" width="136" height="54" rx="6"/>
+  <text class="mono" x="798" y="190">getInfo()</text>
+  <text class="s" x="798" y="206">resolved config and</text>
+  <text class="s" x="798" y="218">actual seed used</text>
+
+  <path class="ln" d="M 480 244 V 264" marker-end="url(#a)"/>
+
+  <rect class="card" x="350" y="266" width="260" height="48" rx="6"/>
+  <text class="mono" x="362" y="286">generator.destroy()</text>
+  <text class="s" x="362" y="302">frees the WASM memory it took</text>
+
+  <path class="seam" d="M 24 330 H 936"/>
+  <text class="s" x="480" y="350" text-anchor="middle">One instance can generate as many times as you want; each call replaces the previous result. Forgetting destroy() leaks WASM memory, not JavaScript memory.</text>
+</svg>

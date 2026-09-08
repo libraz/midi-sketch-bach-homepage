@@ -12,7 +12,11 @@ Read a form name as a **composition template**, not just a style label. The form
 :::
 
 ::: info The form decides the voice count
-Each form fixes its own number of voices, meter, and natural/reference length. The engine applies `scale` or `targetBars`, then snaps the result to the form's bar grid. This makes the fugue's 42-bar reference resolve to 44 bars by default. There is no `numVoices` option — choose the form to choose the texture. Every form has a maximum of 128 bars. See [Option Relationships](/docs/option-relationships) for details.
+Each form fixes its own number of voices, meter, and natural/reference length. The engine applies `scale` or `targetBars`, then snaps the result to the form's bar grid. A `targetBars` value of `0` uses `scale`; a positive value overrides it. Resolved output is clamped to the form's range up to 128 bars; see [Option Relationships](/docs/option-relationships) for the accepted range and snapping caveat. This makes the fugue's 42-bar reference resolve to 44 bars by default. There is no `numVoices` option — choose the form to choose the texture.
+:::
+
+::: info Character also shapes performance
+`character` selects the melodic and figuration profile. Every form applies that profile to note articulation and the MIDI CC profile in the finished output. In `cello_prelude`, it also orders the figure palette used for each bar. See [Instruments](/docs/physical-models) for the instrument-specific expression output.
 :::
 
 | Form | Voices | Meter | Reference Length | Default Output | Default Instrument |
@@ -25,7 +29,7 @@ Each form fixes its own number of voices, meter, and natural/reference length. T
 | `passacaglia` | 3 | 3/4 | 24 bars | 24 bars | Organ |
 | `fantasia_and_fugue` | 3 | 4/4 | 32 bars | 32 bars | Organ |
 | `cello_prelude` | 1 | 4/4 | 8 bars | 8 bars | Cello |
-| `chaconne` | 2 | 3/4 | 16 bars | 16 bars | Violin |
+| `chaconne` | 3 | 3/4 | 16 bars | 16 bars | Violin |
 | `goldberg_variations` | 3 | 4/4 | 20 bars | 20 bars | Harpsichord |
 
 ## Organ System (Forms 0--6)
@@ -36,7 +40,7 @@ Seven forms covering the major genres of Bach's organ repertoire.
 
 A pure contrapuntal fugue -- the cornerstone of Baroque polyphony.
 
-**Structure**: Opens with a single-voice subject statement, followed by the answer (typically at the fifth). Additional voices enter with the subject in turn (exposition). The middle section alternates episodes (free counterpoint) with subject entries in new keys. Culminates in stretto (overlapping entries) and a final statement in the home key.
+**Structure**: Opens with a single-voice subject statement, followed by the answer (typically at the fifth). Additional voices enter with the subject in turn (exposition). In the standalone `fugue` form, each voice waits for its own thematic entry; development entries alternate with authored, motif-derived **Fortspinnung** episodes — short motifs spun into sequential continuations. The episodes thin to two voices before the final episode restores all three. See [Voice Architecture](/docs/voice-architecture) for the rest rotation and bass support. The form culminates in stretto (overlapping entries) and a final statement in the home key.
 
 ::: tip Reading the fugue description
 The **subject** is the main theme. The **answer** is the same idea entering in another voice, usually shifted by a fifth. An **episode** is a freer connector between subject entries. **Stretto** means entries overlap before the previous one finishes.
@@ -94,7 +98,7 @@ generator.generate({
 
 A three-voice texture modeled on Bach's organ trio sonatas, where two upper voices interact over an independent bass line.
 
-**Structure**: The two upper voices engage in imitative counterpoint, trading melodic ideas while maintaining independence. The bass voice (typically played on the organ pedals) provides a foundation with its own melodic character. Multiple movements may be generated depending on the scale setting.
+**Structure**: The two upper voices engage in imitative counterpoint, trading melodic ideas while maintaining independence. The bass voice (typically played on the organ pedals) provides a foundation with its own melodic character. A longer scale setting extends this continuous layout and its internal periods; it does not add separate movements.
 
 - **Default instrument**: Organ
 - **Voices**: 3
@@ -170,7 +174,7 @@ The `noble` character is rejected for the toccata and fugue — generation throw
 :::
 
 ::: info Bach's Toccatas and Fugues
-The Toccata and Fugue in D minor (BWV 565) is perhaps Bach's most famous organ work. The toccata (from Italian "toccare" — to touch) showcases the player's virtuosity with free-flowing passage work before the structured fugue begins.
+The Toccata and Fugue in D minor (BWV 565) is traditionally attributed to Bach, although its authorship has been debated. The toccata (from Italian "toccare" — to touch) showcases the player's virtuosity with free-flowing passage work before the structured fugue begins. See the [Netherlands Bach Society's BWV 565 notes](https://www.bachvereniging.nl/en/bwv/bwv-565).
 :::
 
 ```js
@@ -189,7 +193,7 @@ generator.generate({
 
 A variation form built over a repeating bass theme (ostinato).
 
-**Structure**: Opens with a bass theme statement. Successive variations add a principal variation line and a middle counterline over the repeating ground bass, growing in complexity toward a climax. The ground bass is immutable across all variations.
+**Structure**: Historically, passacaglia and chaconne labels overlap, and recurring bass or harmonic frameworks can be revoiced and ornamented across variations ([SFCM's ostinato analysis](https://sfcm.edu/study/majors/academics/music-theory-and-musicianship/sfcm-theory/online-materials/analysis-lectures/ostinato-and-variation)). In this engine, the form opens with a bass carrier, then adds a principal variation line and a middle counterline over it. That carrier is deliberately immutable across the generated variations.
 
 - **Default instrument**: Organ
 - **Voices**: 3
@@ -225,7 +229,7 @@ A pairing of a free-form fantasia with a structured fugue.
 - **Character**: Imaginative fantasia, disciplined fugue
 
 ::: info Bach's Fantasias and Fugues
-Bach's organ fantasias and fugues (BWV 537, 542, 561) combine the improvisatory freedom of the fantasia — from the Italian "fantasia" (imagination) — with the intellectual discipline of the fugue. The Fantasia and Fugue in G minor (BWV 542) is considered one of the greatest organ works ever written.
+Bach's organ fantasias and fugues (for example, BWV 537 and 542) combine the improvisatory freedom of the fantasia — from the Italian "fantasia" (imagination) — with the intellectual discipline of the fugue. The Fantasia and Fugue in G minor (BWV 542) is considered one of the greatest organ works ever written.
 :::
 
 ```js
@@ -247,7 +251,7 @@ Two forms for unaccompanied string instruments.
 
 A flowing prelude for solo cello, modeled on the opening movements of Bach's Cello Suites.
 
-**Structure**: A single continuous line of arpeggiated figuration that outlines harmonic progressions. Implied voices emerge from register shifts — bass notes, inner harmonies, and upper melodies interweave within one melodic line.
+**Structure**: A single continuous line can outline harmonic progressions through broken chords and other figuration. Implied voices emerge from register shifts — bass notes, inner harmonies, and upper melodies interweave within one melodic line. The character orders the builder's figure palette for each bar, so its surface pattern changes while the voice count stays one.
 
 - **Default instrument**: Cello
 - **Voices**: 1
@@ -256,7 +260,7 @@ A flowing prelude for solo cello, modeled on the opening movements of Bach's Cel
 - **Character**: Flowing, harmonically rich, meditative
 
 ::: info Bach's Cello Suites
-The six Suites for Unaccompanied Cello (BWV 1007--1012) are cornerstones of the cello repertoire. Each suite opens with a prelude that establishes the key through arpeggiated patterns, creating the illusion of multiple voices on a single-line instrument.
+The six Suites for Unaccompanied Cello (BWV 1007--1012) are cornerstones of the cello repertoire, but their preludes use different textures. The First Suite opens with flowing broken-chord writing, while the Fifth Suite (BWV 1011) begins with a slow French-overture texture before its faster continuation. These idiomatic solo lines can imply several voices without all being arpeggiated; see the [Netherlands Bach Society's BWV 1011 notes](https://www.bachvereniging.nl/en/bwv/bwv-1011).
 :::
 
 ```js
@@ -274,10 +278,10 @@ generator.generate({
 
 A monumental variation form for solo violin, inspired by the Chaconne from Bach's Partita No. 2 in D minor.
 
-**Structure**: Built over a repeating ground-bass harmonic cycle in 3/4, the chaconne unfolds as a series of variations that explore every expressive possibility of the instrument. The two-voice texture pairs the ground bass with an increasingly elaborate upper line.
+**Structure**: The engine declares three lanes for its repeating 3/4 cycle: V0 carries the variation, V1 is a middle line that realises the ground's implied harmony when clean register space is available, and V2 carries the ground. V1 starts as a rest and may withdraw from individual bars or whole cycles where no clean placement exists. Bach's BWV 1004 Chaconne realizes its recurring harmonic and bass framework through double stops, arpeggiated figuration, and implied voices, so the historical texture is richer than the engine's three-lane abstraction.
 
 - **Default instrument**: Violin
-- **Voices**: 2
+- **Voices**: 3
 - **Meter**: 3/4
 - **Natural length**: 16 bars
 - **Character**: Epic, intensely expressive, architecturally grand
@@ -301,9 +305,9 @@ generator.generate({
 
 ### 9. Goldberg Variations
 
-A theme-and-variations cycle modeled on Bach's Goldberg Variations (BWV 988), built over an immutable bass line.
+A theme-and-variations cycle modeled on Bach's Goldberg Variations (BWV 988), with a repeated four-bar immutable carrier in the engine's abstraction.
 
-**Structure**: An opening aria states the theme, followed by thirty variations over the same bass, including canons at progressively widening intervals. The bass line is fixed across the whole cycle while the upper voices are reinvented variation by variation.
+**Structure**: Bach's Aria establishes a fundamental-bass and harmonic framework that the thirty variations preserve while changing surface notes, durations, and textures. Every third variation from 3 through 27 is a canon, progressing from unison through the ninth; Variation 30 is a Quodlibet rather than a tenth canon. The engine's default 20-bar layout contains five four-bar variation blocks; its immutable aria-bass carrier repeats on each four-bar block. `scale: "full"` when no positive `targetBars` is supplied selects the complete compressed Goldberg layout at 128 bars rather than a literal 20 × 4 = 80 bars; a positive `targetBars` overrides the scale. See the [Bach-Archiv Leipzig overview](https://www.bachmuseumleipzig.de/de/node/21950) and the [Netherlands Bach Society's BWV 988 notes](https://www.bachvereniging.nl/en/bwv/bwv-988).
 
 - **Default instrument**: Harpsichord
 - **Voices**: 3
@@ -312,7 +316,7 @@ A theme-and-variations cycle modeled on Bach's Goldberg Variations (BWV 988), bu
 - **Character**: Inventive, encyclopedic, architecturally unified
 
 ::: info Bach's Goldberg Variations
-The Goldberg Variations (BWV 988) are a pinnacle of the variation form: an aria and thirty variations, with every third variation a canon at an interval one step wider than the last, all anchored to the aria's bass.
+The Goldberg Variations (BWV 988) are a pinnacle of the variation form: an aria and thirty variations, with canons at every third variation from 3 through 27 and a Quodlibet at 30. The variations share the aria's fundamental-bass and harmonic framework, while their sounding bass lines and textures change.
 :::
 
 ```js

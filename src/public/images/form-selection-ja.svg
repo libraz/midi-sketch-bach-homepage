@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 384" width="960" height="384" role="img" aria-labelledby="ttl dsc">
+  <title id="ttl">形式の選び方</title>
+  <desc id="dsc">まず楽器を決めると、形式の候補がそこから定まります。オルガンにはフーガ、前奏曲とフーガ、トリオソナタ、コラール前奏曲、トッカータとフーガ、パッサカリア、幻想曲とフーガの 7 形式があります。無伴奏チェロはチェロ前奏曲、無伴奏ヴァイオリンは V0 変奏・V1 休むことがある中声・V2 グラウンドの 3 声を宣言するシャコンヌ、チェンバロはゴルトベルク変奏曲につながります。ゴルトベルク変奏曲だけがピアノも受け付けます。</desc>
+
+  <style>
+    .bg    { fill:#f7f5f1 }
+    .grp   { fill:#edeae4 }
+    .chip  { fill:#ffffff; stroke:#d7d4cd }
+    .card  { fill:#ffffff; stroke:#8a6a1f }
+    .alt   { fill:#ffffff; stroke:#3f6b8a }
+    .seam  { fill:none; stroke:#b8b4ac; stroke-dasharray:6 5 }
+    .rule  { fill:none; stroke:#b8b4ac; stroke-width:1 }
+    .ln    { fill:none; stroke:#8a6a1f; stroke-width:1.4 }
+    .ln2   { fill:none; stroke:#3f6b8a; stroke-width:1.4 }
+    .ah    { fill:#8a6a1f }
+    .ah2   { fill:#3f6b8a }
+    .fill1 { fill:#8a6a1f; opacity:.16 }
+    .fill2 { fill:#3f6b8a; opacity:.16 }
+    .warn  { fill:none; stroke:#a3401f; stroke-width:1.6 }
+    .warnt { fill:#a3401f }
+    text   { font-family:Inter,"Helvetica Neue","Hiragino Sans","Noto Sans JP",Arial,sans-serif; fill:#1f2328 }
+    .h     { font-size:12.5px }
+    .lbl   { font-size:11px; fill:#6e7781; letter-spacing:.06em }
+    .s     { font-size:10.5px; fill:#6e7781 }
+    .mono  { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:10.5px; fill:#8a6a1f }
+    @media (prefers-color-scheme: dark) {
+      .bg{fill:#0d1117} .grp{fill:#12171d}
+      .chip{fill:#161b22;stroke:#30363d} .card{fill:#161b22;stroke:#d9b45c} .alt{fill:#161b22;stroke:#7fb3d5}
+      .seam{stroke:#484f58} .rule{stroke:#484f58}
+      .ln{stroke:#d9b45c} .ln2{stroke:#7fb3d5} .ah{fill:#d9b45c} .ah2{fill:#7fb3d5}
+      .fill1{fill:#d9b45c} .fill2{fill:#7fb3d5}
+      .warn{stroke:#e08a68} .warnt{fill:#e08a68} .mono{fill:#d9b45c}
+      text{fill:#e6edf3} .lbl{fill:#8b949e} .s{fill:#8b949e}
+    }
+  </style>
+
+  <defs>
+    <marker id="a" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path class="ah" d="M0,0 L9,4.5 L0,9 z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="960" height="384" rx="12"/>
+
+  <text class="lbl" x="24" y="34">まず楽器から — 形式の候補はそこから定まる</text>
+
+  <rect class="grp" x="24" y="48" width="912" height="150" rx="8"/>
+  <rect class="card" x="38" y="106" width="170" height="44" rx="6"/>
+  <text class="h" x="50" y="126">オルガン</text>
+  <text class="s" x="50" y="143">選べる形式は 7 つ</text>
+  <path class="ln" d="M 208 128 H 224" marker-end="url(#a)"/>
+  <text class="lbl" x="228" y="70">次に、どの様式か</text>
+
+  <rect class="chip" x="228" y="78" width="168" height="44" rx="6"/>
+  <text class="h" x="240" y="98">0 · フーガ</text>
+  <text class="s" x="240" y="115">厳格な対位法</text>
+  <rect class="chip" x="408" y="78" width="168" height="44" rx="6"/>
+  <text class="h" x="420" y="98">1 · 前奏曲とフーガ</text>
+  <text class="s" x="420" y="115">前奏のあとにフーガ</text>
+  <rect class="chip" x="588" y="78" width="168" height="44" rx="6"/>
+  <text class="h" x="600" y="98">2 · トリオソナタ</text>
+  <text class="s" x="600" y="115">対話する 3 声</text>
+  <rect class="chip" x="768" y="78" width="168" height="44" rx="6"/>
+  <text class="h" x="780" y="98">3 · コラール前奏曲</text>
+  <text class="s" x="780" y="115">長い音符の讃美歌旋律</text>
+
+  <rect class="chip" x="228" y="134" width="168" height="44" rx="6"/>
+  <text class="h" x="240" y="154">4 · トッカータとフーガ</text>
+  <text class="s" x="240" y="171">劇的で技巧的</text>
+  <rect class="chip" x="408" y="134" width="168" height="44" rx="6"/>
+  <text class="h" x="420" y="154">5 · パッサカリア</text>
+  <text class="s" x="420" y="171">固執低音による変奏</text>
+  <rect class="chip" x="588" y="134" width="168" height="44" rx="6"/>
+  <text class="h" x="600" y="154">6 · 幻想曲とフーガ</text>
+  <text class="s" x="600" y="171">自由のあとに厳格</text>
+
+  <rect class="grp" x="24" y="208" width="912" height="124" rx="8"/>
+  <rect class="card" x="38" y="218" width="170" height="30" rx="6"/>
+  <text class="h" x="50" y="238">無伴奏チェロ</text>
+  <path class="ln" d="M 208 233 H 224" marker-end="url(#a)"/>
+  <rect class="chip" x="228" y="218" width="210" height="30" rx="6"/>
+  <text class="h" x="240" y="238">7 · チェロ前奏曲</text>
+  <text class="s" x="454" y="237">途切れない分散和音の線 1 本、8 小節</text>
+
+  <rect class="card" x="38" y="254" width="170" height="30" rx="6"/>
+  <text class="h" x="50" y="274">無伴奏ヴァイオリン</text>
+  <path class="ln" d="M 208 269 H 224" marker-end="url(#a)"/>
+  <rect class="chip" x="228" y="254" width="210" height="30" rx="6"/>
+  <text class="h" x="240" y="274">8 · シャコンヌ</text>
+  <text class="s" x="454" y="273">変奏・中声・グラウンドの 3 声、3 拍子</text>
+
+  <rect class="card" x="38" y="290" width="170" height="30" rx="6"/>
+  <text class="h" x="50" y="310">チェンバロ</text>
+  <path class="ln" d="M 208 305 H 224" marker-end="url(#a)"/>
+  <rect class="chip" x="228" y="290" width="210" height="30" rx="6"/>
+  <text class="h" x="240" y="310">9 · ゴルトベルク変奏曲</text>
+  <text class="s" x="454" y="309">ピアノも受け付ける唯一の形式</text>
+
+  <path class="seam" d="M 24 348 H 936"/>
+  <text class="s" x="480" y="368" text-anchor="middle">ゴルトベルク変奏曲以外はどれも楽器をひとつしか受け付けない。別の楽器を求めると、移し替えるのではなく例外を投げる。</text>
+</svg>

@@ -94,7 +94,7 @@ The course also speaks of **upper voices** and **outer voices**. The lowest voic
 
 ## Pitch, Key, and Scale
 
-A **pitch** is the height of a note, such as C, D, or E. The smallest distance between two pitches is a **semitone** — one MIDI number; two semitones make a **whole tone**. An **octave** is 12 semitones, and notes an octave apart share a letter name. `pitch % 12` gives the **pitch class** — the letter identity with the octave stripped — and many validator checks work on pitch classes.
+A **pitch** is the height of a note, such as C, D, or E. The smallest distance between two pitches is a **semitone** — one MIDI number; two semitones make a **whole tone**. An **octave** is 12 semitones, and notes an octave apart share a letter name. `pitch % 12` gives the **pitch class** — the pitch identity modulo the octave. It does not retain letter spelling or accidental notation, and many validator checks work on pitch classes.
 
 A **key** is the tonal center: C major means C feels like home; D minor means D feels like home in a minor mode.
 
@@ -115,9 +115,9 @@ That step pattern is the entire structural difference, yet major keys read as br
 
 C major and A minor in the pattern table share all seven notes and differ only in which one is home — such pairs are called **relative keys** (they return in chapter 6, where fugues modulate to them). Any of the 12 pitch classes can be the tonic, and each supports both modes, so there are 24 keys in total; MIDI Sketch Bach generates in all of them (`key` plus `isMinor` in the JS API, `c_major` / `d_minor` style values in the CLI). On a printed staff, the key is announced by the **key signature** — the sharps or flats stacked at the start of each line so they need not be repeated on every note.
 
-In practice the minor mode is not one fixed scale: counterpoint routinely raises its 7th degree to manufacture a leading tone (**harmonic minor**), and melodies raise degrees 6 and 7 when ascending and revert them when descending (**melodic minor**). Chapter 4 of the course shows what the validator does with this.
+In practice the minor mode is not one fixed scale. Counterpoint often raises its 7th degree to supply a leading tone (**harmonic minor**), and the familiar textbook pattern raises degrees 6 and 7 when ascending and lowers them when descending (**melodic minor**). In Bach's music, these degrees can be altered in either direction when harmony and voice leading call for it, so the ascending/descending pattern is a teaching description rather than a mechanical rule. See this [common-practice scale overview](https://open.lib.umn.edu/musiccomposition/chapter/common-practice-era-scales-intervals-and-chord-functions/); Chapter 4 of the course shows what the validator does with the distinction.
 
-A **scale** is the ordered set of pitches used around that center — the two patterns above are the Baroque defaults. One API caveat: in MIDI Sketch Bach, `scale` means the length multiplier (`short`, `medium`, `long`, `full`), not a musical scale. The musical key is selected by `key`.
+A **scale** is the ordered set of pitches used around that center — the major and natural-minor patterns above are useful reference patterns, not a complete description of Baroque scale practice. One API caveat: in MIDI Sketch Bach, `scale` means the length multiplier (`short`, `medium`, `long`, `full`), not a musical scale. The musical key is selected by `key`.
 
 ## Scale Degrees
 
@@ -226,18 +226,18 @@ Roman numerals name chords by their position in the key. In C major, **I** is th
 
 ## Diatonic and Chromatic
 
-A note is **diatonic** when it belongs to the current key's scale, and **chromatic** when it has been altered with a sharp or flat from outside the scale. Baroque counterpoint is mostly diatonic; chromatic notes are allowed where a device licenses them — secondary dominants borrow a chromatic leading tone, and the minor mode raises its seventh degree. Unlicensed chromatic contradictions between voices are rejected as cross relations (chapter 5).
+A note is **diatonic** when it belongs to the current key's scale, and **chromatic** when it falls outside that scale, whether written with a sharp, flat, or natural. A natural sign can therefore make a pitch chromatic by cancelling a key-signature accidental. Baroque counterpoint is mostly diatonic; chromatic notes are allowed where a device licenses them — secondary dominants borrow a chromatic leading tone, and the minor mode raises its seventh degree. Unlicensed chromatic contradictions between voices are rejected as cross relations (chapter 5).
 
 ## Fugue Terms
 
-A **fugue** is a form built from a main theme that enters in different voices.
+A **fugue** is a contrapuntal procedure built from a main theme that enters in different voices.
 
 | Term | Meaning |
 |------|---------|
 | Subject | The main theme of a fugue. |
 | Answer | The subject restated in another voice, usually shifted toward the dominant. |
-| Countersubject | A recurring line that accompanies the subject. |
-| Episode | A freer passage between subject entries. |
+| Countersubject | A recurring accompanying line used in some fugues. |
+| Episode | A comparatively freer passage between subject entries, often developing subject material or another salient idea. |
 | Stretto | Overlapping subject entries before the previous entry has finished. |
 
 ## Fixed Material
@@ -250,7 +250,7 @@ Some forms contain material the engine treats as fixed.
 | Cantus firmus | A fixed long-note melody, often a chorale tune. |
 | Pedal point | A held or repeated bass note while harmony changes above it. |
 
-These fixed lines are marked as `"material"` in event data. Generated supporting notes are marked as `"compose"`, and decorative added notes are marked as `"ornament"`.
+Fixed carrier lines and their default supporting material are marked as `"material"` in event data. Notes emitted by the opt-in scored search (currently the Passacaglia free-counterpoint path) are marked as `"compose"`, and decorative post-pass notes are marked as `"ornament"`.
 
 ## Where to Go Next
 

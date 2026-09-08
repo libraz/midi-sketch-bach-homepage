@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 378" width="960" height="378" role="img" aria-labelledby="ttl dsc">
+  <title id="ttl">どのオプションが何を決めるか</title>
+  <desc id="dsc">設定は 2 つの帯に分かれます。上の帯の form・character・isMinor・seed は、作曲される音そのものを変えます。あわせて、形式によっては特定の性格が拒否されることも示しています。下の帯では key が出力の移調とメタデータを決めます。instrument と bpm は後段の実現処理にも入り、instrument は装飾密度・出力音域・音色番号に、bpm はトリルの刻み方とテンポイベントに影響します。</desc>
+
+  <style>
+    .bg    { fill:#f7f5f1 }
+    .grp   { fill:#edeae4 }
+    .chip  { fill:#ffffff; stroke:#d7d4cd }
+    .card  { fill:#ffffff; stroke:#8a6a1f }
+    .alt   { fill:#ffffff; stroke:#3f6b8a }
+    .seam  { fill:none; stroke:#b8b4ac; stroke-dasharray:6 5 }
+    .rule  { fill:none; stroke:#b8b4ac; stroke-width:1 }
+    .ln    { fill:none; stroke:#8a6a1f; stroke-width:1.4 }
+    .ln2   { fill:none; stroke:#3f6b8a; stroke-width:1.4 }
+    .ah    { fill:#8a6a1f }
+    .ah2   { fill:#3f6b8a }
+    .fill1 { fill:#8a6a1f; opacity:.16 }
+    .fill2 { fill:#3f6b8a; opacity:.16 }
+    .warn  { fill:none; stroke:#a3401f; stroke-width:1.6 }
+    .warnt { fill:#a3401f }
+    text   { font-family:Inter,"Helvetica Neue","Hiragino Sans","Noto Sans JP",Arial,sans-serif; fill:#1f2328 }
+    .h     { font-size:12.5px }
+    .lbl   { font-size:11px; fill:#6e7781; letter-spacing:.06em }
+    .s     { font-size:10.5px; fill:#6e7781 }
+    .mono  { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:10.5px; fill:#8a6a1f }
+    @media (prefers-color-scheme: dark) {
+      .bg{fill:#0d1117} .grp{fill:#12171d}
+      .chip{fill:#161b22;stroke:#30363d} .card{fill:#161b22;stroke:#d9b45c} .alt{fill:#161b22;stroke:#7fb3d5}
+      .seam{stroke:#484f58} .rule{stroke:#484f58}
+      .ln{stroke:#d9b45c} .ln2{stroke:#7fb3d5} .ah{fill:#d9b45c} .ah2{fill:#7fb3d5}
+      .fill1{fill:#d9b45c} .fill2{fill:#7fb3d5}
+      .warn{stroke:#e08a68} .warnt{fill:#e08a68} .mono{fill:#d9b45c}
+      text{fill:#e6edf3} .lbl{fill:#8b949e} .s{fill:#8b949e}
+    }
+  </style>
+
+  <defs>
+    <marker id="a" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path class="ah" d="M0,0 L9,4.5 L0,9 z"/>
+    </marker>
+    <marker id="b" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path class="ah2" d="M0,0 L9,4.5 L0,9 z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="960" height="378" rx="12"/>
+
+  <rect class="grp" x="24" y="48" width="912" height="156" rx="8"/>
+  <text class="lbl" x="38" y="68">音そのものを変える</text>
+  <text class="s" x="200" y="68">作曲の前と作曲中に読まれる</text>
+
+  <rect class="card" x="40" y="76" width="110" height="22" rx="5"/>
+  <text class="mono" x="95" y="91" text-anchor="middle">form</text>
+  <path class="ln" d="M 150 87 H 176" marker-end="url(#a)"/>
+  <text class="s" x="182" y="91">声部数・拍子・自然な長さ、そして形式レイアウト全体を決める</text>
+
+  <rect class="card" x="40" y="102" width="110" height="22" rx="5"/>
+  <text class="mono" x="95" y="117" text-anchor="middle">character</text>
+  <path class="ln" d="M 150 113 H 176" marker-end="url(#a)"/>
+  <text class="s" x="182" y="117">主題素材・アーティキュレーション・MIDI レベルに影響する — 音程・勢い・線の形</text>
+
+  <rect class="card" x="40" y="128" width="110" height="22" rx="5"/>
+  <text class="mono" x="95" y="143" text-anchor="middle">isMinor</text>
+  <path class="ln" d="M 150 139 H 176" marker-end="url(#a)"/>
+  <text class="s" x="182" y="143">内部の C 長調／C 短調どちらの和声プランを使うかを選ぶ</text>
+
+  <rect class="card" x="40" y="154" width="110" height="22" rx="5"/>
+  <text class="mono" x="95" y="169" text-anchor="middle">seed</text>
+  <path class="ln" d="M 150 165 H 176" marker-end="url(#a)"/>
+  <text class="s" x="182" y="169">乱数を初期化する。0 なら非ゼロの値が抽かれ、getInfo().seedUsed に入る</text>
+
+  <text class="warnt" style="font-size:10.5px" x="40" y="192">形式が性格を拒むことがある。chorale_prelude は playful と restless を、toccata_and_fugue は noble を受け付けない</text>
+
+  <rect class="grp" x="24" y="214" width="912" height="112" rx="8"/>
+  <text class="lbl" x="38" y="234">装飾・演奏・出力</text>
+  <text class="s" x="200" y="234">後段の処理で解決される</text>
+
+  <rect class="alt" x="40" y="242" width="110" height="22" rx="5"/>
+  <text class="mono" x="95" y="257" text-anchor="middle">key</text>
+  <path class="ln2" d="M 150 253 H 176" marker-end="url(#b)"/>
+  <text class="s" x="182" y="257">MIDI と getEvents() の音高を移調し、出力調のメタデータを与える</text>
+
+  <rect class="alt" x="40" y="268" width="110" height="22" rx="5"/>
+  <text class="mono" x="95" y="283" text-anchor="middle">instrument</text>
+  <path class="ln2" d="M 150 279 H 176" marker-end="url(#b)"/>
+  <text class="s" x="182" y="283">装飾密度と音域上限を決め、後段で GM 音色番号と出力音域を設定する</text>
+
+  <rect class="alt" x="40" y="294" width="110" height="22" rx="5"/>
+  <text class="mono" x="95" y="309" text-anchor="middle">bpm</text>
+  <path class="ln2" d="M 150 305 H 176" marker-end="url(#b)"/>
+  <text class="s" x="182" y="309">トリルの刻み方とテンポイベントを決める。0 は既定の 100 を意味する</text>
+
+  <path class="seam" d="M 24 342 H 936"/>
+  <text class="s" x="480" y="362" text-anchor="middle">2 つのオプションが協力して決めるのは長さだけ。scale と targetBars はそれ専用の解決の流れを持つ。</text>
+</svg>

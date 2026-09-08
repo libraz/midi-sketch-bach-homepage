@@ -22,14 +22,18 @@ Voice count is fixed per form. Picking the form picks the texture:
 | Form | Voices |
 |------|--------|
 | `fugue`, `prelude_and_fugue`, `trio_sonata`, `chorale_prelude`, `toccata_and_fugue`, `passacaglia`, `fantasia_and_fugue`, `goldberg_variations` | 3 |
-| `chaconne` | 2 |
+| `chaconne` | 3 |
 | `cello_prelude` | 1 |
 
 Passing `numVoices`/`num_voices` is accepted and ignored for backward compatibility. See [Forms](/docs/forms) for the full table including meter and natural length.
 
+For the chaconne, the engine declares three lanes even though Bach's historical work is for solo violin: V0 carries the variation, V1 carries middle material where clean register space is available, and V2 carries the ground. V1 starts as a rest and may rest for individual bars or whole cycles when no clean placement exists, while the output still reports three chaconne tracks. Character also sets note articulation and the MIDI CC profile applied to every form; see [Instruments](/docs/physical-models) for the instrument-specific output.
+
 ## Voice Intents
 
 The form director assigns each voice a **voice intent** over the bar spans of the piece — the role that voice plays at each point. The engine defines 33 named intents (`voice_intent.h`), including three dedicated Goldberg carriers; they group into a handful of families:
+
+![A fugue read as three voice lanes with one named intent per span, and the seven families those names group into](/images/voice-intents.svg)
 
 | Family | Representative intents | Role |
 |--------|------------------------|------|
@@ -40,6 +44,10 @@ The form director assigns each voice a **voice intent** over the bar spans of th
 | Figural | `FigurationCarrier`, `ArpeggioFlow`, `ToccataCarrier`, `FantasiaCarrier` | Continuous idiomatic figuration and sectional solo writing |
 | Variation | `VariationCarrier`, `GoldbergBassCarrier`, `GoldbergVariationCarrier`, `GoldbergInnerVoiceCarrier` | Authored variation material and the three distinct Goldberg lines |
 | Texture | `RhythmCarrier`, `NctCarrier`, `TrioVoiceCarrier` | Anacrusis/hemiola rhythm shapes, declared non-chord-tone figures, and authored trio/counterlines |
+
+For the standalone `fugue` form, each voice waits for its own exposition entry: V0 carries the subject, V1 the answer, and V2 the third entry. Ordinary development entries rotate V0 → V1 → V2; during the pre-coda pedal cycle, the subject returns to V0.
+
+Episodes place an authored `FortspinnungSpan` sequence in V0 and thin to two voices: V1 rests in two of each three non-final episode cycles, V2 rests in the third, and the final episode keeps all three. When V2 sounds in a thinned episode, its bass support alternates a faster running figure with slower walking support. When a pedal cycle is present, one supporting voice holds the dominant while the other supplies figuration.
 
 All default shipped forms use carrier assembly: candidate search dispatches the spans but replays the authored material verbatim, so scored search contributes no default notes. The opt-in `--free-counterpoint` path reroutes only Passacaglia V1 (`voice == 1`) from `TrioVoiceCarrier` to `SequentialCounterline`; it is unavailable for other forms. See [Candidate Search](/docs/generation-pipeline#step-3-candidate-search).
 
