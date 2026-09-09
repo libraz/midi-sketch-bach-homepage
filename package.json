@@ -7,9 +7,10 @@
   "packageManager": "yarn@4.18.0",
   "scripts": {
     "dev": "vitepress dev",
-    "build": "node scripts/check-rule-count.mjs && vitepress build",
+    "build": "node scripts/check-rule-count.mjs && node scripts/check-diagram-palette.mjs && vitepress build",
     "preview": "vitepress preview",
     "check:rules": "node scripts/check-rule-count.mjs",
+    "check:diagrams": "node scripts/check-diagram-palette.mjs",
     "typecheck": "vue-tsc --noEmit",
     "lint": "biome check src .vitepress scripts",
     "lint:fix": "biome check --write src .vitepress scripts",
