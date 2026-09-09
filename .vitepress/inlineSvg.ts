@@ -12,8 +12,12 @@ import type { MarkdownRenderer } from 'vitepress'
  * whenever the reader's OS preference and the site toggle disagree. Inlining puts the
  * diagram in the page's own cascade, where `.dark` applies.
  *
- * The SVG files keep their `prefers-color-scheme` block so they still render correctly
- * when opened on their own; this module rewrites that block to `.dark` on the way in.
+ * The palette cannot travel with the diagram: Vue's template compiler drops every
+ * `<style>` element from a page template, so a palette inlined here would render on the
+ * server and then disappear on hydration, leaving every shape at the SVG default fill of
+ * black. The block is therefore stripped on the way in, and the palette lives in the
+ * theme (`theme/custom.css`, DOC DIAGRAMS). The files keep their own copy behind
+ * `prefers-color-scheme` so they still render when opened on their own.
  */
 
 const IMAGES_DIR = fileURLToPath(new URL('../src/public/images', import.meta.url))
@@ -24,45 +28,12 @@ interface InlineSvgEnv {
   __inlineSvgCounts?: Map<string, number>
 }
 
-/** Splits a flat rule list into `selectors { body }` pairs and prefixes every selector. */
-function prefixRules(css: string, scope: string): string {
-  const rules: string[] = []
-  for (const match of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
-    const body = match[2].trim()
-    if (!body) continue
-    const selectors = match[1]
-      .trim()
-      .split(',')
-      .map(selector => `${scope} ${selector.trim()}`)
-      .join(', ')
-    rules.push(`${selectors} { ${body} }`)
-  }
-  return rules.join('\n')
-}
-
-/** Rewrites the OS-preference dark block as a `.dark` block and scopes everything. */
-function scopeCss(css: string, scope: string): string {
-  const start = css.search(/@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)\s*\{/)
-  if (start === -1) return prefixRules(css, scope)
-
-  const open = css.indexOf('{', start)
-  let depth = 0
-  let end = -1
-  for (let i = open; i < css.length; i += 1) {
-    if (css[i] === '{') depth += 1
-    else if (css[i] === '}') {
-      depth -= 1
-      if (depth === 0) {
-        end = i
-        break
-      }
-    }
-  }
-  if (end === -1) return prefixRules(css, scope)
-
-  const light = css.slice(0, start) + css.slice(end + 1)
-  const dark = css.slice(open + 1, end)
-  return `${prefixRules(light, scope)}\n${prefixRules(dark, `.dark ${scope}`)}`
+/** The diagrams this plugin inlines; every other image renders as usual. */
+function diagramName(src: string): string | null {
+  if (!src.startsWith(IMAGE_PREFIX) || !src.endsWith('.svg')) return null
+  const name = src.slice(IMAGE_PREFIX.length)
+  if (name.includes('/') || name.includes('..')) return null
+  return name
 }
 
 /**
@@ -96,15 +67,38 @@ function transform(svg: string, uid: string): string {
     (_, attrs: string) => `<svg id="${uid}"${attrs.replace(/\s(?:width|height)="[^"]*"/g, '')}>`,
   )
 
-  return out.replace(
-    /<style>([\s\S]*?)<\/style>/,
-    (_, css: string) => `<style>\n${scopeCss(css, `#${uid}`)}\n</style>`,
-  )
+  // The palette is a page-level concern; see the module comment.
+  return out.replace(/\s*<style>[\s\S]*?<\/style>/, '')
+}
+
+/**
+ * Hides the paragraph around a diagram that is alone in one. A `<figure>` is not valid
+ * inside a `<p>`, so the browser lifts it out while parsing the server-rendered HTML —
+ * the DOM then no longer matches the client render and Vue rebuilds the subtree.
+ */
+function unwrapDiagramParagraphs(md: MarkdownRenderer): void {
+  md.core.ruler.push('inline_svg_unwrap', state => {
+    const tokens = state.tokens
+    for (let idx = 0; idx + 2 < tokens.length; idx += 1) {
+      if (tokens[idx].type !== 'paragraph_open') continue
+      const inline = tokens[idx + 1]
+      if (inline.type !== 'inline' || tokens[idx + 2].type !== 'paragraph_close') continue
+
+      const children = inline.children ?? []
+      if (children.length !== 1 || children[0].type !== 'image') continue
+      if (!diagramName(children[0].attrGet('src') ?? '')) continue
+
+      tokens[idx].hidden = true
+      tokens[idx + 2].hidden = true
+    }
+  })
 }
 
 /** Inlines `![alt](/images/*.svg)` diagrams; every other image renders as usual. */
 export function inlineSvgPlugin(md: MarkdownRenderer): void {
   const renderImage = md.renderer.rules.image
+
+  unwrapDiagramParagraphs(md)
 
   md.renderer.rules.image = (tokens, idx, options, env, self) => {
     const fallback = () =>
@@ -112,17 +106,14 @@ export function inlineSvgPlugin(md: MarkdownRenderer): void {
         ? renderImage(tokens, idx, options, env, self)
         : self.renderToken(tokens, idx, options)
 
-    const src = tokens[idx].attrGet('src') ?? ''
-    if (!src.startsWith(IMAGE_PREFIX) || !src.endsWith('.svg')) return fallback()
-
-    const name = src.slice(IMAGE_PREFIX.length)
-    if (name.includes('/') || name.includes('..')) return fallback()
+    const name = diagramName(tokens[idx].attrGet('src') ?? '')
+    if (name === null) return fallback()
 
     let svg: string
     try {
       svg = readFileSync(join(IMAGES_DIR, name), 'utf8')
     } catch {
-      console.warn(`[inline-svg] ${src} could not be read; left as an <img> reference`)
+      console.warn(`[inline-svg] ${name} could not be read; left as an <img> reference`)
       return fallback()
     }
 
@@ -133,7 +124,8 @@ export function inlineSvgPlugin(md: MarkdownRenderer): void {
     counts.set(base, seen)
     const uid = seen === 1 ? `dg-${base}` : `dg-${base}-${seen}`
 
-    // `v-pre` keeps the Vue compiler out of the CSS, where `{` and `}` are structural.
+    // `v-pre` keeps the Vue compiler out of the diagram: its text is prose written for a
+    // reader, and a stray `{{` in a label is a label, not an interpolation.
     return `<figure class="docs-figure" v-pre>${transform(svg, uid)}</figure>`
   }
 }

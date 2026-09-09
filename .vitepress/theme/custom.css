@@ -222,8 +222,16 @@ html[lang="ja"] .VPNavBarTitle .title::after {
    ========================================================================== */
 
 /* Diagrams are inlined by the inline-svg markdown plugin rather than referenced as
-   images, so their own `<style>` block lives in the page cascade and follows the
-   theme toggle. The palette ships inside each SVG, scoped to its root id. */
+   images, so they live in the page cascade and follow the theme toggle instead of the
+   reader's OS preference.
+
+   Their palette lives here rather than inside the SVG. Vue's template compiler removes
+   every `<style>` element from a page template, so a palette shipped with the inlined
+   diagram renders on the server and then disappears on hydration, leaving every shape
+   at the SVG default fill of black. Each file keeps the same colours behind
+   `prefers-color-scheme` so it still renders when opened on its own; the plugin drops
+   that block on the way in, and `scripts/check-diagram-palette.mjs` holds the two
+   copies together. */
 .docs-figure {
   margin: 24px 0;
 }
@@ -232,6 +240,149 @@ html[lang="ja"] .VPNavBarTitle .title::after {
   display: block;
   width: 100%;
   height: auto;
+}
+
+.docs-figure .bg {
+  fill: #f7f5f1;
+}
+.docs-figure .grp {
+  fill: #edeae4;
+}
+.docs-figure .chip {
+  fill: #ffffff;
+  stroke: #d7d4cd;
+}
+.docs-figure .card {
+  fill: #ffffff;
+  stroke: #8a6a1f;
+}
+.docs-figure .alt {
+  fill: #ffffff;
+  stroke: #3f6b8a;
+}
+.docs-figure .seam {
+  fill: none;
+  stroke: #b8b4ac;
+  stroke-dasharray: 6 5;
+}
+.docs-figure .rule {
+  fill: none;
+  stroke: #b8b4ac;
+  stroke-width: 1;
+}
+.docs-figure .ln {
+  fill: none;
+  stroke: #8a6a1f;
+  stroke-width: 1.4;
+}
+.docs-figure .ln2 {
+  fill: none;
+  stroke: #3f6b8a;
+  stroke-width: 1.4;
+}
+.docs-figure .ah {
+  fill: #8a6a1f;
+}
+.docs-figure .ah2 {
+  fill: #3f6b8a;
+}
+.docs-figure .fill1 {
+  fill: #8a6a1f;
+  opacity: 0.16;
+}
+.docs-figure .fill2 {
+  fill: #3f6b8a;
+  opacity: 0.16;
+}
+.docs-figure .warn {
+  fill: none;
+  stroke: #a3401f;
+  stroke-width: 1.6;
+}
+.docs-figure .warnt {
+  fill: #a3401f;
+}
+.docs-figure text {
+  font-family: Inter, "Helvetica Neue", "Hiragino Sans", "Noto Sans JP", Arial, sans-serif;
+  fill: #1f2328;
+}
+.docs-figure .h {
+  font-size: 12.5px;
+}
+.docs-figure .lbl {
+  font-size: 11px;
+  fill: #6e7781;
+  letter-spacing: 0.06em;
+}
+.docs-figure .s {
+  font-size: 10.5px;
+  fill: #6e7781;
+}
+.docs-figure .mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10.5px;
+  fill: #8a6a1f;
+}
+
+.dark .docs-figure .bg {
+  fill: #0d1117;
+}
+.dark .docs-figure .grp {
+  fill: #12171d;
+}
+.dark .docs-figure .chip {
+  fill: #161b22;
+  stroke: #30363d;
+}
+.dark .docs-figure .card {
+  fill: #161b22;
+  stroke: #d9b45c;
+}
+.dark .docs-figure .alt {
+  fill: #161b22;
+  stroke: #7fb3d5;
+}
+.dark .docs-figure .seam {
+  stroke: #484f58;
+}
+.dark .docs-figure .rule {
+  stroke: #484f58;
+}
+.dark .docs-figure .ln {
+  stroke: #d9b45c;
+}
+.dark .docs-figure .ln2 {
+  stroke: #7fb3d5;
+}
+.dark .docs-figure .ah {
+  fill: #d9b45c;
+}
+.dark .docs-figure .ah2 {
+  fill: #7fb3d5;
+}
+.dark .docs-figure .fill1 {
+  fill: #d9b45c;
+}
+.dark .docs-figure .fill2 {
+  fill: #7fb3d5;
+}
+.dark .docs-figure .warn {
+  stroke: #e08a68;
+}
+.dark .docs-figure .warnt {
+  fill: #e08a68;
+}
+.dark .docs-figure .mono {
+  fill: #d9b45c;
+}
+.dark .docs-figure text {
+  fill: #e6edf3;
+}
+.dark .docs-figure .lbl {
+  fill: #8b949e;
+}
+.dark .docs-figure .s {
+  fill: #8b949e;
 }
 
 /* ==========================================================================
